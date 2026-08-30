@@ -1,0 +1,231 @@
+<div class="app">
+
+  <header class="dash">
+    <div class="clock-block">
+      <div class="clock-time">{{ clockHours }}<span class="sep">:</span>{{ clockMinutes }}</div>
+      <div class="clock-date">{{ clockDateLabel }}</div>
+    </div>
+    <div class="status-block">
+      <div class="status-pill" [class.live]="isLive"><span class="dot"></span><span>{{ statusText }}</span></div>
+      <div class="status-detail">{{ statusDetail }}</div>
+    </div>
+  </header>
+
+  <div class="toolbar">
+
+    <div class="profile-group">
+      <span class="profile-label">Schwerpunkt</span>
+      <div class="chip-group">
+        <button *ngFor="let t of trackOptions"
+                class="chip chip-cyan"
+                [class.active]="selectedTrack === t"
+                (click)="setTrack(t)">{{ t }}</button>
+      </div>
+    </div>
+
+    <div class="profile-group">
+      <span class="profile-label">Naturwissenschaften <small>(genau 2 auswählen)</small></span>
+      <div class="chip-group">
+        <button *ngFor="let s of scienceOptions"
+                class="chip"
+                [class.active]="selectedSciences.includes(s)"
+                [disabled]="isScienceDisabled(s)"
+                (click)="toggleScience(s)">{{ s }}</button>
+      </div>
+    </div>
+
+    <div class="profile-group">
+      <span class="profile-label">Sprache</span>
+      <div class="chip-group">
+        <button class="chip chip-cyan"
+                [class.active]="selectedLanguage === 'Spanisch'"
+                (click)="toggleLanguage()">Spanisch</button>
+      </div>
+    </div>
+
+    <div class="toolbar-spacer"></div>
+
+    <div class="nav-group">
+      <button class="nav-btn primary" (click)="goToday()">Heute</button>
+      <button class="nav-btn icon" (click)="goPrev()" aria-label="Vorheriger Tag">←</button>
+      <button class="nav-btn icon" (click)="goNext()" aria-label="Nächster Tag">→</button>
+      <button class="nav-btn" (click)="goWeek()">Aktuelle Woche</button>
+    </div>
+
+    <div class="nav-group">
+      <button class="nav-btn add" (click)="openNewLesson()">+ Stunde hinzufügen</button>
+      <button class="nav-btn" [class.active]="showWeekend" (click)="toggleWeekend()">Wochenende anzeigen</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div class="board" (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)">
+
+      <div class="mobile-daybar" *ngIf="isMobile">
+        <div class="mobile-daylabel">
+          {{ mobileDayDef.label }}
+          <span class="sub">{{ mobileDayDate.getDate() }}.{{ mobileDayDate.getMonth() + 1 }}.{{ mobileDayDate.getFullYear() }}</span>
+        </div>
+      </div>
+
+      <div class="day-headers" *ngIf="!isMobile" [style.grid-template-columns]="'repeat(' + displayedDays.length + ', 1fr)'">
+        <div class="day-header" *ngFor="let col of displayedDays" [class.is-today]="col.isToday">
+          {{ col.def.short }}
+          <span class="num">{{ col.date.getDate() }}.{{ col.date.getMonth() + 1 }}.</span>
+        </div>
+      </div>
+
+      <div class="grid-scroll">
+        <div class="time-axis" [style.height.px]="gridHeight">
+          <div class="mark" *ngFor="let mark of timeMarks" [style.top.%]="mark.top">{{ mark.label }}</div>
+        </div>
+
+        <div class="day-columns" [style.height.px]="gridHeight" [style.grid-template-columns]="'repeat(' + displayedDays.length + ', 1fr)'">
+
+          <div class="hour-line" *ngFor="let mark of timeMarks" [style.top.%]="mark.top"></div>
+
+          <div class="day-col" *ngFor="let col of displayedDays" [class.is-today]="col.isToday">
+
+            <div class="empty-note" *ngIf="col.lessons.length === 0">Frei</div>
+
+            <div class="lesson"
+                 *ngFor="let lesson of col.lessons"
+                 [class.is-live]="lesson.isLive"
+                 [style.top.%]="lesson.top"
+                 [style.height.%]="lesson.height"
+                 [style.--lesson-border]="lesson.color.border"
+                 [style.--lesson-bg]="lesson.color.bg"
+                 (click)="openEditLesson(lesson, $event)">
+              <button class="edit-btn" (click)="openEditLesson(lesson, $event)" aria-label="Stunde bearbeiten">✎</button>
+              <div class="subj">{{ lesson.subject }}</div>
+              <div class="meta">{{ lesson.teacher }}</div>
+              <div class="room">Raum {{ lesson.room }}</div>
+              <div class="time">{{ lesson.start }}–{{ lesson.end }}</div>
+              <div class="live-tag" *ngIf="lesson.isLive">LIVE</div>
+            </div>
+
+          </div>
+
+          <div class="sweep-line" *ngIf="sweepVisible" [style.top.%]="sweepTop" [style.display]="'block'">
+            <span class="sweep-dot"></span>
+            <span class="sweep-label">{{ sweepLabel }}</span>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <aside class="side">
+      <div class="panel">
+        <div class="eyebrow">Nächste Stunde</div>
+
+        <div *ngIf="!nextLessonInfo" class="next-empty">Aktuell sind keine weiteren Stunden eingetragen.</div>
+
+        <div *ngIf="nextLessonInfo as next">
+          <div class="next-subject">{{ next.lesson.subject }}</div>
+          <div class="next-meta">
+            {{ next.lesson.teacher }} · Raum {{ next.lesson.room }}<br>
+            {{ next.lesson.start }}–{{ next.lesson.end }} Uhr{{ nextLessonDateSuffix }}
+          </div>
+          <div class="next-countdown">{{ nextLessonWhenLabel }}</div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <footer></footer>
+
+  <div class="modal-backdrop" *ngIf="editorOpen" (click)="closeEditor()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h2>{{ editorMode === 'edit' ? 'Stunde bearbeiten' : 'Stunde hinzufügen' }}</h2>
+
+      <label class="field">
+        <span>Fach</span>
+        <input type="text" [(ngModel)]="editorSubject" placeholder="z. B. Mathe" />
+      </label>
+
+      <label class="field">
+        <span>Lehrer</span>
+        <input type="text" [(ngModel)]="editorTeacher" placeholder="z. B. Herr Müller" />
+      </label>
+
+      <label class="field">
+        <span>Raum</span>
+        <input type="text" [(ngModel)]="editorRoom" placeholder="z. B. B211" />
+      </label>
+
+      <label class="field">
+        <span>Wochentag</span>
+        <select [(ngModel)]="editorDay">
+          <option *ngFor="let d of dayOptions" [value]="d.key">{{ d.label }}</option>
+        </select>
+      </label>
+
+      <div class="field-row">
+        <label class="field">
+          <span>Start</span>
+          <select [(ngModel)]="editorStart">
+            <option *ngFor="let t of periodTimes" [value]="t">{{ t }}</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Ende</span>
+          <select [(ngModel)]="editorEnd">
+            <option *ngFor="let t of periodTimes" [value]="t">{{ t }}</option>
+          </select>
+        </label>
+      </div>
+
+      <label class="field">
+        <span>Nur für Schwerpunkt (optional)</span>
+        <select [(ngModel)]="editorTrack">
+          <option value="">Für alle sichtbar</option>
+          <option *ngFor="let t of trackOptions" [value]="t">{{ t }}</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span>Nur für Sprachwahl (optional)</span>
+        <select [(ngModel)]="editorLanguage">
+          <option value="">Unabhängig von der Sprachwahl</option>
+          <option value="Spanisch">Nur für Spanisch</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span>Naturwissenschafts-Gruppe (optional)</span>
+        <select [(ngModel)]="editorScienceGroup">
+          <option value="">Kein Naturwissenschaftsfach / Name passt genau</option>
+          <option *ngFor="let s of scienceOptions" [value]="s">{{ s }}</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span>Farbe</span>
+        <div class="color-swatches">
+          <button type="button"
+                  class="swatch swatch-auto"
+                  [class.selected]="editorColorIndex === null"
+                  (click)="setEditorColor(null)"
+                  title="Automatisch (anhand des Fachnamens)">Auto</button>
+          <button type="button"
+                  *ngFor="let c of subjectPalette; let i = index"
+                  class="swatch"
+                  [class.selected]="editorColorIndex === i"
+                  [style.--swatch-border]="c.border"
+                  [style.--swatch-bg]="c.bg"
+                  (click)="setEditorColor(i)"
+                  [attr.aria-label]="'Farbe ' + (i + 1)"></button>
+        </div>
+      </label>
+
+      <div class="modal-actions">
+        <button class="nav-btn danger" *ngIf="editorMode === 'edit'" (click)="deleteLesson()">Löschen</button>
+        <div class="spacer"></div>
+        <button class="nav-btn" (click)="closeEditor()">Abbrechen</button>
+        <button class="nav-btn primary" (click)="saveLesson()">Speichern</button>
+      </div>
+    </div>
+  </div>
+
+</div>
