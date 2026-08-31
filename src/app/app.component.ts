@@ -112,6 +112,7 @@ export class AppComponent implements OnInit, OnDestroy {
     { subject: "Mathe", teacher: "Herr von Lindenfels", room: "B211", day: "Mon", start: "11:00", end: "12:30" },
     { subject: "Deutsch", teacher: "Herr Bendig", room: "B211", day: "Mon", start: "13:00", end: "13:45" },
     { subject: "Deutsch", teacher: "Herr Bendig", room: "B211", day: "Mon", start: "13:45", end: "14:30" },
+    { subject: "Spanisch", teacher: "WEIT?", room: "A411", day: "Mon", start: "14:45", end: "16:15", language: "Spanisch" },
 
     // Dienstag
     { subject: "Chemie", teacher: "Frau Malcomess", room: "B207", day: "Tue", start: "07:30", end: "09:00", track: "Informatik" },
@@ -121,6 +122,7 @@ export class AppComponent implements OnInit, OnDestroy {
     { subject: "Umwelttechnik", teacher: "Herr Meinecke", room: "B211", day: "Tue", start: "11:00", end: "11:45", track: "Umwelttechnik" },
     { subject: "Technische Wissenschaft", teacher: "Frau Von Willich", room: "B115", day: "Tue", start: "11:00", end: "12:30", track: "Informatik" },
     { subject: "Religion", teacher: "Herr Lenz", room: "B208", day: "Tue", start: "13:00", end: "14:30" },
+    { subject: "Spanisch", teacher: "WEIT?, CHAP?", room: "A411, A113", day: "Tue", start: "14:45", end: "16:15", language: "Spanisch" },
 
     // Mittwoch
     { subject: "Physik", teacher: "BORM?", room: "B211", day: "Wed", start: "07:30", end: "09:00", track: "Umwelttechnik" },
@@ -134,6 +136,7 @@ export class AppComponent implements OnInit, OnDestroy {
     { subject: "Sport", teacher: "Faru Roos, Herr Sommer", room: "S3", day: "Thu", start: "11:00", end: "12:30" },
     { subject: "Physik", teacher: "Herr Bahmer", room: "B207", day: "Thu", start: "13:00", end: "14:30", track: "Informatik" },
     { subject: "Biologie", teacher: "BECK?", room: "A401", day: "Thu", start: "13:00", end: "14:30", track: "Umwelttechnik" },
+    { subject: "Spanisch", teacher: "CHAP?", room: "A113", day: "Thu", start: "14:45", end: "16:15", language: "Spanisch" },
 
     // Freitag
     { subject: "Biologie", teacher: "JELI?", room: "A407", day: "Fri", start: "07:30", end: "09:00", track: "Informatik" },
@@ -170,7 +173,6 @@ export class AppComponent implements OnInit, OnDestroy {
     { border: "#FF9AC1", bg: "rgba(255,154,193,0.12)" },
     { border: "#C9A46A", bg: "rgba(201,164,106,0.12)" },
     { border: "#7C93FF", bg: "rgba(124,147,255,0.12)" },
-    { border: "#9B6DFF", bg: "rgba(155,109,255,0.12)" },
   ];
 
   private readonly rangeStart: number = Math.min(...this.periods.map(p => this.toMinutes(p.start))) - 15;
@@ -632,16 +634,30 @@ export class AppComponent implements OnInit, OnDestroy {
     this.selectedDate = d;
   }
 
+  private shiftWeek(delta: number): void {
+    const d = new Date(this.selectedDate);
+    d.setDate(d.getDate() + delta * 7);
+    this.selectedDate = d;
+  }
+
   goToday(): void {
     this.selectedDate = new Date();
   }
 
   goPrev(): void {
-    this.shiftDay(-1);
+    if (this.isMobile) {
+      this.shiftDay(-1);
+    } else {
+      this.shiftWeek(-1);
+    }
   }
 
   goNext(): void {
-    this.shiftDay(1);
+    if (this.isMobile) {
+      this.shiftDay(1);
+    } else {
+      this.shiftWeek(1);
+    }
   }
 
   goWeek(): void {
