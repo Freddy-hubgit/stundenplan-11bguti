@@ -1,10 +1,9 @@
-```yaml
 name: Deploy Angular
 
 on:
   push:
     branches:
-      - main
+      - "main"
   workflow_dispatch:
 
 permissions:
@@ -21,7 +20,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: "24"
 
       - run: npm install --legacy-peer-deps
 
@@ -45,4 +44,3 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
-```
