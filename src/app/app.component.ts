@@ -640,28 +640,12 @@ export class AppComponent implements OnInit, OnDestroy {
     this.selectedDate = d;
   }
 
-  goToday(): void {
-    this.selectedDate = new Date();
-  }
-
   goPrev(): void {
-    if (this.isMobile) {
-      this.shiftDay(-1);
-    } else {
-      this.shiftWeek(-1);
-    }
+    this.shiftWeek(-1);
   }
 
   goNext(): void {
-    if (this.isMobile) {
-      this.shiftDay(1);
-    } else {
-      this.shiftWeek(1);
-    }
-  }
-
-  goWeek(): void {
-    this.selectedDate = new Date();
+    this.shiftWeek(1);
   }
 
   toggleWeekend(): void {
