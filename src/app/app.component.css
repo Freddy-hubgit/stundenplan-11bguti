@@ -306,6 +306,22 @@
       color:var(--text-faint);
     }
   
+    .time-axis .now-mark{
+      color:var(--accent-amber);
+      font-weight:700;
+      z-index:6;
+    }
+    .time-axis .now-mark::before{
+      content:"";
+      display:inline-block;
+      width:6px; height:6px;
+      border-radius:50%;
+      background:var(--accent-amber);
+      box-shadow:0 0 6px rgba(255,159,74,0.8);
+      margin-right:5px;
+      vertical-align:middle;
+    }
+  
     .day-columns{
       flex:1;
       display:grid;
@@ -389,7 +405,7 @@
   
     .live-tag{
       position:absolute;
-      top:6px; right:32px;
+      top:6px; right:7px;
       font-size:8.5px;
       font-weight:700;
       letter-spacing:0.06em;
@@ -397,6 +413,10 @@
       background:rgba(10,13,18,0.7);
       padding:2px 5px;
       border-radius:5px;
+      transition:transform .18s ease;
+    }
+    .lesson:hover .live-tag{
+      transform:translateX(-27px);
     }
   
     /* sweep line */
@@ -409,25 +429,6 @@
       z-index:5;
       pointer-events:none;
       display:none;
-    }
-    .sweep-line .sweep-dot{
-      position:absolute;
-      left:-4px; top:-4.5px;
-      width:9px; height:9px;
-      border-radius:50%;
-      background:var(--accent-amber);
-      box-shadow:0 0 10px rgba(255,159,74,0.8);
-    }
-    .sweep-line .sweep-label{
-      position:absolute;
-      left:8px; top:-9px;
-      font-family:var(--font-mono);
-      font-size:10px;
-      color:var(--accent-amber);
-      background:rgba(10,13,18,0.85);
-      padding:1px 6px;
-      border-radius:6px;
-      border:1px solid rgba(255,159,74,0.35);
     }
   
     .empty-note{
