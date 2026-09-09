@@ -67,7 +67,7 @@
       </div>
 
       <div class="day-headers" *ngIf="!isMobile" [style.grid-template-columns]="'repeat(' + displayedDays.length + ', 1fr)'">
-        <div class="day-header" *ngFor="let col of displayedDays" [class.is-today]="col.isToday">
+        <div class="day-header" *ngFor="let col of displayedDays; trackBy: trackByDay" [class.is-today]="col.isToday">
           {{ col.def.short }}
           <span class="num">{{ col.date.getDate() }}.{{ col.date.getMonth() + 1 }}.</span>
         </div>
@@ -75,20 +75,20 @@
 
       <div class="grid-scroll">
         <div class="time-axis" [style.height.px]="gridHeight">
-          <div class="mark" *ngFor="let mark of timeMarks" [style.top.%]="mark.top">{{ mark.label }}</div>
+          <div class="mark" *ngFor="let mark of timeMarks; trackBy: trackByMark" [style.top.%]="mark.top">{{ mark.label }}</div>
           <div class="mark now-mark" *ngIf="sweepVisible" [style.top.%]="sweepTop">{{ sweepLabel }}</div>
         </div>
 
         <div class="day-columns" [style.height.px]="gridHeight" [style.grid-template-columns]="'repeat(' + displayedDays.length + ', 1fr)'">
 
-          <div class="hour-line" *ngFor="let mark of timeMarks" [style.top.%]="mark.top"></div>
+          <div class="hour-line" *ngFor="let mark of timeMarks; trackBy: trackByMark" [style.top.%]="mark.top"></div>
 
-          <div class="day-col" *ngFor="let col of displayedDays" [class.is-today]="col.isToday">
+          <div class="day-col" *ngFor="let col of displayedDays; trackBy: trackByDay" [class.is-today]="col.isToday">
 
             <div class="empty-note" *ngIf="col.lessons.length === 0">Frei</div>
 
             <div class="lesson"
-                 *ngFor="let lesson of col.lessons"
+                 *ngFor="let lesson of col.lessons; trackBy: trackByLesson"
                  [class.is-live]="lesson.isLive"
                  [style.top.%]="lesson.top"
                  [style.height.%]="lesson.height"

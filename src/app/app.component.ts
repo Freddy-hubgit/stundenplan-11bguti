@@ -652,6 +652,24 @@ export class AppComponent implements OnInit, OnDestroy {
     this.showWeekend = !this.showWeekend;
   }
 
+  /* ---------------- trackBy-Funktionen ----------------
+     Ohne trackBy erzeugt Angular bei jedem Sekundentakt (this.now ändert sich)
+     komplett neue DOM-Elemente für die Karten/Spalten/Marken, weil displayedDays
+     etc. bei jedem Change-Detection-Zyklus neue Objekte liefern. Das reißt u.a.
+     laufende Hover-Animationen ab und startet sie immer wieder neu. */
+
+  trackByDay(_index: number, col: DayColumn): DayKey {
+    return col.def.key;
+  }
+
+  trackByLesson(_index: number, lesson: PositionedLesson): string {
+    return lesson.day + ":" + lesson.sourceIndex;
+  }
+
+  trackByMark(_index: number, mark: TimeMark): number {
+    return mark.minutes;
+  }
+
   onTouchStart(e: TouchEvent): void {
     this.touchStartX = e.touches[0].clientX;
   }
