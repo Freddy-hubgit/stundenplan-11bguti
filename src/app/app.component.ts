@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, HostListener, Renderer2 } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 
 /* =====================================================================
    TYPEN
@@ -289,8 +289,6 @@ export class AppComponent implements OnInit, OnDestroy {
   settingsOpen: boolean = false;
   subjectRenameDrafts: Record<string, string> = {};
 
-  constructor(private renderer: Renderer2) {}
-
   private loadAppearance(): void {
     try {
       const raw = localStorage.getItem(this.APPEARANCE_STORAGE_KEY);
@@ -311,23 +309,14 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
-  private applyAppearanceToBody(): void {
-    const body = document.body;
-    ["theme-light", "bg-aurora", "bg-sunset", "bg-forest"].forEach(c => this.renderer.removeClass(body, c));
-    if (this.theme === "light") this.renderer.addClass(body, "theme-light");
-    if (this.backgroundKey !== "default") this.renderer.addClass(body, "bg-" + this.backgroundKey);
-  }
-
   setTheme(t: "dark" | "light"): void {
     this.theme = t;
     this.persistAppearance();
-    this.applyAppearanceToBody();
   }
 
   setBackground(key: string): void {
     this.backgroundKey = key;
     this.persistAppearance();
-    this.applyAppearanceToBody();
   }
 
   /* ---------------- Einstellungen: Fächer verwalten ---------------- */
@@ -440,7 +429,6 @@ export class AppComponent implements OnInit, OnDestroy {
     this.loadProfile();
     this.loadSubjectColors();
     this.loadAppearance();
-    this.applyAppearanceToBody();
     this.isMobile = window.matchMedia("(max-width:920px)").matches;
     this.updateGridHeight();
     this.timerId = setInterval(() => {

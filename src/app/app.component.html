@@ -1,4 +1,8 @@
-<div class="app">
+<div class="app"
+     [class.theme-light]="theme === 'light'"
+     [class.bg-aurora]="backgroundKey === 'aurora'"
+     [class.bg-sunset]="backgroundKey === 'sunset'"
+     [class.bg-forest]="backgroundKey === 'forest'">
 
   <header class="dash">
     <div class="clock-block">
@@ -107,7 +111,9 @@
               <div class="time">{{ lesson.start }}–{{ lesson.end }}</div>
               <div class="live-tag" *ngIf="lesson.isLive">LIVE</div>
               <div class="cancelled-tag" *ngIf="lesson.cancelled">AUSGEFALLEN</div>
-              <div class="day-progress" *ngIf="lesson.isLive" [style.width.%]="dayProgressPct"></div>
+              <div class="day-progress-track" *ngIf="lesson.isLive">
+                <div class="day-progress-fill" [style.width.%]="dayProgressPct"></div>
+              </div>
             </div>
 
           </div>

@@ -36,63 +36,6 @@
       overflow-x:hidden;
     }
   
-    body{
-      background-image:
-        radial-gradient(circle at 12% -10%, rgba(79,216,232,0.06), transparent 40%),
-        radial-gradient(circle at 88% 0%, rgba(255,159,74,0.05), transparent 45%);
-      transition:background-color .2s ease, color .2s ease;
-    }
-  
-    /* Hintergrund-Varianten (Einstellungen -> Hintergrund) */
-    body.bg-aurora{
-      background-image:
-        radial-gradient(circle at 15% -10%, rgba(90,220,180,0.10), transparent 45%),
-        radial-gradient(circle at 85% 100%, rgba(120,140,255,0.09), transparent 50%);
-    }
-    body.bg-sunset{
-      background-image:
-        radial-gradient(circle at 12% -10%, rgba(255,140,90,0.13), transparent 45%),
-        radial-gradient(circle at 88% 100%, rgba(255,90,140,0.09), transparent 50%);
-    }
-    body.bg-forest{
-      background-image:
-        radial-gradient(circle at 12% -10%, rgba(120,210,120,0.11), transparent 45%),
-        radial-gradient(circle at 88% 100%, rgba(80,170,110,0.09), transparent 50%);
-    }
-  
-    /* Helles Theme (Einstellungen -> Darstellung) */
-    body.theme-light{
-      --bg:#F4F6F9;
-      --bg-elevated:#FFFFFF;
-      --surface:#FFFFFF;
-      --surface-2:#F0F2F6;
-      --border:#DDE1E8;
-      --border-soft:#E9ECF1;
-      --text:#181B21;
-      --text-dim:#565F6E;
-      --text-faint:#8891A0;
-    }
-    body.theme-light.bg-aurora{
-      background-image:
-        radial-gradient(circle at 15% -10%, rgba(90,220,180,0.14), transparent 45%),
-        radial-gradient(circle at 85% 100%, rgba(120,140,255,0.12), transparent 50%);
-    }
-    body.theme-light.bg-sunset{
-      background-image:
-        radial-gradient(circle at 12% -10%, rgba(255,140,90,0.16), transparent 45%),
-        radial-gradient(circle at 88% 100%, rgba(255,90,140,0.12), transparent 50%);
-    }
-    body.theme-light.bg-forest{
-      background-image:
-        radial-gradient(circle at 12% -10%, rgba(120,210,120,0.15), transparent 45%),
-        radial-gradient(circle at 88% 100%, rgba(80,170,110,0.12), transparent 50%);
-    }
-    body.theme-light:not(.bg-aurora):not(.bg-sunset):not(.bg-forest){
-      background-image:
-        radial-gradient(circle at 12% -10%, rgba(79,216,232,0.10), transparent 40%),
-        radial-gradient(circle at 88% 0%, rgba(255,159,74,0.08), transparent 45%);
-    }
-  
     ::selection{ background:var(--accent-cyan-dim); color:var(--accent-cyan); }
   
     @media (prefers-reduced-motion: reduce){
@@ -103,6 +46,63 @@
       max-width:1180px;
       margin:0 auto;
       padding:28px 22px 60px;
+      min-height:100vh;
+      background-color:var(--bg);
+      background-image:
+        radial-gradient(circle at 12% -10%, rgba(79,216,232,0.06), transparent 40%),
+        radial-gradient(circle at 88% 0%, rgba(255,159,74,0.05), transparent 45%);
+      transition:background-color .2s ease, color .2s ease;
+      color:var(--text);
+    }
+  
+    /* Hintergrund-Varianten (Einstellungen -> Hintergrund) */
+    .app.bg-aurora{
+      background-image:
+        radial-gradient(circle at 15% -10%, rgba(90,220,180,0.10), transparent 45%),
+        radial-gradient(circle at 85% 100%, rgba(120,140,255,0.09), transparent 50%);
+    }
+    .app.bg-sunset{
+      background-image:
+        radial-gradient(circle at 12% -10%, rgba(255,140,90,0.13), transparent 45%),
+        radial-gradient(circle at 88% 100%, rgba(255,90,140,0.09), transparent 50%);
+    }
+    .app.bg-forest{
+      background-image:
+        radial-gradient(circle at 12% -10%, rgba(120,210,120,0.11), transparent 45%),
+        radial-gradient(circle at 88% 100%, rgba(80,170,110,0.09), transparent 50%);
+    }
+  
+    /* Helles Theme (Einstellungen -> Darstellung) */
+    .app.theme-light{
+      --bg:#F4F6F9;
+      --bg-elevated:#FFFFFF;
+      --surface:#FFFFFF;
+      --surface-2:#F0F2F6;
+      --border:#DDE1E8;
+      --border-soft:#E9ECF1;
+      --text:#181B21;
+      --text-dim:#565F6E;
+      --text-faint:#8891A0;
+    }
+    .app.theme-light.bg-aurora{
+      background-image:
+        radial-gradient(circle at 15% -10%, rgba(90,220,180,0.14), transparent 45%),
+        radial-gradient(circle at 85% 100%, rgba(120,140,255,0.12), transparent 50%);
+    }
+    .app.theme-light.bg-sunset{
+      background-image:
+        radial-gradient(circle at 12% -10%, rgba(255,140,90,0.16), transparent 45%),
+        radial-gradient(circle at 88% 100%, rgba(255,90,140,0.12), transparent 50%);
+    }
+    .app.theme-light.bg-forest{
+      background-image:
+        radial-gradient(circle at 12% -10%, rgba(120,210,120,0.15), transparent 45%),
+        radial-gradient(circle at 88% 100%, rgba(80,170,110,0.12), transparent 50%);
+    }
+    .app.theme-light:not(.bg-aurora):not(.bg-sunset):not(.bg-forest){
+      background-image:
+        radial-gradient(circle at 12% -10%, rgba(79,216,232,0.10), transparent 40%),
+        radial-gradient(circle at 88% 0%, rgba(255,159,74,0.08), transparent 45%);
     }
   
     /* ---------- HEADER / COCKPIT CLOCK ---------- */
@@ -494,13 +494,19 @@
     }
   
     /* Tages-Fortschrittsbalken auf der laufenden Stunde */
-    .day-progress{
+    .day-progress-track{
       position:absolute;
-      left:0; bottom:0;
-      height:3px;
+      top:0; left:0; right:0;
+      height:4px;
+      background:rgba(0,0,0,0.4);
+      border-radius:9px 9px 0 0;
+      overflow:hidden;
+      z-index:2;
+    }
+    .day-progress-fill{
+      height:100%;
       background:var(--accent-amber);
-      box-shadow:0 0 6px rgba(255,159,74,0.7);
-      border-radius:0 0 0 10px;
+      box-shadow:0 0 8px rgba(255,159,74,0.85);
       transition:width 1s linear;
     }
   
@@ -812,9 +818,10 @@
   
     .subject-row{
       display:flex;
-      align-items:center;
-      gap:10px;
-      padding:6px 0;
+      flex-direction:column;
+      align-items:stretch;
+      gap:8px;
+      padding:10px 0;
       border-bottom:1px solid var(--border-soft);
     }
     .subject-row:last-child{
