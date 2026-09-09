@@ -40,6 +40,57 @@
       background-image:
         radial-gradient(circle at 12% -10%, rgba(79,216,232,0.06), transparent 40%),
         radial-gradient(circle at 88% 0%, rgba(255,159,74,0.05), transparent 45%);
+      transition:background-color .2s ease, color .2s ease;
+    }
+  
+    /* Hintergrund-Varianten (Einstellungen -> Hintergrund) */
+    body.bg-aurora{
+      background-image:
+        radial-gradient(circle at 15% -10%, rgba(90,220,180,0.10), transparent 45%),
+        radial-gradient(circle at 85% 100%, rgba(120,140,255,0.09), transparent 50%);
+    }
+    body.bg-sunset{
+      background-image:
+        radial-gradient(circle at 12% -10%, rgba(255,140,90,0.13), transparent 45%),
+        radial-gradient(circle at 88% 100%, rgba(255,90,140,0.09), transparent 50%);
+    }
+    body.bg-forest{
+      background-image:
+        radial-gradient(circle at 12% -10%, rgba(120,210,120,0.11), transparent 45%),
+        radial-gradient(circle at 88% 100%, rgba(80,170,110,0.09), transparent 50%);
+    }
+  
+    /* Helles Theme (Einstellungen -> Darstellung) */
+    body.theme-light{
+      --bg:#F4F6F9;
+      --bg-elevated:#FFFFFF;
+      --surface:#FFFFFF;
+      --surface-2:#F0F2F6;
+      --border:#DDE1E8;
+      --border-soft:#E9ECF1;
+      --text:#181B21;
+      --text-dim:#565F6E;
+      --text-faint:#8891A0;
+    }
+    body.theme-light.bg-aurora{
+      background-image:
+        radial-gradient(circle at 15% -10%, rgba(90,220,180,0.14), transparent 45%),
+        radial-gradient(circle at 85% 100%, rgba(120,140,255,0.12), transparent 50%);
+    }
+    body.theme-light.bg-sunset{
+      background-image:
+        radial-gradient(circle at 12% -10%, rgba(255,140,90,0.16), transparent 45%),
+        radial-gradient(circle at 88% 100%, rgba(255,90,140,0.12), transparent 50%);
+    }
+    body.theme-light.bg-forest{
+      background-image:
+        radial-gradient(circle at 12% -10%, rgba(120,210,120,0.15), transparent 45%),
+        radial-gradient(circle at 88% 100%, rgba(80,170,110,0.12), transparent 50%);
+    }
+    body.theme-light:not(.bg-aurora):not(.bg-sunset):not(.bg-forest){
+      background-image:
+        radial-gradient(circle at 12% -10%, rgba(79,216,232,0.10), transparent 40%),
+        radial-gradient(circle at 88% 0%, rgba(255,159,74,0.08), transparent 45%);
     }
   
     ::selection{ background:var(--accent-cyan-dim); color:var(--accent-cyan); }
@@ -415,8 +466,42 @@
       border-radius:5px;
       transition:transform .18s ease;
     }
-    .lesson:hover .live-tag{
+    .lesson.hovered .live-tag{
       transform:translateX(-27px);
+    }
+  
+    /* ausgefallene Stunde */
+    .lesson.cancelled{
+      opacity:0.55;
+    }
+    .lesson.cancelled .subj,
+    .lesson.cancelled .meta,
+    .lesson.cancelled .room,
+    .lesson.cancelled .time{
+      text-decoration:line-through;
+      text-decoration-color:var(--text-faint);
+    }
+    .cancelled-tag{
+      position:absolute;
+      top:6px; left:7px;
+      font-size:8px;
+      font-weight:700;
+      letter-spacing:0.05em;
+      color:#FF7A7A;
+      background:rgba(10,13,18,0.75);
+      padding:2px 5px;
+      border-radius:5px;
+    }
+  
+    /* Tages-Fortschrittsbalken auf der laufenden Stunde */
+    .day-progress{
+      position:absolute;
+      left:0; bottom:0;
+      height:3px;
+      background:var(--accent-amber);
+      box-shadow:0 0 6px rgba(255,159,74,0.7);
+      border-radius:0 0 0 10px;
+      transition:width 1s linear;
     }
   
     /* sweep line */
@@ -597,7 +682,7 @@
       opacity:0;
       transition:opacity .12s ease;
     }
-    .lesson:hover .edit-btn{ opacity:1; }
+    .lesson.hovered .edit-btn{ opacity:1; }
     .edit-btn:hover{ color:var(--text); border-color:var(--accent-cyan); }
   
     /* ---------- STUNDE HINZUFÜGEN/BEARBEITEN – MODAL ---------- */
@@ -659,6 +744,20 @@
       flex:1;
     }
   
+    .field-checkbox{
+      flex-direction:row;
+      align-items:center;
+      gap:8px;
+    }
+    .field-checkbox input[type="checkbox"]{
+      width:16px; height:16px;
+      accent-color:var(--accent-cyan);
+    }
+    .field-checkbox span{
+      color:var(--text);
+      font-size:13px;
+    }
+  
     .color-swatches{
       display:flex;
       flex-wrap:wrap;
@@ -692,6 +791,51 @@
       background-color:var(--surface-2);
       background-image:none;
       border-style:dashed;
+    }
+  
+    .swatch-sm{
+      width:20px;
+      height:20px;
+      border-radius:6px;
+    }
+    .swatch-sm.selected{
+      box-shadow:0 0 0 1.5px var(--bg-elevated), 0 0 0 3px var(--text);
+    }
+  
+    .settings-section{
+      margin-bottom:20px;
+    }
+    .settings-section .profile-label{
+      display:block;
+      margin-bottom:8px;
+    }
+  
+    .subject-row{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:6px 0;
+      border-bottom:1px solid var(--border-soft);
+    }
+    .subject-row:last-child{
+      border-bottom:none;
+    }
+    .subject-name-input{
+      flex:1;
+      min-width:0;
+      font-family:inherit;
+      font-size:13px;
+      color:var(--text);
+      background:var(--surface-2);
+      border:1px solid var(--border);
+      border-radius:7px;
+      padding:6px 9px;
+    }
+    .color-swatches.compact{
+      flex-wrap:nowrap;
+      overflow-x:auto;
+      gap:5px;
+      padding-bottom:2px;
     }
   
     .modal-actions{

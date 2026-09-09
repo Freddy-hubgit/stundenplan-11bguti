@@ -53,6 +53,7 @@
     <div class="nav-group">
       <button class="nav-btn add" (click)="openNewLesson()">+ Stunde hinzufügen</button>
       <button class="nav-btn" [class.active]="showWeekend" (click)="toggleWeekend()">Wochenende anzeigen</button>
+      <button class="nav-btn icon" (click)="openSettings()" aria-label="Einstellungen">⚙</button>
     </div>
   </div>
 
@@ -90,10 +91,14 @@
             <div class="lesson"
                  *ngFor="let lesson of col.lessons; trackBy: trackByLesson"
                  [class.is-live]="lesson.isLive"
+                 [class.hovered]="isLessonHovered(lesson)"
+                 [class.cancelled]="lesson.cancelled"
                  [style.top.%]="lesson.top"
                  [style.height.%]="lesson.height"
                  [style.--lesson-border]="lesson.color.border"
                  [style.--lesson-bg]="lesson.color.bg"
+                 (mouseenter)="onLessonEnter(lesson)"
+                 (mouseleave)="onLessonLeave(lesson)"
                  (click)="openEditLesson(lesson, $event)">
               <button class="edit-btn" (click)="openEditLesson(lesson, $event)" aria-label="Stunde bearbeiten">✎</button>
               <div class="subj">{{ lesson.subject }}</div>
@@ -101,6 +106,8 @@
               <div class="room">Raum {{ lesson.room }}</div>
               <div class="time">{{ lesson.start }}–{{ lesson.end }}</div>
               <div class="live-tag" *ngIf="lesson.isLive">LIVE</div>
+              <div class="cancelled-tag" *ngIf="lesson.cancelled">AUSGEFALLEN</div>
+              <div class="day-progress" *ngIf="lesson.isLive" [style.width.%]="dayProgressPct"></div>
             </div>
 
           </div>
@@ -215,11 +222,69 @@
         </div>
       </label>
 
+      <label class="field field-checkbox">
+        <input type="checkbox" [(ngModel)]="editorCancelled" />
+        <span>Diese Stunde ist ausgefallen</span>
+      </label>
+
       <div class="modal-actions">
         <button class="nav-btn danger" *ngIf="editorMode === 'edit'" (click)="deleteLesson()">Löschen</button>
         <div class="spacer"></div>
         <button class="nav-btn" (click)="closeEditor()">Abbrechen</button>
         <button class="nav-btn primary" (click)="saveLesson()">Speichern</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" *ngIf="settingsOpen" (click)="closeSettings()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h2>Einstellungen</h2>
+
+      <div class="settings-section">
+        <span class="profile-label">Darstellung</span>
+        <div class="chip-group">
+          <button *ngFor="let t of themeOptions"
+                  class="chip chip-cyan"
+                  [class.active]="theme === t.key"
+                  (click)="setTheme(t.key)">{{ t.label }}</button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <span class="profile-label">Hintergrund</span>
+        <div class="chip-group">
+          <button *ngFor="let b of backgroundOptions"
+                  class="chip chip-cyan"
+                  [class.active]="backgroundKey === b.key"
+                  (click)="setBackground(b.key)">{{ b.label }}</button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <span class="profile-label">Fächer verwalten</span>
+        <div class="subject-row" *ngFor="let s of uniqueSubjects">
+          <input type="text" class="subject-name-input" [(ngModel)]="subjectRenameDrafts[s]" (blur)="renameSubject(s)" />
+          <div class="color-swatches compact">
+            <button type="button"
+                    class="swatch swatch-auto swatch-sm"
+                    [class.selected]="subjectColorIndex(s) === null"
+                    (click)="setSubjectColor(s, null)"
+                    title="Automatisch">A</button>
+            <button type="button"
+                    *ngFor="let c of subjectPalette; let i = index"
+                    class="swatch swatch-sm"
+                    [class.selected]="subjectColorIndex(s) === i"
+                    [style.--swatch-border]="c.border"
+                    [style.--swatch-bg]="c.bg"
+                    (click)="setSubjectColor(s, i)"
+                    [attr.aria-label]="'Farbe ' + (i + 1)"></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <div class="spacer"></div>
+        <button class="nav-btn primary" (click)="closeSettings()">Fertig</button>
       </div>
     </div>
   </div>

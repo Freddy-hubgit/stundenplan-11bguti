@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, Renderer2 } from '@angular/core';
 
 /* =====================================================================
    TYPEN
@@ -27,6 +27,7 @@ interface Lesson {
   track?: DayTrack;      // nur gesetzt, wenn die Stunde nur für einen Schwerpunkt gilt
   language?: "Spanisch"; // nur gesetzt, wenn die Stunde nur für Spanisch-Schüler gilt
   scienceGroup?: "Chemie" | "Physik" | "Biologie"; // nur nötig, wenn der Fachname vom Standardnamen abweicht (z.B. "Technische Mikrobiologie" -> "Biologie")
+  cancelled?: boolean; // Stunde fällt aus – wird durchgestrichen angezeigt, zählt nicht als aktuelle/nächste Stunde
 }
 
 interface DayDef {
@@ -267,6 +268,115 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
+  /* ---------------- Einstellungen: Darstellung (Hell/Dunkel, Hintergrund) ---------------- */
+
+  private readonly APPEARANCE_STORAGE_KEY = "stundenplan-appearance";
+
+  readonly themeOptions: { key: "dark" | "light"; label: string }[] = [
+    { key: "dark", label: "Dunkel" },
+    { key: "light", label: "Hell" },
+  ];
+
+  readonly backgroundOptions: { key: string; label: string }[] = [
+    { key: "default", label: "Cockpit (Standard)" },
+    { key: "aurora", label: "Aurora" },
+    { key: "sunset", label: "Sonnenuntergang" },
+    { key: "forest", label: "Wald" },
+  ];
+
+  theme: "dark" | "light" = "dark";
+  backgroundKey: string = "default";
+  settingsOpen: boolean = false;
+  subjectRenameDrafts: Record<string, string> = {};
+
+  constructor(private renderer: Renderer2) {}
+
+  private loadAppearance(): void {
+    try {
+      const raw = localStorage.getItem(this.APPEARANCE_STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (parsed.theme === "dark" || parsed.theme === "light") this.theme = parsed.theme;
+      if (typeof parsed.background === "string") this.backgroundKey = parsed.background;
+    } catch {
+      // Ungültige/gelöschte Daten im Speicher ignorieren.
+    }
+  }
+
+  private persistAppearance(): void {
+    try {
+      localStorage.setItem(this.APPEARANCE_STORAGE_KEY, JSON.stringify({ theme: this.theme, background: this.backgroundKey }));
+    } catch {
+      // z.B. Privater Modus ohne Speicherzugriff.
+    }
+  }
+
+  private applyAppearanceToBody(): void {
+    const body = document.body;
+    ["theme-light", "bg-aurora", "bg-sunset", "bg-forest"].forEach(c => this.renderer.removeClass(body, c));
+    if (this.theme === "light") this.renderer.addClass(body, "theme-light");
+    if (this.backgroundKey !== "default") this.renderer.addClass(body, "bg-" + this.backgroundKey);
+  }
+
+  setTheme(t: "dark" | "light"): void {
+    this.theme = t;
+    this.persistAppearance();
+    this.applyAppearanceToBody();
+  }
+
+  setBackground(key: string): void {
+    this.backgroundKey = key;
+    this.persistAppearance();
+    this.applyAppearanceToBody();
+  }
+
+  /* ---------------- Einstellungen: Fächer verwalten ---------------- */
+
+  get uniqueSubjects(): string[] {
+    return Array.from(new Set(this.lessons.map(l => l.subject))).sort((a, b) => a.localeCompare(b, "de"));
+  }
+
+  subjectColorIndex(subject: string): number | null {
+    return this.subjectColorOverrides[subject] ?? null;
+  }
+
+  setSubjectColor(subject: string, idx: number | null): void {
+    if (idx !== null) {
+      this.subjectColorOverrides[subject] = idx;
+    } else {
+      delete this.subjectColorOverrides[subject];
+    }
+    this.persistSubjectColors();
+  }
+
+  renameSubject(oldName: string): void {
+    const newName = (this.subjectRenameDrafts[oldName] || "").trim();
+    if (!newName || newName === oldName) return;
+
+    this.lessons.forEach(l => {
+      if (l.subject === oldName) l.subject = newName;
+    });
+
+    if (this.subjectColorOverrides[oldName] !== undefined) {
+      this.subjectColorOverrides[newName] = this.subjectColorOverrides[oldName];
+      delete this.subjectColorOverrides[oldName];
+      this.persistSubjectColors();
+    }
+
+    delete this.subjectRenameDrafts[oldName];
+    this.subjectRenameDrafts[newName] = newName;
+  }
+
+  openSettings(): void {
+    this.subjectRenameDrafts = {};
+    this.uniqueSubjects.forEach(s => { this.subjectRenameDrafts[s] = s; });
+    this.settingsOpen = true;
+  }
+
+  closeSettings(): void {
+    this.settingsOpen = false;
+  }
+
   setTrack(track: DayTrack): void {
     this.selectedTrack = track;
     this.persistProfile();
@@ -320,6 +430,7 @@ export class AppComponent implements OnInit, OnDestroy {
   editorLanguage: "Spanisch" | "" = "";  // "" = unabhängig von der Sprachwahl sichtbar
   editorScienceGroup: "Chemie" | "Physik" | "Biologie" | "" = ""; // nur bei abweichendem Fachnamen nötig
   editorColorIndex: number | null = null; // null = automatische Farbe anhand des Fachnamens
+  editorCancelled: boolean = false;
 
   setEditorColor(idx: number | null): void {
     this.editorColorIndex = idx;
@@ -328,6 +439,8 @@ export class AppComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadProfile();
     this.loadSubjectColors();
+    this.loadAppearance();
+    this.applyAppearanceToBody();
     this.isMobile = window.matchMedia("(max-width:920px)").matches;
     this.updateGridHeight();
     this.timerId = setInterval(() => {
@@ -404,6 +517,13 @@ export class AppComponent implements OnInit, OnDestroy {
       .sort((a, b) => this.toMinutes(a.start) - this.toMinutes(b.start));
   }
 
+  // Wie lessonsForDay, aber ohne ausgefallene Stunden – für "aktuell"/"nächste
+  // Stunde"-Berechnungen. Im Raster selbst werden ausgefallene Stunden weiterhin
+  // angezeigt (nur durchgestrichen), siehe buildDayColumn/lessonsForDay.
+  private activeLessonsForDay(dayKey: DayKey): Lesson[] {
+    return this.lessonsForDay(dayKey).filter(l => !l.cancelled);
+  }
+
   // Alle Uhrzeiten aus dem Perioden-Raster, aufsteigend sortiert, ohne Duplikate.
   // Wird für die Start-/Ende-Auswahl im Editor benutzt.
   get periodTimes(): string[] {
@@ -438,7 +558,7 @@ export class AppComponent implements OnInit, OnDestroy {
     const dayKey = this.todayKey;
     if (!dayKey) return null;
     const nowMin = this.now.getHours() * 60 + this.now.getMinutes();
-    return this.lessonsForDay(dayKey).find(l => nowMin >= this.toMinutes(l.start) && nowMin < this.toMinutes(l.end)) || null;
+    return this.activeLessonsForDay(dayKey).find(l => nowMin >= this.toMinutes(l.start) && nowMin < this.toMinutes(l.end)) || null;
   }
 
   get isLive(): boolean {
@@ -452,7 +572,7 @@ export class AppComponent implements OnInit, OnDestroy {
     if (!dayKey) return "Kein Schultag";
     if (live) return live.subject + " läuft";
 
-    const todays = this.lessonsForDay(dayKey);
+    const todays = this.activeLessonsForDay(dayKey);
     const nowMin = this.now.getHours() * 60 + this.now.getMinutes();
     const firstToday = todays[0];
 
@@ -475,7 +595,7 @@ export class AppComponent implements OnInit, OnDestroy {
       return `noch ${Math.max(1, this.toMinutes(live.end) - nowMin)} Min. · Raum ${live.room}`;
     }
 
-    const todays = this.lessonsForDay(dayKey);
+    const todays = this.activeLessonsForDay(dayKey);
     const nowMin = this.now.getHours() * 60 + this.now.getMinutes();
     const firstToday = todays[0];
 
@@ -570,6 +690,21 @@ export class AppComponent implements OnInit, OnDestroy {
     return this.fmtHM(this.now);
   }
 
+  // Wie viel Prozent des heutigen Schultags (von Beginn der ersten bis Ende der
+  // letzten Stunde) bereits vergangen sind. Wird als schmaler Balken über der
+  // aktuell laufenden Stunde angezeigt.
+  get dayProgressPct(): number {
+    const dayKey = this.todayKey;
+    if (!dayKey) return 0;
+    const todays = this.lessonsForDay(dayKey);
+    if (!todays.length) return 0;
+    const dayStart = this.toMinutes(todays[0].start);
+    const dayEnd = Math.max(...todays.map(l => this.toMinutes(l.end)));
+    if (dayEnd <= dayStart) return 0;
+    const nowMin = this.now.getHours() * 60 + this.now.getMinutes();
+    return Math.min(100, Math.max(0, ((nowMin - dayStart) / (dayEnd - dayStart)) * 100));
+  }
+
   /* ---------------- Template-Getter: Nächste Stunde ---------------- */
 
   get nextLessonInfo(): NextLessonInfo | null {
@@ -578,7 +713,7 @@ export class AppComponent implements OnInit, OnDestroy {
     const todayKey = this.todayKey;
 
     if (todayKey) {
-      const today = this.lessonsForDay(todayKey).find(l => this.toMinutes(l.start) > nowMin);
+      const today = this.activeLessonsForDay(todayKey).find(l => this.toMinutes(l.start) > nowMin);
       if (today) {
         return {
           lesson: today,
@@ -594,7 +729,7 @@ export class AppComponent implements OnInit, OnDestroy {
       d.setDate(d.getDate() + i);
       const key = this.dayKeyFromDate(d);
       if (!key) continue;
-      const list = this.lessonsForDay(key);
+      const list = this.activeLessonsForDay(key);
       if (list.length) {
         return { lesson: list[0], date: d, sameDay: false, minutesUntil: 0 };
       }
@@ -670,6 +805,26 @@ export class AppComponent implements OnInit, OnDestroy {
     return mark.minutes;
   }
 
+  /* ---------------- Hover-Zustand für die LIVE/Stift-Animation ----------------
+     Bewusst über echte mouseenter/mouseleave-Events statt reinem CSS :hover,
+     damit der Sekundentakt (this.now) den Übergang nicht erneut anstößt. */
+
+  private hoveredLessonKey: string | null = null;
+
+  onLessonEnter(lesson: PositionedLesson): void {
+    this.hoveredLessonKey = this.trackByLesson(0, lesson);
+  }
+
+  onLessonLeave(lesson: PositionedLesson): void {
+    if (this.hoveredLessonKey === this.trackByLesson(0, lesson)) {
+      this.hoveredLessonKey = null;
+    }
+  }
+
+  isLessonHovered(lesson: PositionedLesson): boolean {
+    return this.hoveredLessonKey === this.trackByLesson(0, lesson);
+  }
+
   onTouchStart(e: TouchEvent): void {
     this.touchStartX = e.touches[0].clientX;
   }
@@ -696,6 +851,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.editorLanguage = "";
     this.editorScienceGroup = "";
     this.editorColorIndex = null;
+    this.editorCancelled = false;
     this.editorOpen = true;
   }
 
@@ -717,6 +873,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.editorLanguage = target.language || "";
     this.editorScienceGroup = target.scienceGroup || "";
     this.editorColorIndex = this.subjectColorOverrides[target.subject] ?? null;
+    this.editorCancelled = !!target.cancelled;
     this.editorOpen = true;
   }
 
@@ -738,6 +895,7 @@ export class AppComponent implements OnInit, OnDestroy {
       ...(this.editorTrack ? { track: this.editorTrack } : {}),
       ...(this.editorLanguage ? { language: this.editorLanguage } : {}),
       ...(this.editorScienceGroup ? { scienceGroup: this.editorScienceGroup } : {}),
+      ...(this.editorCancelled ? { cancelled: true } : {}),
     };
 
     if (this.editorMode === "edit" && this.editorIndex !== null) {
