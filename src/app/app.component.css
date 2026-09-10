@@ -42,38 +42,43 @@
       *{ animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important; }
     }
   
-    .app{
-      max-width:1180px;
-      margin:0 auto;
-      padding:28px 22px 60px;
+    .app-shell{
+      position:relative;
       min-height:100vh;
+      color:var(--text);
+      transition:color .2s ease;
+    }
+  
+    .app-bg{
+      position:fixed;
+      inset:0;
+      z-index:-1;
       background-color:var(--bg);
       background-image:
         radial-gradient(circle at 12% -10%, rgba(79,216,232,0.06), transparent 40%),
         radial-gradient(circle at 88% 0%, rgba(255,159,74,0.05), transparent 45%);
-      transition:background-color .2s ease, color .2s ease;
-      color:var(--text);
+      transition:background-color .2s ease;
     }
   
     /* Hintergrund-Varianten (Einstellungen -> Hintergrund) */
-    .app.bg-aurora{
+    .app-bg.bg-aurora{
       background-image:
         radial-gradient(circle at 15% -10%, rgba(90,220,180,0.10), transparent 45%),
         radial-gradient(circle at 85% 100%, rgba(120,140,255,0.09), transparent 50%);
     }
-    .app.bg-sunset{
+    .app-bg.bg-sunset{
       background-image:
         radial-gradient(circle at 12% -10%, rgba(255,140,90,0.13), transparent 45%),
         radial-gradient(circle at 88% 100%, rgba(255,90,140,0.09), transparent 50%);
     }
-    .app.bg-forest{
+    .app-bg.bg-forest{
       background-image:
         radial-gradient(circle at 12% -10%, rgba(120,210,120,0.11), transparent 45%),
         radial-gradient(circle at 88% 100%, rgba(80,170,110,0.09), transparent 50%);
     }
   
     /* Helles Theme (Einstellungen -> Darstellung) */
-    .app.theme-light{
+    .app-shell.theme-light{
       --bg:#F4F6F9;
       --bg-elevated:#FFFFFF;
       --surface:#FFFFFF;
@@ -84,25 +89,31 @@
       --text-dim:#565F6E;
       --text-faint:#8891A0;
     }
-    .app.theme-light.bg-aurora{
+    .app-shell.theme-light .app-bg.bg-aurora{
       background-image:
         radial-gradient(circle at 15% -10%, rgba(90,220,180,0.14), transparent 45%),
         radial-gradient(circle at 85% 100%, rgba(120,140,255,0.12), transparent 50%);
     }
-    .app.theme-light.bg-sunset{
+    .app-shell.theme-light .app-bg.bg-sunset{
       background-image:
         radial-gradient(circle at 12% -10%, rgba(255,140,90,0.16), transparent 45%),
         radial-gradient(circle at 88% 100%, rgba(255,90,140,0.12), transparent 50%);
     }
-    .app.theme-light.bg-forest{
+    .app-shell.theme-light .app-bg.bg-forest{
       background-image:
         radial-gradient(circle at 12% -10%, rgba(120,210,120,0.15), transparent 45%),
         radial-gradient(circle at 88% 100%, rgba(80,170,110,0.12), transparent 50%);
     }
-    .app.theme-light:not(.bg-aurora):not(.bg-sunset):not(.bg-forest){
+    .app-shell.theme-light .app-bg:not(.bg-aurora):not(.bg-sunset):not(.bg-forest){
       background-image:
         radial-gradient(circle at 12% -10%, rgba(79,216,232,0.10), transparent 40%),
         radial-gradient(circle at 88% 0%, rgba(255,159,74,0.08), transparent 45%);
+    }
+  
+    .app{
+      max-width:1180px;
+      margin:0 auto;
+      padding:28px 22px 60px;
     }
   
     /* ---------- HEADER / COCKPIT CLOCK ---------- */
