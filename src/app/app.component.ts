@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, ViewEncapsulation } from '@angular/core';
 
 /* =====================================================================
    TYPEN
@@ -80,6 +80,7 @@ type EditorMode = "new" | "edit";
   selector: 'app-stundenplan',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
+  encapsulation: ViewEncapsulation.None,
 })
 export class AppComponent implements OnInit, OnDestroy {
 

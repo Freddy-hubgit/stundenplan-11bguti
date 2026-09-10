@@ -89,6 +89,9 @@
       --text-dim:#565F6E;
       --text-faint:#8891A0;
     }
+    .app-shell.theme-light .clock-time{
+      color:#181B21;
+    }
     .app-shell.theme-light .app-bg.bg-aurora{
       background-image:
         radial-gradient(circle at 15% -10%, rgba(90,220,180,0.14), transparent 45%),
