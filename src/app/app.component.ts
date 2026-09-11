@@ -355,11 +355,38 @@ export class AppComponent implements OnInit, OnDestroy {
 
     delete this.subjectRenameDrafts[oldName];
     this.subjectRenameDrafts[newName] = newName;
+
+    if (this.expandedSubject === oldName) this.expandedSubject = newName;
+  }
+
+  // Akkordeon: nur ein Fach gleichzeitig aufgeklappt
+  expandedSubject: string | null = null;
+
+  toggleSubjectExpand(subject: string): void {
+    this.expandedSubject = this.expandedSubject === subject ? null : subject;
+  }
+
+  // Alle einzelnen Stunden-Einträge zu einem Fach (echte Referenzen aus this.lessons,
+  // Änderungen über ngModel wirken sich direkt aus).
+  lessonsForSubjectDisplay(subject: string): Lesson[] {
+    return this.lessons
+      .filter(l => l.subject === subject)
+      .sort((a, b) => {
+        const dayOrder = this.dayDefs.findIndex(d => d.key === a.day) - this.dayDefs.findIndex(d => d.key === b.day);
+        if (dayOrder !== 0) return dayOrder;
+        return this.toMinutes(a.start) - this.toMinutes(b.start);
+      });
+  }
+
+  dayLabel(day: DayKey): string {
+    const def = this.dayDefs.find(d => d.key === day);
+    return def ? def.label : day;
   }
 
   openSettings(): void {
     this.subjectRenameDrafts = {};
     this.uniqueSubjects.forEach(s => { this.subjectRenameDrafts[s] = s; });
+    this.expandedSubject = null;
     this.settingsOpen = true;
   }
 

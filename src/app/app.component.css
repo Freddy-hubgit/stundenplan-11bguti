@@ -887,28 +887,89 @@
       margin-bottom:8px;
     }
   
-    .subject-row{
-      display:flex;
-      flex-direction:column;
-      align-items:stretch;
-      gap:8px;
-      padding:10px 0;
+    .subject-accordion-item{
       border-bottom:1px solid var(--border-soft);
     }
-    .subject-row:last-child{
+    .subject-accordion-item:last-child{
       border-bottom:none;
     }
-    .subject-name-input{
-      flex:1;
-      min-width:0;
+
+    .subject-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      width:100%;
+      padding:11px 4px;
+      background:none;
+      border:none;
       font-family:inherit;
-      font-size:13px;
+      text-align:left;
+      cursor:pointer;
+    }
+    .subject-header:hover .subject-header-name{
+      color:var(--accent-cyan);
+    }
+    .subject-header-name{
+      font-size:13.5px;
+      font-weight:600;
       color:var(--text);
+    }
+    .subject-header .chevron{
+      font-size:12px;
+      color:var(--text-faint);
+      transition:transform .15s ease;
+    }
+    .subject-header .chevron.open{
+      transform:rotate(180deg);
+    }
+
+    .subject-body{
+      padding:0 4px 14px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .subject-lesson-row{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
       background:var(--surface-2);
       border:1px solid var(--border);
-      border-radius:7px;
-      padding:6px 9px;
+      border-radius:8px;
+      flex-wrap:wrap;
     }
+    .lesson-row-meta{
+      flex:1 1 100%;
+      font-family:var(--font-mono);
+      font-size:10.5px;
+      color:var(--text-faint);
+    }
+    .lesson-row-teacher{
+      flex:1;
+      min-width:100px;
+      font-family:inherit;
+      font-size:12.5px;
+      color:var(--text);
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:6px;
+      padding:5px 8px;
+    }
+    .lesson-row-cancel{
+      display:flex;
+      align-items:center;
+      gap:5px;
+      font-size:11.5px;
+      color:var(--text-dim);
+      white-space:nowrap;
+    }
+    .lesson-row-cancel input[type="checkbox"]{
+      width:14px; height:14px;
+      accent-color:var(--accent-cyan);
+    }
+
     .color-swatches.compact{
       flex-wrap:nowrap;
       overflow-x:auto;

@@ -279,22 +279,48 @@
 
       <div class="settings-section">
         <span class="profile-label">Fächer verwalten</span>
-        <div class="subject-row" *ngFor="let s of uniqueSubjects">
-          <input type="text" class="subject-name-input" [(ngModel)]="subjectRenameDrafts[s]" (blur)="renameSubject(s)" />
-          <div class="color-swatches compact">
-            <button type="button"
-                    class="swatch swatch-auto swatch-sm"
-                    [class.selected]="subjectColorIndex(s) === null"
-                    (click)="setSubjectColor(s, null)"
-                    title="Automatisch">A</button>
-            <button type="button"
-                    *ngFor="let c of subjectPalette; let i = index"
-                    class="swatch swatch-sm"
-                    [class.selected]="subjectColorIndex(s) === i"
-                    [style.--swatch-border]="c.border"
-                    [style.--swatch-bg]="c.bg"
-                    (click)="setSubjectColor(s, i)"
-                    [attr.aria-label]="'Farbe ' + (i + 1)"></button>
+        <div class="subject-accordion-item" *ngFor="let s of uniqueSubjects">
+
+          <button type="button" class="subject-header" (click)="toggleSubjectExpand(s)">
+            <span class="subject-header-name">{{ s }}</span>
+            <span class="chevron" [class.open]="expandedSubject === s">▾</span>
+          </button>
+
+          <div class="subject-body" *ngIf="expandedSubject === s">
+
+            <label class="field">
+              <span>Name</span>
+              <input type="text" [(ngModel)]="subjectRenameDrafts[s]" (blur)="renameSubject(s)" />
+            </label>
+
+            <label class="field">
+              <span>Farbe</span>
+              <div class="color-swatches compact">
+                <button type="button"
+                        class="swatch swatch-auto swatch-sm"
+                        [class.selected]="subjectColorIndex(s) === null"
+                        (click)="setSubjectColor(s, null)"
+                        title="Automatisch">A</button>
+                <button type="button"
+                        *ngFor="let c of subjectPalette; let i = index"
+                        class="swatch swatch-sm"
+                        [class.selected]="subjectColorIndex(s) === i"
+                        [style.--swatch-border]="c.border"
+                        [style.--swatch-bg]="c.bg"
+                        (click)="setSubjectColor(s, i)"
+                        [attr.aria-label]="'Farbe ' + (i + 1)"></button>
+              </div>
+            </label>
+
+            <div class="subject-lesson-row" *ngFor="let lesson of lessonsForSubjectDisplay(s)">
+              <div class="lesson-row-meta">{{ dayLabel(lesson.day) }} · {{ lesson.start }}–{{ lesson.end }}</div>
+              <input type="text" class="lesson-row-teacher" [(ngModel)]="lesson.teacher" placeholder="Lehrer" />
+              <label class="lesson-row-cancel">
+                <input type="checkbox" [(ngModel)]="lesson.cancelled" />
+                <span>Ausgefallen</span>
+              </label>
+            </div>
+
           </div>
         </div>
       </div>
