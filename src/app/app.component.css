@@ -119,8 +119,9 @@
     }
   
     .app{
-      width:100%;
-      padding:28px clamp(18px, 3.5vw, 64px) 60px;
+      width:100vw;
+      max-width:100%;
+      padding:28px clamp(18px, 2.5vw, 40px) 60px;
     }
   
     /* ---------- HEADER / COCKPIT CLOCK ---------- */
