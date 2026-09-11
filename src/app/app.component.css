@@ -52,35 +52,29 @@
       width:100vw;
       min-height:100vh;
       color:var(--text);
-      transition:color .2s ease;
-    }
-  
-    .app-bg{
-      position:fixed;
-      inset:0;
-      z-index:-1;
       background-color:var(--bg);
+      background-attachment:fixed;
       background-image:
         radial-gradient(circle at 8% 8%, rgba(79,216,232,0.35), transparent 45%),
         radial-gradient(circle at 92% 6%, rgba(255,159,74,0.30), transparent 45%),
         radial-gradient(circle at 50% 100%, rgba(79,216,232,0.14), transparent 55%);
-      transition:background-color .2s ease;
+      transition:background-color .2s ease, color .2s ease;
     }
   
     /* Hintergrund-Varianten (Einstellungen -> Hintergrund) */
-    .app-bg.bg-aurora{
+    .app-shell.bg-aurora{
       background-image:
         radial-gradient(circle at 8% 8%, rgba(60,230,180,0.45), transparent 45%),
         radial-gradient(circle at 92% 90%, rgba(120,140,255,0.40), transparent 45%),
         radial-gradient(circle at 50% 50%, rgba(60,230,180,0.10), transparent 60%);
     }
-    .app-bg.bg-sunset{
+    .app-shell.bg-sunset{
       background-image:
         radial-gradient(circle at 8% 8%, rgba(255,120,70,0.48), transparent 45%),
         radial-gradient(circle at 92% 90%, rgba(255,70,130,0.40), transparent 45%),
         radial-gradient(circle at 50% 50%, rgba(255,120,70,0.10), transparent 60%);
     }
-    .app-bg.bg-forest{
+    .app-shell.bg-forest{
       background-image:
         radial-gradient(circle at 8% 8%, rgba(90,210,90,0.42), transparent 45%),
         radial-gradient(circle at 92% 90%, rgba(60,160,100,0.36), transparent 45%),
@@ -102,22 +96,22 @@
     .app-shell.theme-light .clock-time{
       color:#181B21;
     }
-    .app-shell.theme-light .app-bg.bg-aurora{
+    .app-shell.theme-light.bg-aurora{
       background-image:
         radial-gradient(circle at 8% 8%, rgba(60,230,180,0.40), transparent 45%),
         radial-gradient(circle at 92% 90%, rgba(120,140,255,0.35), transparent 45%);
     }
-    .app-shell.theme-light .app-bg.bg-sunset{
+    .app-shell.theme-light.bg-sunset{
       background-image:
         radial-gradient(circle at 8% 8%, rgba(255,120,70,0.42), transparent 45%),
         radial-gradient(circle at 92% 90%, rgba(255,70,130,0.35), transparent 45%);
     }
-    .app-shell.theme-light .app-bg.bg-forest{
+    .app-shell.theme-light.bg-forest{
       background-image:
         radial-gradient(circle at 8% 8%, rgba(90,210,90,0.40), transparent 45%),
         radial-gradient(circle at 92% 90%, rgba(60,160,100,0.32), transparent 45%);
     }
-    .app-shell.theme-light .app-bg:not(.bg-aurora):not(.bg-sunset):not(.bg-forest){
+    .app-shell.theme-light:not(.bg-aurora):not(.bg-sunset):not(.bg-forest){
       background-image:
         radial-gradient(circle at 8% 8%, rgba(79,216,232,0.22), transparent 45%),
         radial-gradient(circle at 92% 6%, rgba(255,159,74,0.18), transparent 45%);
