@@ -120,7 +120,8 @@
   
     .app{
       width:100vw;
-      max-width:100%;
+      max-width:1600px;
+      margin:0 auto;
       padding:28px clamp(18px, 2.5vw, 40px) 60px;
     }
   
