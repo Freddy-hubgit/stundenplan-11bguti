@@ -215,29 +215,57 @@
       color:var(--text-faint);
     }
   
+    .day-progress-mini{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin-top:4px;
+    }
+    .day-progress-mini-track{
+      width:110px;
+      height:6px;
+      border-radius:4px;
+      background:rgba(255,255,255,0.08);
+      overflow:hidden;
+    }
+    .day-progress-mini-fill{
+      height:100%;
+      background:var(--accent-amber);
+      box-shadow:0 0 8px rgba(255,159,74,0.7);
+      transition:width 1s linear;
+    }
+    .day-progress-mini span{
+      font-size:11px;
+      color:var(--text-faint);
+      white-space:nowrap;
+    }
+  
     /* ---------- NAVIGATION ---------- */
   
-    .toolbar{
+    .controls-col{
       display:flex;
-      align-items:flex-end;
-      flex-wrap:wrap;
-      gap:20px 24px;
-      margin-bottom:22px;
-      padding:14px 16px;
+      flex-direction:column;
+      gap:18px;
+      padding:16px;
       background:var(--surface);
       border:1px solid var(--border-soft);
       border-radius:var(--radius-md);
-    }
-  
-    .toolbar-spacer{
-      flex:1 1 auto;
-      min-width:0;
+      align-self:start;
     }
   
     .nav-group{
       display:flex;
       align-items:center;
       gap:8px;
+    }
+  
+    .nav-group.stacked{
+      flex-direction:column;
+      align-items:stretch;
+    }
+    .nav-group.stacked .nav-btn{
+      width:100%;
+      text-align:left;
     }
   
     button{
@@ -304,13 +332,19 @@
   
     .layout{
       display:grid;
-      grid-template-columns:1fr 250px;
+      grid-template-columns:220px 1fr 250px;
       gap:22px;
       align-items:start;
     }
   
+    @media (max-width:1180px){
+      .layout{ grid-template-columns:200px 1fr; }
+      .side{ grid-column:1 / -1; }
+    }
+  
     @media (max-width:920px){
       .layout{ grid-template-columns:1fr; }
+      .side{ grid-column:auto; }
     }
   
     /* ---------- TIMETABLE ---------- */
