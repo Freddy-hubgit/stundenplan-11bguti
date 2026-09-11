@@ -331,10 +331,10 @@
     /* ---------- MAIN LAYOUT ---------- */
   
     .layout{
-      display:grid;
-      grid-template-columns:220px 1fr 250px;
-      gap:22px;
-      align-items:start;
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr) 250px;
+  gap: 18px;
+  align-items: start;
     }
   
     @media (max-width:1180px){
