@@ -332,19 +332,13 @@
   
     .layout{
   display: grid;
-  grid-template-columns: 220px minmax(0, 1fr) 250px;
+  grid-template-columns: minmax(0, 1fr) 250px;
   gap: 18px;
   align-items: start;
     }
   
-    @media (max-width:1180px){
-      .layout{ grid-template-columns:200px 1fr; }
-      .side{ grid-column:1 / -1; }
-    }
-  
     @media (max-width:920px){
       .layout{ grid-template-columns:1fr; }
-      .side{ grid-column:auto; }
     }
   
     /* ---------- TIMETABLE ---------- */
@@ -662,7 +656,23 @@
       .mobile-daybar{ display:none; }
     }
   
-    /* ---------- PROFIL-GRUPPEN (innerhalb der .toolbar) ---------- */
+    /* ---------- PROFIL-LEISTE (Steuerung unter dem Header) ---------- */
+  
+    .toolbar{
+      display:flex;
+      align-items:flex-end;
+      flex-wrap:wrap;
+      gap:18px 24px;
+      margin-bottom:22px;
+      padding:14px 16px;
+      background:var(--surface);
+      border:1px solid var(--border-soft);
+      border-radius:var(--radius-md);
+    }
+    .toolbar-spacer{
+      flex:1 1 auto;
+      min-width:0;
+    }
   
     .profile-group{
       display:flex;
