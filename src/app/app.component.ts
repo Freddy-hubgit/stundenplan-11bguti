@@ -323,7 +323,9 @@ export class AppComponent implements OnInit, OnDestroy {
   /* ---------------- Einstellungen: Fächer verwalten ---------------- */
 
   get uniqueSubjects(): string[] {
-    return Array.from(new Set(this.lessons.map(l => l.subject))).sort((a, b) => a.localeCompare(b, "de"));
+    return Array.from(new Set(
+      this.lessons.filter(l => this.isLessonVisible(l)).map(l => l.subject)
+    )).sort((a, b) => a.localeCompare(b, "de"));
   }
 
   subjectColorIndex(subject: string): number | null {
@@ -370,7 +372,7 @@ export class AppComponent implements OnInit, OnDestroy {
   // Änderungen über ngModel wirken sich direkt aus).
   lessonsForSubjectDisplay(subject: string): Lesson[] {
     return this.lessons
-      .filter(l => l.subject === subject)
+      .filter(l => l.subject === subject && this.isLessonVisible(l))
       .sort((a, b) => {
         const dayOrder = this.dayDefs.findIndex(d => d.key === a.day) - this.dayDefs.findIndex(d => d.key === b.day);
         if (dayOrder !== 0) return dayOrder;
