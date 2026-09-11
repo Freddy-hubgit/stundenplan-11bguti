@@ -674,6 +674,10 @@
       min-width:0;
     }
   
+    .controls-panel .profile-group + .profile-group{
+      margin-top:16px;
+    }
+
     .profile-group{
       display:flex;
       flex-direction:column;

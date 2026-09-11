@@ -23,52 +23,6 @@
     </div>
   </header>
 
-  <div class="toolbar">
-
-    <div class="profile-group">
-      <span class="profile-label">Schwerpunkt</span>
-      <div class="chip-group">
-        <button *ngFor="let t of trackOptions"
-                class="chip chip-cyan"
-                [class.active]="selectedTrack === t"
-                (click)="setTrack(t)">{{ t }}</button>
-      </div>
-    </div>
-
-    <div class="profile-group">
-      <span class="profile-label">Naturwissenschaften <small>(genau 2 auswählen)</small></span>
-      <div class="chip-group">
-        <button *ngFor="let s of scienceOptions"
-                class="chip"
-                [class.active]="selectedSciences.includes(s)"
-                [disabled]="isScienceDisabled(s)"
-                (click)="toggleScience(s)">{{ s }}</button>
-      </div>
-    </div>
-
-    <div class="profile-group">
-      <span class="profile-label">Sprache</span>
-      <div class="chip-group">
-        <button class="chip chip-cyan"
-                [class.active]="selectedLanguage === 'Spanisch'"
-                (click)="toggleLanguage()">Spanisch</button>
-      </div>
-    </div>
-
-    <div class="toolbar-spacer"></div>
-
-    <div class="nav-group">
-      <button class="nav-btn" (click)="goPrev()">← Vorherige Woche</button>
-      <button class="nav-btn" (click)="goNext()">Nächste Woche →</button>
-    </div>
-
-    <div class="nav-group">
-      <button class="nav-btn add" (click)="openNewLesson()">+ Stunde hinzufügen</button>
-      <button class="nav-btn" [class.active]="showWeekend" (click)="toggleWeekend()">Wochenende anzeigen</button>
-      <button class="nav-btn icon" (click)="openSettings()" aria-label="Einstellungen">⚙</button>
-    </div>
-  </div>
-
   <div class="layout">
 
     <div class="board" (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)">
@@ -146,6 +100,54 @@
             {{ next.lesson.start }}–{{ next.lesson.end }} Uhr{{ nextLessonDateSuffix }}
           </div>
           <div class="next-countdown">{{ nextLessonWhenLabel }}</div>
+        </div>
+      </div>
+
+      <div class="panel controls-panel">
+        <div class="profile-group">
+          <span class="profile-label">Schwerpunkt</span>
+          <div class="chip-group">
+            <button *ngFor="let t of trackOptions"
+                    class="chip chip-cyan"
+                    [class.active]="selectedTrack === t"
+                    (click)="setTrack(t)">{{ t }}</button>
+          </div>
+        </div>
+
+        <div class="profile-group">
+          <span class="profile-label">Naturwissenschaften <small>(genau 2 auswählen)</small></span>
+          <div class="chip-group">
+            <button *ngFor="let s of scienceOptions"
+                    class="chip"
+                    [class.active]="selectedSciences.includes(s)"
+                    [disabled]="isScienceDisabled(s)"
+                    (click)="toggleScience(s)">{{ s }}</button>
+          </div>
+        </div>
+
+        <div class="profile-group">
+          <span class="profile-label">Sprache</span>
+          <div class="chip-group">
+            <button class="chip chip-cyan"
+                    [class.active]="selectedLanguage === 'Spanisch'"
+                    (click)="toggleLanguage()">Spanisch</button>
+          </div>
+        </div>
+
+        <div class="profile-group">
+          <span class="profile-label">Woche</span>
+          <div class="nav-group stacked">
+            <button class="nav-btn" (click)="goPrev()">← Vorherige Woche</button>
+            <button class="nav-btn" (click)="goNext()">Nächste Woche →</button>
+          </div>
+        </div>
+
+        <div class="profile-group">
+          <div class="nav-group stacked">
+            <button class="nav-btn add" (click)="openNewLesson()">+ Stunde hinzufügen</button>
+            <button class="nav-btn" [class.active]="showWeekend" (click)="toggleWeekend()">Wochenende anzeigen</button>
+            <button class="nav-btn" (click)="openSettings()">⚙ Einstellungen</button>
+          </div>
         </div>
       </div>
     </aside>
