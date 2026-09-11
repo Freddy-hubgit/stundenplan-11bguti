@@ -61,30 +61,30 @@
       z-index:-1;
       background-color:var(--bg);
       background-image:
-        radial-gradient(circle at 12% -10%, rgba(79,216,232,0.22), transparent 55%),
-        radial-gradient(circle at 88% 0%, rgba(255,159,74,0.18), transparent 60%),
-        radial-gradient(circle at 50% 100%, rgba(79,216,232,0.08), transparent 60%);
+        radial-gradient(circle at 8% 8%, rgba(79,216,232,0.35), transparent 45%),
+        radial-gradient(circle at 92% 6%, rgba(255,159,74,0.30), transparent 45%),
+        radial-gradient(circle at 50% 100%, rgba(79,216,232,0.14), transparent 55%);
       transition:background-color .2s ease;
     }
   
     /* Hintergrund-Varianten (Einstellungen -> Hintergrund) */
     .app-bg.bg-aurora{
       background-image:
-        radial-gradient(circle at 15% -10%, rgba(60,230,180,0.30), transparent 55%),
-        radial-gradient(circle at 85% 100%, rgba(120,140,255,0.26), transparent 60%),
-        radial-gradient(circle at 50% 50%, rgba(60,230,180,0.06), transparent 65%);
+        radial-gradient(circle at 8% 8%, rgba(60,230,180,0.45), transparent 45%),
+        radial-gradient(circle at 92% 90%, rgba(120,140,255,0.40), transparent 45%),
+        radial-gradient(circle at 50% 50%, rgba(60,230,180,0.10), transparent 60%);
     }
     .app-bg.bg-sunset{
       background-image:
-        radial-gradient(circle at 12% -10%, rgba(255,120,70,0.32), transparent 55%),
-        radial-gradient(circle at 88% 100%, rgba(255,70,130,0.26), transparent 60%),
-        radial-gradient(circle at 50% 50%, rgba(255,120,70,0.06), transparent 65%);
+        radial-gradient(circle at 8% 8%, rgba(255,120,70,0.48), transparent 45%),
+        radial-gradient(circle at 92% 90%, rgba(255,70,130,0.40), transparent 45%),
+        radial-gradient(circle at 50% 50%, rgba(255,120,70,0.10), transparent 60%);
     }
     .app-bg.bg-forest{
       background-image:
-        radial-gradient(circle at 12% -10%, rgba(90,210,90,0.28), transparent 55%),
-        radial-gradient(circle at 88% 100%, rgba(60,160,100,0.24), transparent 60%),
-        radial-gradient(circle at 50% 50%, rgba(90,210,90,0.06), transparent 65%);
+        radial-gradient(circle at 8% 8%, rgba(90,210,90,0.42), transparent 45%),
+        radial-gradient(circle at 92% 90%, rgba(60,160,100,0.36), transparent 45%),
+        radial-gradient(circle at 50% 50%, rgba(90,210,90,0.10), transparent 60%);
     }
   
     /* Helles Theme (Einstellungen -> Darstellung) */
@@ -104,23 +104,23 @@
     }
     .app-shell.theme-light .app-bg.bg-aurora{
       background-image:
-        radial-gradient(circle at 15% -10%, rgba(60,230,180,0.35), transparent 55%),
-        radial-gradient(circle at 85% 100%, rgba(120,140,255,0.30), transparent 60%);
+        radial-gradient(circle at 8% 8%, rgba(60,230,180,0.40), transparent 45%),
+        radial-gradient(circle at 92% 90%, rgba(120,140,255,0.35), transparent 45%);
     }
     .app-shell.theme-light .app-bg.bg-sunset{
       background-image:
-        radial-gradient(circle at 12% -10%, rgba(255,120,70,0.38), transparent 55%),
-        radial-gradient(circle at 88% 100%, rgba(255,70,130,0.30), transparent 60%);
+        radial-gradient(circle at 8% 8%, rgba(255,120,70,0.42), transparent 45%),
+        radial-gradient(circle at 92% 90%, rgba(255,70,130,0.35), transparent 45%);
     }
     .app-shell.theme-light .app-bg.bg-forest{
       background-image:
-        radial-gradient(circle at 12% -10%, rgba(90,210,90,0.35), transparent 55%),
-        radial-gradient(circle at 88% 100%, rgba(60,160,100,0.28), transparent 60%);
+        radial-gradient(circle at 8% 8%, rgba(90,210,90,0.40), transparent 45%),
+        radial-gradient(circle at 92% 90%, rgba(60,160,100,0.32), transparent 45%);
     }
     .app-shell.theme-light .app-bg:not(.bg-aurora):not(.bg-sunset):not(.bg-forest){
       background-image:
-        radial-gradient(circle at 12% -10%, rgba(79,216,232,0.10), transparent 40%),
-        radial-gradient(circle at 88% 0%, rgba(255,159,74,0.08), transparent 45%);
+        radial-gradient(circle at 8% 8%, rgba(79,216,232,0.22), transparent 45%),
+        radial-gradient(circle at 92% 6%, rgba(255,159,74,0.18), transparent 45%);
     }
   
     .app{
