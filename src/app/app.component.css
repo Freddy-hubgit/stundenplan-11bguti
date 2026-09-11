@@ -38,7 +38,7 @@
       color:var(--text);
       font-family:var(--font-sans);
       -webkit-font-smoothing:antialiased;
-      overflow-x:hidden;
+      overflow:hidden;
     }
   
     ::selection{ background:var(--accent-cyan-dim); color:var(--accent-cyan); }
@@ -48,9 +48,10 @@
     }
   
     .app-shell{
-      position:relative;
-      width:100vw;
-      min-height:100vh;
+      position:fixed;
+      inset:0;
+      overflow-y:auto;
+      overflow-x:hidden;
       color:var(--text);
       background-color:var(--bg);
       background-attachment:fixed;
