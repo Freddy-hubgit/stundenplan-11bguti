@@ -398,6 +398,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   setTrack(track: DayTrack): void {
     this.selectedTrack = track;
+    this.enforceCompulsoryScience();
     this.persistProfile();
   }
 
@@ -411,7 +412,28 @@ export class AppComponent implements OnInit, OnDestroy {
     this.persistProfile();
   }
 
+  // Informatik -> Physik ist Pflicht, Umwelttechnik -> Chemie ist Pflicht.
+  get compulsoryScience(): "Chemie" | "Physik" | null {
+    if (this.selectedTrack === "Informatik") return "Physik";
+    if (this.selectedTrack === "Umwelttechnik") return "Chemie";
+    return null;
+  }
+
+  isScienceLocked(subject: string): boolean {
+    return subject === this.compulsoryScience;
+  }
+
+  private enforceCompulsoryScience(): void {
+    const required = this.compulsoryScience;
+    if (!required || this.selectedSciences.includes(required)) return;
+    if (this.selectedSciences.length >= 2) {
+      this.selectedSciences.shift(); // Platz schaffen: älteste Auswahl entfernen
+    }
+    this.selectedSciences.push(required);
+  }
+
   toggleScience(subject: string): void {
+    if (this.isScienceLocked(subject)) return; // durch Schwerpunkt fest vorgegeben, nicht abwählbar
     const idx = this.selectedSciences.indexOf(subject);
     if (idx !== -1) {
       this.selectedSciences.splice(idx, 1);
@@ -422,6 +444,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   isScienceDisabled(subject: string): boolean {
+    if (this.isScienceLocked(subject)) return false;
     return this.selectedSciences.length >= 2 && !this.selectedSciences.includes(subject);
   }
 
@@ -457,6 +480,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadProfile();
+    this.enforceCompulsoryScience();
     this.loadSubjectColors();
     this.loadAppearance();
     this.isMobile = window.matchMedia("(max-width:920px)").matches;

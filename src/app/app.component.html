@@ -118,6 +118,7 @@
                     class="chip"
                     [class.active]="selectedSciences.includes(s)"
                     [disabled]="isScienceDisabled(s)"
+                    [title]="isScienceLocked(s) ? 'Durch Schwerpunkt ' + selectedTrack + ' fest vorgegeben' : ''"
                     (click)="toggleScience(s)">{{ s }}</button>
           </div>
         </div>
