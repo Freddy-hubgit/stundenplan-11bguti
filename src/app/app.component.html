@@ -132,9 +132,18 @@
           </div>
         </div>
 
+        <div class="profile-group" *ngIf="isMobile">
+          <span class="profile-label">Ansicht</span>
+          <div class="chip-group">
+            <button class="chip chip-cyan" [class.active]="mobileViewMode === 'day'" (click)="setMobileViewMode('day')">Tag</button>
+            <button class="chip chip-cyan" [class.active]="mobileViewMode === 'week'" (click)="setMobileViewMode('week')">Woche</button>
+          </div>
+        </div>
+
         <div class="profile-group">
           <span class="profile-label">Woche</span>
           <div class="nav-group stacked">
+            <button class="nav-btn primary" (click)="goToday()">Heute</button>
             <button class="nav-btn" (click)="goPrev()">← Vorherige Woche</button>
             <button class="nav-btn" (click)="goNext()">Nächste Woche →</button>
           </div>
@@ -321,6 +330,15 @@
 
           </div>
         </div>
+      </div>
+
+      <div class="settings-section">
+        <span class="profile-label">Daten</span>
+        <div class="chip-group">
+          <button class="chip chip-cyan" (click)="exportData()">⭳ Exportieren</button>
+          <button class="chip chip-cyan" (click)="importFileInput.click()">⭱ Importieren</button>
+        </div>
+        <input #importFileInput type="file" accept="application/json" style="display:none" (change)="onImportFile($event)" />
       </div>
 
       <div class="modal-actions">

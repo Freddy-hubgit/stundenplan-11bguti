@@ -118,7 +118,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
     // Dienstag
     { subject: "Chemie", teacher: "Frau Malcomess", room: "B207", day: "Tue", start: "07:30", end: "09:00", track: "Informatik" },
-    { subject: "Technische Mikrobiologie", teacher: "HENR?", room: "B214", day: "Tue", start: "07:30", end: "09:00", track: "Umwelttechnik", scienceGroup: "Biologie" },
+    { subject: "Technische Mikrobiologie", teacher: "HENR?", room: "B214", day: "Tue", start: "07:30", end: "09:00", track: "Informatik", scienceGroup: "Biologie" },
     { subject: "Informatik", teacher: "Herr Hansen", room: "B115", day: "Tue", start: "09:15", end: "10:45", track: "Informatik" },
     { subject: "Umwelttechnik", teacher: "Herr Meinecke", room: "B211", day: "Tue", start: "09:15", end: "10:45", track: "Umwelttechnik" },
     { subject: "Umwelttechnik", teacher: "Herr Meinecke", room: "B211", day: "Tue", start: "11:00", end: "11:45", track: "Umwelttechnik" },
@@ -186,6 +186,11 @@ export class AppComponent implements OnInit, OnDestroy {
   selectedDate: Date = new Date();
   showWeekend: boolean = false;
   isMobile: boolean = false;
+  mobileViewMode: "day" | "week" = "day";
+
+  setMobileViewMode(mode: "day" | "week"): void {
+    this.mobileViewMode = mode;
+  }
   now: Date = new Date();
 
   gridHeight: number = 760;
@@ -394,6 +399,89 @@ export class AppComponent implements OnInit, OnDestroy {
 
   closeSettings(): void {
     this.settingsOpen = false;
+  }
+
+  /* ---------------- Export / Import ---------------- */
+
+  exportData(): void {
+    const payload = {
+      exportedAt: new Date().toISOString(),
+      lessons: this.lessons,
+      subjectColorOverrides: this.subjectColorOverrides,
+      profile: {
+        track: this.selectedTrack,
+        sciences: this.selectedSciences,
+        language: this.selectedLanguage,
+      },
+      appearance: {
+        theme: this.theme,
+        background: this.backgroundKey,
+      },
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "stundenplan-export.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  onImportFile(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files && input.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(String(reader.result));
+        if (!data || !Array.isArray(data.lessons)) {
+          throw new Error("Kein gültiges Export-Format");
+        }
+
+        const confirmed = window.confirm(
+          `Import durchführen? ${data.lessons.length} Stunden werden geladen und ersetzen den aktuellen Stundenplan.`
+        );
+        if (!confirmed) return;
+
+        this.lessons = data.lessons;
+
+        if (data.subjectColorOverrides && typeof data.subjectColorOverrides === "object") {
+          this.subjectColorOverrides = data.subjectColorOverrides;
+          this.persistSubjectColors();
+        }
+        if (data.profile) {
+          if (data.profile.track === "Informatik" || data.profile.track === "Umwelttechnik") {
+            this.selectedTrack = data.profile.track;
+          }
+          if (Array.isArray(data.profile.sciences)) {
+            this.selectedSciences = data.profile.sciences;
+          }
+          if (data.profile.language === "Spanisch" || data.profile.language === "Frei") {
+            this.selectedLanguage = data.profile.language;
+          }
+          this.enforceCompulsoryScience();
+          this.persistProfile();
+        }
+        if (data.appearance) {
+          if (data.appearance.theme === "dark" || data.appearance.theme === "light") {
+            this.theme = data.appearance.theme;
+          }
+          if (typeof data.appearance.background === "string") {
+            this.backgroundKey = data.appearance.background;
+          }
+          this.persistAppearance();
+        }
+
+        window.alert("Import erfolgreich.");
+      } catch {
+        window.alert("Die Datei konnte nicht gelesen werden. Bitte eine gültige Export-Datei auswählen.");
+      } finally {
+        input.value = "";
+      }
+    };
+    reader.readAsText(file);
   }
 
   setTrack(track: DayTrack): void {
@@ -665,7 +753,8 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   get displayedDays(): DayColumn[] {
-    const entries: { def: DayDef; date: Date }[] = this.isMobile
+    const showSingleDay = this.isMobile && this.mobileViewMode === "day";
+    const entries: { def: DayDef; date: Date }[] = showSingleDay
       ? [{ def: this.mobileDayDef, date: this.selectedDate }]
       : this.weekDates(this.selectedDate);
 
@@ -817,12 +906,24 @@ export class AppComponent implements OnInit, OnDestroy {
     this.selectedDate = d;
   }
 
+  goToday(): void {
+    this.selectedDate = new Date();
+  }
+
   goPrev(): void {
-    this.shiftWeek(-1);
+    if (this.isMobile && this.mobileViewMode === "day") {
+      this.shiftDay(-1);
+    } else {
+      this.shiftWeek(-1);
+    }
   }
 
   goNext(): void {
-    this.shiftWeek(1);
+    if (this.isMobile && this.mobileViewMode === "day") {
+      this.shiftDay(1);
+    } else {
+      this.shiftWeek(1);
+    }
   }
 
   toggleWeekend(): void {
