@@ -74,9 +74,6 @@
               <div class="time">{{ lesson.start }}–{{ lesson.end }}</div>
               <div class="live-tag" *ngIf="lesson.isLive">LIVE</div>
               <div class="cancelled-tag" *ngIf="lesson.cancelled">AUSGEFALLEN</div>
-              <div class="day-progress-track" *ngIf="lesson.isLive">
-                <div class="day-progress-fill" [style.width.%]="dayProgressPct"></div>
-              </div>
             </div>
 
           </div>
@@ -215,7 +212,7 @@
       <label class="field">
         <span>Naturwissenschafts-Gruppe (optional)</span>
         <select [(ngModel)]="editorScienceGroup">
-          <option value="">Kein Naturwissenschaftsfach / Name passt genau</option>
+          <option value="">Kein Naturwissenschaftsfach</option>
           <option *ngFor="let s of scienceOptions" [value]="s">{{ s }}</option>
         </select>
       </label>
