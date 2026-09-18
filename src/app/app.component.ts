@@ -118,7 +118,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
     // Dienstag
     { subject: "Chemie", teacher: "Frau Malcomess", room: "B207", day: "Tue", start: "07:30", end: "09:00", track: "Informatik" },
-    { subject: "Technische Mikrobiologie", teacher: "HENR?", room: "B214", day: "Tue", start: "07:30", end: "09:00", track: "Informatik", scienceGroup: "Biologie" },
+    { subject: "Technische Mikrobiologie", teacher: "HENR?", room: "B214", day: "Tue", start: "07:30", end: "09:00", track: "Umwelttechnik", scienceGroup: "Biologie" },
     { subject: "Informatik", teacher: "Herr Hansen", room: "B115", day: "Tue", start: "09:15", end: "10:45", track: "Informatik" },
     { subject: "Umwelttechnik", teacher: "Herr Meinecke", room: "B211", day: "Tue", start: "09:15", end: "10:45", track: "Umwelttechnik" },
     { subject: "Umwelttechnik", teacher: "Herr Meinecke", room: "B211", day: "Tue", start: "11:00", end: "11:45", track: "Umwelttechnik" },
