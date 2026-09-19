@@ -25,7 +25,7 @@
 
   <div class="layout">
 
-    <div class="board" (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)">
+    <div class="board" #boardRef (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)">
 
       <div class="mobile-daybar" *ngIf="isMobile">
         <div class="mobile-daylabel">
@@ -101,37 +101,6 @@
       </div>
 
       <div class="panel controls-panel">
-        <div class="profile-group">
-          <span class="profile-label">Schwerpunkt</span>
-          <div class="chip-group">
-            <button *ngFor="let t of trackOptions"
-                    class="chip chip-cyan"
-                    [class.active]="selectedTrack === t"
-                    (click)="setTrack(t)">{{ t }}</button>
-          </div>
-        </div>
-
-        <div class="profile-group">
-          <span class="profile-label">Naturwissenschaften <small>(genau 2 auswählen)</small></span>
-          <div class="chip-group">
-            <button *ngFor="let s of scienceOptions"
-                    class="chip"
-                    [class.active]="selectedSciences.includes(s)"
-                    [disabled]="isScienceDisabled(s)"
-                    [title]="isScienceLocked(s) ? 'Durch Schwerpunkt ' + selectedTrack + ' fest vorgegeben' : ''"
-                    (click)="toggleScience(s)">{{ s }}</button>
-          </div>
-        </div>
-
-        <div class="profile-group">
-          <span class="profile-label">Sprache</span>
-          <div class="chip-group">
-            <button class="chip chip-cyan"
-                    [class.active]="selectedLanguage === 'Spanisch'"
-                    (click)="toggleLanguage()">Spanisch</button>
-          </div>
-        </div>
-
         <div class="profile-group" *ngIf="isMobile">
           <span class="profile-label">Ansicht</span>
           <div class="chip-group">
@@ -261,84 +230,151 @@
   </div>
 
   <div class="modal-backdrop" *ngIf="settingsOpen" (click)="closeSettings()">
-    <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal modal-wide" (click)="$event.stopPropagation()">
       <h2>Einstellungen</h2>
 
-      <div class="settings-section">
-        <span class="profile-label">Darstellung</span>
-        <div class="chip-group">
-          <button *ngFor="let t of themeOptions"
-                  class="chip chip-cyan"
-                  [class.active]="theme === t.key"
-                  (click)="setTheme(t.key)">{{ t.label }}</button>
+      <div class="settings-layout">
+
+        <div class="settings-nav">
+          <button class="settings-nav-btn" [class.active]="settingsCategory === 'profil'" (click)="setSettingsCategory('profil')">Profil</button>
+          <button class="settings-nav-btn" [class.active]="settingsCategory === 'faecher'" (click)="setSettingsCategory('faecher')">Fächer verwalten</button>
+          <button class="settings-nav-btn" [class.active]="settingsCategory === 'darstellung'" (click)="setSettingsCategory('darstellung')">Darstellung</button>
+          <button class="settings-nav-btn" [class.active]="settingsCategory === 'daten'" (click)="setSettingsCategory('daten')">Daten</button>
         </div>
-      </div>
 
-      <div class="settings-section">
-        <span class="profile-label">Hintergrund</span>
-        <div class="chip-group">
-          <button *ngFor="let b of backgroundOptions"
-                  class="chip chip-cyan"
-                  [class.active]="backgroundKey === b.key"
-                  (click)="setBackground(b.key)">{{ b.label }}</button>
-        </div>
-      </div>
+        <div class="settings-content">
 
-      <div class="settings-section">
-        <span class="profile-label">Fächer verwalten</span>
-        <div class="subject-accordion-item" *ngFor="let s of uniqueSubjects">
-
-          <button type="button" class="subject-header" (click)="toggleSubjectExpand(s)">
-            <span class="subject-header-name">{{ s }}</span>
-            <span class="chevron" [class.open]="expandedSubject === s">▾</span>
-          </button>
-
-          <div class="subject-body" *ngIf="expandedSubject === s">
-
-            <label class="field">
-              <span>Name</span>
-              <input type="text" [(ngModel)]="subjectRenameDrafts[s]" (blur)="renameSubject(s)" />
-            </label>
-
-            <label class="field">
-              <span>Farbe</span>
-              <div class="color-swatches compact">
-                <button type="button"
-                        class="swatch swatch-auto swatch-sm"
-                        [class.selected]="subjectColorIndex(s) === null"
-                        (click)="setSubjectColor(s, null)"
-                        title="Automatisch">A</button>
-                <button type="button"
-                        *ngFor="let c of subjectPalette; let i = index"
-                        class="swatch swatch-sm"
-                        [class.selected]="subjectColorIndex(s) === i"
-                        [style.--swatch-border]="c.border"
-                        [style.--swatch-bg]="c.bg"
-                        (click)="setSubjectColor(s, i)"
-                        [attr.aria-label]="'Farbe ' + (i + 1)"></button>
+          <div *ngIf="settingsCategory === 'profil'">
+            <div class="settings-section">
+              <span class="profile-label">Schwerpunkt</span>
+              <div class="chip-group">
+                <button *ngFor="let t of trackOptions"
+                        class="chip chip-cyan"
+                        [class.active]="selectedTrack === t"
+                        (click)="setTrack(t)">{{ t }}</button>
               </div>
-            </label>
-
-            <div class="subject-lesson-row" *ngFor="let lesson of lessonsForSubjectDisplay(s)">
-              <div class="lesson-row-meta">{{ dayLabel(lesson.day) }} · {{ lesson.start }}–{{ lesson.end }}</div>
-              <input type="text" class="lesson-row-teacher" [(ngModel)]="lesson.teacher" placeholder="Lehrer" />
-              <label class="lesson-row-cancel">
-                <input type="checkbox" [(ngModel)]="lesson.cancelled" />
-                <span>Ausgefallen</span>
-              </label>
             </div>
 
-          </div>
-        </div>
-      </div>
+            <div class="settings-section">
+              <span class="profile-label">Naturwissenschaften <small>(genau 2 auswählen)</small></span>
+              <div class="chip-group">
+                <button *ngFor="let s of scienceOptions"
+                        class="chip"
+                        [class.active]="selectedSciences.includes(s)"
+                        [disabled]="isScienceDisabled(s)"
+                        [title]="isScienceLocked(s) ? 'Durch Schwerpunkt ' + selectedTrack + ' fest vorgegeben' : ''"
+                        (click)="toggleScience(s)">{{ s }}</button>
+              </div>
+            </div>
 
-      <div class="settings-section">
-        <span class="profile-label">Daten</span>
-        <div class="chip-group">
-          <button class="chip chip-cyan" (click)="exportData()">⭳ Exportieren</button>
-          <button class="chip chip-cyan" (click)="importFileInput.click()">⭱ Importieren</button>
+            <div class="settings-section">
+              <span class="profile-label">Sprache</span>
+              <div class="chip-group">
+                <button class="chip chip-cyan"
+                        [class.active]="selectedLanguage === 'Spanisch'"
+                        (click)="toggleLanguage()">Spanisch</button>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="settingsCategory === 'faecher'">
+            <div class="settings-section">
+              <span class="profile-label">Fächer verwalten</span>
+              <div class="subject-accordion-item" *ngFor="let s of uniqueSubjects">
+
+                <button type="button" class="subject-header" (click)="toggleSubjectExpand(s)">
+                  <span class="subject-header-name">{{ s }}</span>
+                  <span class="chevron" [class.open]="expandedSubject === s">▾</span>
+                </button>
+
+                <div class="subject-body" *ngIf="expandedSubject === s">
+
+                  <label class="field">
+                    <span>Name</span>
+                    <input type="text" [(ngModel)]="subjectRenameDrafts[s]" (blur)="renameSubject(s)" />
+                  </label>
+
+                  <label class="field">
+                    <span>Farbe</span>
+                    <div class="color-swatches compact">
+                      <button type="button"
+                              class="swatch swatch-auto swatch-sm"
+                              [class.selected]="subjectColorIndex(s) === null"
+                              (click)="setSubjectColor(s, null)"
+                              title="Automatisch">A</button>
+                      <button type="button"
+                              *ngFor="let c of subjectPalette; let i = index"
+                              class="swatch swatch-sm"
+                              [class.selected]="subjectColorIndex(s) === i"
+                              [style.--swatch-border]="c.border"
+                              [style.--swatch-bg]="c.bg"
+                              (click)="setSubjectColor(s, i)"
+                              [attr.aria-label]="'Farbe ' + (i + 1)"></button>
+                    </div>
+                  </label>
+
+                  <div class="subject-lesson-row" *ngFor="let lesson of lessonsForSubjectDisplay(s)">
+                    <div class="lesson-row-meta">{{ dayLabel(lesson.day) }} · {{ lesson.start }}–{{ lesson.end }}</div>
+                    <input type="text" class="lesson-row-teacher" [(ngModel)]="lesson.teacher" placeholder="Lehrer" />
+                    <label class="lesson-row-cancel">
+                      <input type="checkbox" [(ngModel)]="lesson.cancelled" />
+                      <span>Ausgefallen</span>
+                    </label>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="settingsCategory === 'darstellung'">
+            <div class="settings-section">
+              <span class="profile-label">Darstellung</span>
+              <div class="chip-group">
+                <button *ngFor="let t of themeOptions"
+                        class="chip chip-cyan"
+                        [class.active]="theme === t.key"
+                        (click)="setTheme(t.key)">{{ t.label }}</button>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <span class="profile-label">Hintergrund</span>
+              <div class="chip-group">
+                <button *ngFor="let b of backgroundOptions"
+                        class="chip chip-cyan"
+                        [class.active]="backgroundKey === b.key"
+                        (click)="setBackground(b.key)">{{ b.label }}</button>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="settingsCategory === 'daten'">
+            <div class="settings-section">
+              <span class="profile-label">Exportieren</span>
+              <div class="chip-group">
+                <button class="chip chip-cyan" (click)="exportData()">⭳ Als JSON</button>
+                <button class="chip chip-cyan" (click)="exportImage()">⭳ Als JPG</button>
+                <button class="chip chip-cyan" (click)="exportICS()">⭳ Als Kalender (ICS)</button>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <span class="profile-label">Importieren</span>
+              <div class="chip-group">
+                <button class="chip chip-cyan" (click)="importFileInput.click()">⭱ Datei auswählen</button>
+              </div>
+              <input #importFileInput type="file" accept="application/json" style="display:none" (change)="onImportFile($event)" />
+
+              <label class="field" style="margin-top:12px">
+                <span>Oder JSON-Text einfügen (z.B. von einem anderen Gerät kopiert)</span>
+                <textarea class="import-textarea" rows="4" [(ngModel)]="importPasteText" placeholder="{ &quot;lessons&quot;: [...] }"></textarea>
+              </label>
+              <button class="nav-btn add" (click)="importFromPastedText()">Eingefügten Text importieren</button>
+            </div>
+          </div>
+
         </div>
-        <input #importFileInput type="file" accept="application/json" style="display:none" (change)="onImportFile($event)" />
       </div>
 
       <div class="modal-actions">
