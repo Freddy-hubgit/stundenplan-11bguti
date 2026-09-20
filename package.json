@@ -11,6 +11,7 @@
     "@angular/platform-browser": "^13.2.0",
     "@angular/platform-browser-dynamic": "^13.2.0",
     "@angular/router": "^13.2.0",
+    "html2canvas": "^1.4.1",
     "rxjs": "^7.5.2",
     "tslib": "^2.3.1",
     "zone.js": "^0.11.4"
@@ -18,7 +19,8 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "write-version": "node scripts/write-version.js",
+    "build": "npm run write-version && ng build",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"

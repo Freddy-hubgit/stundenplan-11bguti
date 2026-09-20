@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, HostListener, ViewEncapsulation, ViewChild, ElementRef } from '@angular/core';
 import html2canvas from 'html2canvas';
+import { UpdateService } from './update.service';
 
 /* =====================================================================
    TYPEN
@@ -86,6 +87,8 @@ type EditorMode = "new" | "edit";
 export class AppComponent implements OnInit, OnDestroy {
 
   @ViewChild('boardRef') boardRef?: ElementRef<HTMLElement>;
+
+  constructor(public updateService: UpdateService) {}
 
   /* ---------------- KONFIGURATION – hier trägst du deine echten Daten ein ---------------- */
 
@@ -296,9 +299,9 @@ export class AppComponent implements OnInit, OnDestroy {
   theme: "dark" | "light" = "dark";
   backgroundKey: string = "default";
   settingsOpen: boolean = false;
-  settingsCategory: "profil" | "faecher" | "darstellung" | "daten" = "profil";
+  settingsCategory: "profil" | "faecher" | "darstellung" | "daten" | "update" = "profil";
 
-  setSettingsCategory(cat: "profil" | "faecher" | "darstellung" | "daten"): void {
+  setSettingsCategory(cat: "profil" | "faecher" | "darstellung" | "daten" | "update"): void {
     this.settingsCategory = cat;
   }
   subjectRenameDrafts: Record<string, string> = {};
