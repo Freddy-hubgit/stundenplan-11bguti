@@ -420,12 +420,27 @@ export class AppComponent implements OnInit, OnDestroy {
   async exportImage(): Promise<void> {
     const el = this.boardRef?.nativeElement;
     if (!el) return;
-    const bgColor = getComputedStyle(document.querySelector(".app-shell") || document.body).backgroundColor || "#0A0D12";
-    const canvas = await html2canvas(el, { backgroundColor: bgColor, scale: 2 });
-    const a = document.createElement("a");
-    a.href = canvas.toDataURL("image/jpeg", 0.92);
-    a.download = "stundenplan.jpg";
-    a.click();
+
+    // Live-Elemente (Sweep-Line + zugehörige Zeit-Markierung) für den
+    // Screenshot kurz ausblenden – die sollen im exportierten Bild nicht stören.
+    const sweepEl = el.querySelector('.sweep-line') as HTMLElement | null;
+    const nowMarkEl = el.querySelector('.now-mark') as HTMLElement | null;
+    const prevSweepDisplay = sweepEl?.style.display ?? '';
+    const prevNowMarkDisplay = nowMarkEl?.style.display ?? '';
+    if (sweepEl) sweepEl.style.display = 'none';
+    if (nowMarkEl) nowMarkEl.style.display = 'none';
+
+    try {
+      const bgColor = getComputedStyle(document.querySelector(".app-shell") || document.body).backgroundColor || "#0A0D12";
+      const canvas = await html2canvas(el, { backgroundColor: bgColor, scale: 2 });
+      const a = document.createElement("a");
+      a.href = canvas.toDataURL("image/jpeg", 0.92);
+      a.download = "stundenplan.jpg";
+      a.click();
+    } finally {
+      if (sweepEl) sweepEl.style.display = prevSweepDisplay;
+      if (nowMarkEl) nowMarkEl.style.display = prevNowMarkDisplay;
+    }
   }
 
   exportICS(): void {
