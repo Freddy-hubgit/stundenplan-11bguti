@@ -240,7 +240,6 @@
           <button class="settings-nav-btn" [class.active]="settingsCategory === 'faecher'" (click)="setSettingsCategory('faecher')">Fächer verwalten</button>
           <button class="settings-nav-btn" [class.active]="settingsCategory === 'darstellung'" (click)="setSettingsCategory('darstellung')">Darstellung</button>
           <button class="settings-nav-btn" [class.active]="settingsCategory === 'daten'" (click)="setSettingsCategory('daten')">Daten</button>
-          <button class="settings-nav-btn" [class.active]="settingsCategory === 'update'" (click)="setSettingsCategory('update')">Update</button>
         </div>
 
         <div class="settings-content">
@@ -372,21 +371,6 @@
                 <textarea class="import-textarea" rows="4" [(ngModel)]="importPasteText" placeholder="{ &quot;lessons&quot;: [...] }"></textarea>
               </label>
               <button class="nav-btn add" (click)="importFromPastedText()">Eingefügten Text importieren</button>
-            </div>
-          </div>
-
-          <div *ngIf="settingsCategory === 'update'">
-            <div class="settings-section">
-              <span class="profile-label">App-Update</span>
-              <p class="update-status">{{ updateService.statusMessage || 'Noch nicht geprüft.' }}</p>
-              <div class="chip-group">
-                <button class="chip chip-cyan" [disabled]="updateService.checking" (click)="updateService.check()">
-                  {{ updateService.checking ? 'Prüfe …' : 'Auf Updates prüfen' }}
-                </button>
-                <button class="chip chip-cyan" *ngIf="updateService.availableCommit" (click)="updateService.apply()">
-                  Update installieren
-                </button>
-              </div>
             </div>
           </div>
 

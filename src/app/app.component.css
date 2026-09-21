@@ -814,12 +814,6 @@
       min-width:0;
     }
 
-    .update-status{
-      font-size:12.5px;
-      color:var(--text-dim);
-      margin-bottom:10px;
-    }
-
     .import-textarea{
       width:100%;
       font-family:var(--font-mono);
