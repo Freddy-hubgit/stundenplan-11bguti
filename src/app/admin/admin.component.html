@@ -1,0 +1,62 @@
+<div class="admin-shell">
+    <header class="admin-header">
+      <h1>Verwaltung</h1>
+      <a routerLink="/" class="back-link">← Zurueck zum Portal</a>
+    </header>
+  
+    <section class="panel">
+      <h2>Neues Konto anlegen</h2>
+  
+      <form (ngSubmit)="createAccount()" class="create-form">
+        <label class="field">
+          <span>E-Mail</span>
+          <input type="email" [(ngModel)]="newEmail" name="newEmail" required />
+        </label>
+  
+        <label class="field">
+          <span>Passwort</span>
+          <input type="password" [(ngModel)]="newPassword" name="newPassword" required minlength="6" />
+        </label>
+  
+        <label class="field">
+          <span>Rolle</span>
+          <select [(ngModel)]="newRole" name="newRole">
+            <option value="user">Nutzer</option>
+            <option *ngIf="isAdmin" value="support">Support</option>
+            <option *ngIf="isAdmin" value="admin">Admin</option>
+          </select>
+        </label>
+  
+        <div class="message error" *ngIf="createError">{{ createError }}</div>
+        <div class="message success" *ngIf="createSuccess">{{ createSuccess }}</div>
+  
+        <button type="submit" class="primary" [disabled]="creating">
+          {{ creating ? 'Lege an ...' : 'Konto anlegen' }}
+        </button>
+      </form>
+    </section>
+  
+    <section class="panel">
+      <h2>Bestehende Konten</h2>
+  
+      <div *ngIf="loading">Lade ...</div>
+      <div class="message error" *ngIf="loadError">{{ loadError }}</div>
+  
+      <table *ngIf="!loading && !loadError" class="profile-table">
+        <thead>
+          <tr>
+            <th>E-Mail</th>
+            <th>Rolle</th>
+            <th>Erstellt am</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of profiles">
+            <td>{{ p.email }}</td>
+            <td><span class="role-badge" [class]="p.role">{{ p.role }}</span></td>
+            <td>{{ p.created_at | date:'dd.MM.yyyy HH:mm' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </div>

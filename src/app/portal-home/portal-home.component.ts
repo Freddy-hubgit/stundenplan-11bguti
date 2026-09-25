@@ -16,6 +16,7 @@ interface PortalTile {
 })
 export class PortalHomeComponent implements OnInit {
   userEmail: string | null = null;
+  isStaff = false;
 
   tiles: PortalTile[] = [
     {
@@ -24,8 +25,6 @@ export class PortalHomeComponent implements OnInit {
       route: '/stundenplan',
       icon: '🗓️',
     },
-    // Weitere Kacheln kommen hier spaeter dazu, z.B.:
-    // { title: 'Vertretungsplan', description: '...', route: '/vertretung', icon: '📋' },
   ];
 
   constructor(private supabase: SupabaseService, private router: Router) {}
@@ -33,6 +32,21 @@ export class PortalHomeComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     const session = await this.supabase.getSession();
     this.userEmail = session?.user?.email ?? null;
+
+    const profile = await this.supabase.getMyProfile();
+    this.isStaff = profile?.role === 'admin' || profile?.role === 'support';
+
+    if (this.isStaff) {
+      this.tiles = [
+        ...this.tiles,
+        {
+          title: 'Verwaltung',
+          description: 'Konten anlegen und verwalten',
+          route: '/admin',
+          icon: '🛠️',
+        },
+      ];
+    }
   }
 
   async logout(): Promise<void> {
