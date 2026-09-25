@@ -77,13 +77,13 @@ type EditorMode = "new" | "edit";
    KOMPONENTE
    ===================================================================== */
 
-@Component({
-  selector: 'app-stundenplan',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css'],
-  encapsulation: ViewEncapsulation.None,
-})
-export class AppComponent implements OnInit, OnDestroy {
+   @Component({
+    selector: 'app-stundenplan-page',
+    templateUrl: './stundenplan-page.component.html',
+    styleUrls: ['./stundenplan-page.component.css'],
+    encapsulation: ViewEncapsulation.None,
+  })
+  export class StundenplanPageComponent implements OnInit, OnDestroy {
 
   @ViewChild('boardRef') boardRef?: ElementRef<HTMLElement>;
 
