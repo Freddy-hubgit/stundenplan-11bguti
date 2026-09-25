@@ -1,0 +1,51 @@
+.portal-shell {
+    min-height: 100vh;
+    background: #0A0D12;
+    color: #fff;
+    padding: 40px 24px;
+    font-family: system-ui, sans-serif;
+  }
+  
+  .portal-header h1 {
+    font-size: 28px;
+    margin-bottom: 32px;
+  }
+  
+  .tile-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+    max-width: 900px;
+  }
+  
+  .tile {
+    display: block;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 12px;
+    padding: 20px;
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.15s ease, transform 0.15s ease;
+  }
+  
+  .tile:hover {
+    background: rgba(255,255,255,0.09);
+    transform: translateY(-2px);
+  }
+  
+  .tile-icon {
+    font-size: 28px;
+    margin-bottom: 8px;
+  }
+  
+  .tile-title {
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 4px;
+  }
+  
+  .tile-desc {
+    font-size: 13px;
+    opacity: 0.7;
+  }

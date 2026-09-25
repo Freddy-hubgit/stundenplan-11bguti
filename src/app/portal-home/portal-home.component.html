@@ -1,0 +1,13 @@
+<div class="portal-shell">
+    <header class="portal-header">
+      <h1>Schulportal</h1>
+    </header>
+  
+    <div class="tile-grid">
+      <a *ngFor="let tile of tiles" class="tile" [routerLink]="tile.route">
+        <div class="tile-icon">{{ tile.icon }}</div>
+        <div class="tile-title">{{ tile.title }}</div>
+        <div class="tile-desc">{{ tile.description }}</div>
+      </a>
+    </div>
+  </div>
