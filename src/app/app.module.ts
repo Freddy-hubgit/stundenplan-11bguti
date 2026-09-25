@@ -6,10 +6,13 @@ import { RouterModule, Routes } from '@angular/router';
 import { AppComponent } from './app.component';
 import { PortalHomeComponent } from './portal-home/portal-home.component';
 import { StundenplanPageComponent } from './stundenplan/stundenplan-page.component';
+import { LoginComponent } from './login/login.component';
+import { AuthGuard } from './auth.guard';
 
 const routes: Routes = [
-  { path: '', component: PortalHomeComponent },
-  { path: 'stundenplan', component: StundenplanPageComponent },
+  { path: 'login', component: LoginComponent },
+  { path: '', component: PortalHomeComponent, canActivate: [AuthGuard] },
+  { path: 'stundenplan', component: StundenplanPageComponent, canActivate: [AuthGuard] },
 ];
 
 @NgModule({
@@ -17,6 +20,7 @@ const routes: Routes = [
     AppComponent,
     PortalHomeComponent,
     StundenplanPageComponent,
+    LoginComponent,
   ],
   imports: [
     BrowserModule,

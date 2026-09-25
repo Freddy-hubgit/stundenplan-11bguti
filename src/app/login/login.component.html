@@ -1,0 +1,29 @@
+<div class="login-shell">
+    <div class="login-card">
+      <h1>Schulportal</h1>
+      <p class="subtitle">{{ mode === 'login' ? 'Anmelden' : 'Konto erstellen' }}</p>
+  
+      <form (ngSubmit)="submit()">
+        <label class="field">
+          <span>E-Mail</span>
+          <input type="email" [(ngModel)]="email" name="email" required autocomplete="email" />
+        </label>
+  
+        <label class="field">
+          <span>Passwort</span>
+          <input type="password" [(ngModel)]="password" name="password" required autocomplete="current-password" minlength="6" />
+        </label>
+  
+        <div class="message error" *ngIf="errorMessage">{{ errorMessage }}</div>
+        <div class="message info" *ngIf="infoMessage">{{ infoMessage }}</div>
+  
+        <button type="submit" class="primary" [disabled]="loading">
+          {{ loading ? 'Bitte warten ...' : (mode === 'login' ? 'Anmelden' : 'Registrieren') }}
+        </button>
+      </form>
+  
+      <button type="button" class="link-btn" (click)="toggleMode()">
+        {{ mode === 'login' ? 'Noch kein Konto? Registrieren' : 'Schon ein Konto? Anmelden' }}
+      </button>
+    </div>
+  </div>
