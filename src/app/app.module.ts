@@ -8,6 +8,7 @@ import { PortalHomeComponent } from './portal-home/portal-home.component';
 import { StundenplanPageComponent } from './stundenplan/stundenplan-page.component';
 import { LoginComponent } from './login/login.component';
 import { AdminComponent } from './admin/admin.component';
+import { ProfileMenuComponent } from './profile-menu/profile-menu.component';
 import { AuthGuard } from './auth.guard';
 import { AdminGuard } from './admin.guard';
 
@@ -25,6 +26,7 @@ const routes: Routes = [
     StundenplanPageComponent,
     LoginComponent,
     AdminComponent,
+    ProfileMenuComponent,
   ],
   imports: [
     BrowserModule,

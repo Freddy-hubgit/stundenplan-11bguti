@@ -1,10 +1,7 @@
 <div class="portal-shell">
   <header class="portal-header">
     <h1>Schulportal</h1>
-    <div class="user-bar" *ngIf="displayName">
-      <span>{{ displayName }}</span>
-      <button class="logout-btn" (click)="logout()">Abmelden</button>
-    </div>
+    <app-profile-menu></app-profile-menu>
   </header>
 
   <div class="tile-grid">

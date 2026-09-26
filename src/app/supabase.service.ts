@@ -59,6 +59,14 @@ export class SupabaseService {
     return this.client.auth.signOut();
   }
 
+  // Selbstbedienung: eingeloggter Nutzer aendert sein eigenes Passwort.
+  // Braucht keine Edge Function, da Supabase das fuer die eigene Sitzung direkt erlaubt.
+  async updatePassword(newPassword: string): Promise<{ ok: boolean; error?: string }> {
+    const { error } = await this.client.auth.updateUser({ password: newPassword });
+    if (error) return { ok: false, error: error.message };
+    return { ok: true };
+  }
+
   async getMyProfile(): Promise<Profile | null> {
     const session = await this.getSession();
     if (!session) return null;

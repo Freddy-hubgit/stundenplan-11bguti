@@ -1,0 +1,53 @@
+<div class="profile-menu">
+    <button type="button" class="profile-trigger" (click)="toggle()">
+      <span class="avatar">{{ initials }}</span>
+      <span class="name">{{ displayName }}</span>
+      <span class="chevron" [class.open]="open">▾</span>
+    </button>
+  
+    <div class="backdrop" *ngIf="open" (click)="close()"></div>
+  
+    <div class="dropdown" *ngIf="open">
+      <div class="profile-header">
+        <span class="avatar large">{{ initials }}</span>
+        <div>
+          <div class="profile-name">{{ displayName }}</div>
+          <div class="profile-email">{{ profile?.email }}</div>
+          <span class="role-badge" [class]="profile?.role">{{ profile?.role }}</span>
+        </div>
+      </div>
+  
+      <div class="divider"></div>
+  
+      <div *ngIf="!changingPassword">
+        <button type="button" class="menu-item" (click)="startChangePassword()">
+          Passwort ändern
+        </button>
+      </div>
+  
+      <form *ngIf="changingPassword" (ngSubmit)="submitPasswordChange()" class="password-form">
+        <label class="field">
+          <span>Neues Passwort</span>
+          <input type="password" [(ngModel)]="newPassword" name="newPassword" required minlength="6" />
+        </label>
+        <label class="field">
+          <span>Bestätigen</span>
+          <input type="password" [(ngModel)]="confirmPassword" name="confirmPassword" required minlength="6" />
+        </label>
+  
+        <div class="message error" *ngIf="passwordError">{{ passwordError }}</div>
+        <div class="message success" *ngIf="passwordSuccess">{{ passwordSuccess }}</div>
+  
+        <div class="form-actions">
+          <button type="submit" class="primary" [disabled]="saving">
+            {{ saving ? 'Speichere ...' : 'Speichern' }}
+          </button>
+          <button type="button" class="menu-item" (click)="resetPasswordForm()">Abbrechen</button>
+        </div>
+      </form>
+  
+      <div class="divider"></div>
+  
+      <button type="button" class="menu-item danger" (click)="logout()">Abmelden</button>
+    </div>
+  </div>

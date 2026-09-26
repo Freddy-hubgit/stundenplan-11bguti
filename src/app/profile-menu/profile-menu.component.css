@@ -1,0 +1,207 @@
+.profile-menu {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .profile-trigger {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 999px;
+    padding: 6px 12px 6px 6px;
+    color: #fff;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  
+  .profile-trigger:hover {
+    background: rgba(255,255,255,0.1);
+  }
+  
+  .avatar {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #37C9B0;
+    color: #06110f;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  
+  .avatar.large {
+    width: 40px;
+    height: 40px;
+    font-size: 14px;
+  }
+  
+  .chevron {
+    font-size: 10px;
+    opacity: 0.7;
+    transition: transform 0.15s ease;
+  }
+  
+  .chevron.open {
+    transform: rotate(180deg);
+  }
+  
+  .backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+  }
+  
+  .dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 260px;
+    background: #12151c;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 12px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+    padding: 14px;
+    z-index: 50;
+    font-family: system-ui, sans-serif;
+    color: #fff;
+  }
+  
+  .profile-header {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .profile-name {
+    font-weight: 600;
+    font-size: 14px;
+  }
+  
+  .profile-email {
+    font-size: 12px;
+    opacity: 0.6;
+    margin-bottom: 4px;
+    word-break: break-all;
+  }
+  
+  .divider {
+    height: 1px;
+    background: rgba(255,255,255,0.1);
+    margin: 10px 0;
+  }
+  
+  .menu-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 13px;
+    padding: 8px 6px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  
+  .menu-item:hover {
+    background: rgba(255,255,255,0.06);
+  }
+  
+  .menu-item.danger {
+    color: #ff9a9a;
+  }
+  
+  .password-form .field {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 12px;
+  }
+  
+  .password-form .field span {
+    display: block;
+    margin-bottom: 4px;
+    opacity: 0.8;
+  }
+  
+  .password-form input {
+    width: 100%;
+    box-sizing: border-box;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    padding: 7px 9px;
+    color: #fff;
+    font-size: 13px;
+  }
+  
+  .password-form input:focus {
+    outline: none;
+    border-color: #37C9B0;
+  }
+  
+  .message {
+    font-size: 12px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+  }
+  
+  .message.error {
+    background: rgba(255,90,90,0.12);
+    color: #ff9a9a;
+  }
+  
+  .message.success {
+    background: rgba(55,201,176,0.12);
+    color: #7fe3cf;
+  }
+  
+  .form-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  
+  button.primary {
+    background: #37C9B0;
+    color: #06110f;
+    border: none;
+    border-radius: 8px;
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  
+  button.primary:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+  
+  .role-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 10px;
+    text-transform: uppercase;
+  }
+  
+  .role-badge.user {
+    background: rgba(255,255,255,0.1);
+  }
+  
+  .role-badge.support {
+    background: rgba(91,184,255,0.18);
+    color: #8fcbff;
+  }
+  
+  .role-badge.admin {
+    background: rgba(255,178,90,0.18);
+    color: #ffcf94;
+  }

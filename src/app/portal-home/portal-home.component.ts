@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
 import { SupabaseService } from '../supabase.service';
 
 interface PortalTile {
@@ -15,9 +14,6 @@ interface PortalTile {
   styleUrls: ['./portal-home.component.css'],
 })
 export class PortalHomeComponent implements OnInit {
-  displayName: string | null = null;
-  isStaff = false;
-
   tiles: PortalTile[] = [
     {
       title: 'Stundenplan',
@@ -27,14 +23,13 @@ export class PortalHomeComponent implements OnInit {
     },
   ];
 
-  constructor(private supabase: SupabaseService, private router: Router) {}
+  constructor(private supabase: SupabaseService) {}
 
   async ngOnInit(): Promise<void> {
     const profile = await this.supabase.getMyProfile();
-    this.displayName = profile?.full_name?.trim() || profile?.email || null;
-    this.isStaff = profile?.role === 'admin' || profile?.role === 'support';
+    const isStaff = profile?.role === 'admin' || profile?.role === 'support';
 
-    if (this.isStaff) {
+    if (isStaff) {
       this.tiles = [
         ...this.tiles,
         {
@@ -45,10 +40,5 @@ export class PortalHomeComponent implements OnInit {
         },
       ];
     }
-  }
-
-  async logout(): Promise<void> {
-    await this.supabase.signOut();
-    this.router.navigateByUrl('/login');
   }
 }
