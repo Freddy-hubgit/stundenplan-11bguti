@@ -69,8 +69,8 @@
   border-color: #37C9B0;
 }
 
-/* Ohne diese Regel erben die aufklappenden <option>-Eintraege die
-   Standardfarben des Browsers (heller Hintergrund) waehrend der Text
+/* Ohne diese Regel erben die aufklappenden <option>-Einträge die
+   Standardfarben des Browsers (heller Hintergrund) während der Text
    weiss bleibt -> unsichtbar. */
 .create-form select option {
   background: #12151c;

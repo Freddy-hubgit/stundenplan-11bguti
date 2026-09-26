@@ -31,6 +31,8 @@ export class SupabaseService {
     });
   }
 
+  // Löst einen Login-Bezeichner (Name ODER E-Mail) zu einer E-Mail auf.
+  // Gibt { email } bei eindeutigem Treffer zurück, sonst { error }.
   async resolveLoginEmail(identifier: string): Promise<{ email?: string; error?: string }> {
     const trimmed = identifier.trim();
     if (!trimmed) return { error: 'Bitte Name oder E-Mail eingeben.' };
@@ -40,7 +42,7 @@ export class SupabaseService {
     }
 
     const { data, error } = await this.client.rpc('get_login_email', { p_name: trimmed });
-    if (error) return { error: 'Anmeldung gerade nicht moeglich.' };
+    if (error) return { error: 'Anmeldung gerade nicht möglich.' };
 
     const matches: string[] = data ?? [];
     if (matches.length === 0) return { error: 'Kein Konto mit diesem Namen gefunden.' };

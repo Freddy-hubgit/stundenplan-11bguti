@@ -1,7 +1,7 @@
 <div class="admin-shell">
   <header class="admin-header">
     <h1>Verwaltung</h1>
-    <a routerLink="/" class="back-link">← Zurueck zum Portal</a>
+    <a routerLink="/" class="back-link">← Zurück zum Portal</a>
   </header>
 
   <section class="panel">
@@ -71,7 +71,7 @@
                 *ngIf="resetTargetId !== p.id"
                 (click)="startReset(p)"
               >
-                Passwort zuruecksetzen
+                Passwort zurücksetzen
               </button>
             </td>
           </tr>
@@ -88,7 +88,7 @@
                 <div class="message success" *ngIf="resetSuccess">{{ resetSuccess }}</div>
                 <div class="reset-actions">
                   <button type="button" class="primary" [disabled]="resetting" (click)="confirmReset(p)">
-                    {{ resetting ? 'Setze zurueck ...' : 'Bestaetigen' }}
+                    {{ resetting ? 'Setze zurück ...' : 'Bestätigen' }}
                   </button>
                   <button type="button" class="reset-btn" (click)="cancelReset()">Abbrechen</button>
                 </div>

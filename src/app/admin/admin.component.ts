@@ -69,7 +69,7 @@ export class AdminComponent implements OnInit {
       return;
     }
 
-    this.createSuccess = `Konto fuer ${this.newName || this.newEmail} wurde angelegt.`;
+    this.createSuccess = `Konto für ${this.newName || this.newEmail} wurde angelegt.`;
     this.newName = '';
     this.newEmail = '';
     this.newPassword = '';
@@ -103,11 +103,11 @@ export class AdminComponent implements OnInit {
     this.resetting = false;
 
     if (!result.ok) {
-      this.resetError = result.error ?? 'Zuruecksetzen fehlgeschlagen.';
+      this.resetError = result.error ?? 'Zurücksetzen fehlgeschlagen.';
       return;
     }
 
-    this.resetSuccess = `Passwort fuer ${this.displayName(p)} wurde geaendert.`;
+    this.resetSuccess = `Passwort für ${this.displayName(p)} wurde geändert.`;
     this.resetPasswordValue = '';
     setTimeout(() => {
       if (this.resetTargetId === p.id) {
