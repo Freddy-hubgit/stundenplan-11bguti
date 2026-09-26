@@ -1,144 +1,192 @@
 .admin-shell {
-    min-height: 100vh;
-    background: #0A0D12;
-    color: #fff;
-    padding: 32px 24px 60px;
-    font-family: system-ui, sans-serif;
-  }
-  
-  .admin-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    max-width: 700px;
-    margin: 0 auto 24px;
-  }
-  
-  .admin-header h1 {
-    font-size: 24px;
-    margin: 0;
-  }
-  
-  .back-link {
-    color: #7fe3cf;
-    font-size: 13px;
-    text-decoration: none;
-  }
-  
-  .panel {
-    max-width: 700px;
-    margin: 0 auto 24px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 12px;
-    padding: 20px;
-  }
-  
-  .panel h2 {
-    font-size: 16px;
-    margin: 0 0 16px;
-  }
-  
-  .create-form .field {
-    display: block;
-    margin-bottom: 12px;
-    font-size: 13px;
-  }
-  
-  .create-form .field span {
-    display: block;
-    margin-bottom: 4px;
-    opacity: 0.8;
-  }
-  
-  .create-form input,
-  .create-form select {
-    width: 100%;
-    box-sizing: border-box;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 8px;
-    padding: 8px 10px;
-    color: #fff;
-    font-size: 14px;
-  }
-  
-  .create-form input:focus,
-  .create-form select:focus {
-    outline: none;
-    border-color: #37C9B0;
-  }
-  
-  .message {
-    font-size: 12px;
-    padding: 8px 10px;
-    border-radius: 8px;
-    margin-bottom: 12px;
-  }
-  
-  .message.error {
-    background: rgba(255,90,90,0.12);
-    color: #ff9a9a;
-  }
-  
-  .message.success {
-    background: rgba(55,201,176,0.12);
-    color: #7fe3cf;
-  }
-  
-  button.primary {
-    background: #37C9B0;
-    color: #06110f;
-    border: none;
-    border-radius: 8px;
-    padding: 9px 16px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-  }
-  
-  button.primary:disabled {
-    opacity: 0.6;
-    cursor: default;
-  }
-  
-  .profile-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-  }
-  
-  .profile-table th {
-    text-align: left;
-    opacity: 0.6;
-    font-weight: 500;
-    padding: 6px 8px;
-    border-bottom: 1px solid rgba(255,255,255,0.12);
-  }
-  
-  .profile-table td {
-    padding: 8px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-  }
-  
-  .role-badge {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 999px;
-    font-size: 11px;
-    text-transform: uppercase;
-  }
-  
-  .role-badge.user {
-    background: rgba(255,255,255,0.1);
-  }
-  
-  .role-badge.support {
-    background: rgba(91,184,255,0.18);
-    color: #8fcbff;
-  }
-  
-  .role-badge.admin {
-    background: rgba(255,178,90,0.18);
-    color: #ffcf94;
-  }
+  min-height: 100vh;
+  background: #0A0D12;
+  color: #fff;
+  padding: 32px 24px 60px;
+  font-family: system-ui, sans-serif;
+}
+
+.admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 700px;
+  margin: 0 auto 24px;
+}
+
+.admin-header h1 {
+  font-size: 24px;
+  margin: 0;
+}
+
+.back-link {
+  color: #7fe3cf;
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.panel {
+  max-width: 700px;
+  margin: 0 auto 24px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.panel h2 {
+  font-size: 16px;
+  margin: 0 0 16px;
+}
+
+.create-form .field {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+
+.create-form .field span {
+  display: block;
+  margin-bottom: 4px;
+  opacity: 0.8;
+}
+
+.create-form input,
+.create-form select {
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: #fff;
+  font-size: 14px;
+}
+
+.create-form input:focus,
+.create-form select:focus {
+  outline: none;
+  border-color: #37C9B0;
+}
+
+/* Ohne diese Regel erben die aufklappenden <option>-Eintraege die
+   Standardfarben des Browsers (heller Hintergrund) waehrend der Text
+   weiss bleibt -> unsichtbar. */
+.create-form select option {
+  background: #12151c;
+  color: #fff;
+}
+
+.message {
+  font-size: 12px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.message.error {
+  background: rgba(255,90,90,0.12);
+  color: #ff9a9a;
+}
+
+.message.success {
+  background: rgba(55,201,176,0.12);
+  color: #7fe3cf;
+}
+
+button.primary {
+  background: #37C9B0;
+  color: #06110f;
+  border: none;
+  border-radius: 8px;
+  padding: 9px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button.primary:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.profile-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.profile-table th {
+  text-align: left;
+  opacity: 0.6;
+  font-weight: 500;
+  padding: 6px 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+}
+
+.profile-table td {
+  padding: 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  vertical-align: top;
+}
+
+.role-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.role-badge.user {
+  background: rgba(255,255,255,0.1);
+}
+
+.role-badge.support {
+  background: rgba(91,184,255,0.18);
+  color: #8fcbff;
+}
+
+.role-badge.admin {
+  background: rgba(255,178,90,0.18);
+  color: #ffcf94;
+}
+
+.reset-btn {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: #fff;
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.reset-btn:hover {
+  background: rgba(255,255,255,0.14);
+}
+
+.reset-row {
+  margin-top: 8px;
+  padding: 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+}
+
+.reset-row input {
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 8px;
+  padding: 7px 9px;
+  color: #fff;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.reset-row .reset-actions {
+  display: flex;
+  gap: 8px;
+}

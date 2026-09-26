@@ -19,6 +19,12 @@ export class AdminComponent implements OnInit {
   createError = '';
   createSuccess = '';
 
+  resetTargetId: string | null = null;
+  resetPasswordValue = '';
+  resetting = false;
+  resetError = '';
+  resetSuccess = '';
+
   constructor(private supabase: SupabaseService) {}
 
   async ngOnInit(): Promise<void> {
@@ -69,5 +75,45 @@ export class AdminComponent implements OnInit {
     this.newPassword = '';
     this.newRole = 'user';
     await this.reload();
+  }
+
+  startReset(p: Profile): void {
+    this.resetTargetId = p.id;
+    this.resetPasswordValue = '';
+    this.resetError = '';
+    this.resetSuccess = '';
+  }
+
+  cancelReset(): void {
+    this.resetTargetId = null;
+    this.resetPasswordValue = '';
+  }
+
+  async confirmReset(p: Profile): Promise<void> {
+    this.resetError = '';
+    this.resetSuccess = '';
+
+    if (this.resetPasswordValue.length < 6) {
+      this.resetError = 'Passwort muss mindestens 6 Zeichen haben.';
+      return;
+    }
+
+    this.resetting = true;
+    const result = await this.supabase.resetPassword(p.id, this.resetPasswordValue);
+    this.resetting = false;
+
+    if (!result.ok) {
+      this.resetError = result.error ?? 'Zuruecksetzen fehlgeschlagen.';
+      return;
+    }
+
+    this.resetSuccess = `Passwort fuer ${this.displayName(p)} wurde geaendert.`;
+    this.resetPasswordValue = '';
+    setTimeout(() => {
+      if (this.resetTargetId === p.id) {
+        this.resetTargetId = null;
+        this.resetSuccess = '';
+      }
+    }, 2000);
   }
 }

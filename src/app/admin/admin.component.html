@@ -54,15 +54,48 @@
           <th>E-Mail</th>
           <th>Rolle</th>
           <th>Erstellt am</th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let p of profiles">
-          <td>{{ displayName(p) }}</td>
-          <td>{{ p.email }}</td>
-          <td><span class="role-badge" [class]="p.role">{{ p.role }}</span></td>
-          <td>{{ p.created_at | date:'dd.MM.yyyy HH:mm' }}</td>
-        </tr>
+        <ng-container *ngFor="let p of profiles">
+          <tr>
+            <td>{{ displayName(p) }}</td>
+            <td>{{ p.email }}</td>
+            <td><span class="role-badge" [class]="p.role">{{ p.role }}</span></td>
+            <td>{{ p.created_at | date:'dd.MM.yyyy HH:mm' }}</td>
+            <td>
+              <button
+                type="button"
+                class="reset-btn"
+                *ngIf="resetTargetId !== p.id"
+                (click)="startReset(p)"
+              >
+                Passwort zuruecksetzen
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="resetTargetId === p.id">
+            <td colspan="5">
+              <div class="reset-row">
+                <input
+                  type="password"
+                  [(ngModel)]="resetPasswordValue"
+                  name="resetPassword-{{ p.id }}"
+                  placeholder="Neues Passwort (min. 6 Zeichen)"
+                />
+                <div class="message error" *ngIf="resetError">{{ resetError }}</div>
+                <div class="message success" *ngIf="resetSuccess">{{ resetSuccess }}</div>
+                <div class="reset-actions">
+                  <button type="button" class="primary" [disabled]="resetting" (click)="confirmReset(p)">
+                    {{ resetting ? 'Setze zurueck ...' : 'Bestaetigen' }}
+                  </button>
+                  <button type="button" class="reset-btn" (click)="cancelReset()">Abbrechen</button>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </ng-container>
       </tbody>
     </table>
   </section>

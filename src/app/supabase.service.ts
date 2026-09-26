@@ -31,8 +31,6 @@ export class SupabaseService {
     });
   }
 
-  // Loest einen Login-Bezeichner (Name ODER E-Mail) zu einer E-Mail auf.
-  // Gibt { email } bei eindeutigem Treffer zurueck, sonst { error }.
   async resolveLoginEmail(identifier: string): Promise<{ email?: string; error?: string }> {
     const trimmed = identifier.trim();
     if (!trimmed) return { error: 'Bitte Name oder E-Mail eingeben.' };
@@ -88,7 +86,17 @@ export class SupabaseService {
     const { data, error } = await this.client.functions.invoke('quick-responder', {
       body: { email, password, role, name },
     });
+    return this.unwrapFunctionResult(data, error);
+  }
 
+  async resetPassword(userId: string, newPassword: string): Promise<{ ok: boolean; error?: string }> {
+    const { data, error } = await this.client.functions.invoke('reset-password', {
+      body: { userId, newPassword },
+    });
+    return this.unwrapFunctionResult(data, error);
+  }
+
+  private unwrapFunctionResult(data: any, error: any): { ok: boolean; error?: string } {
     if (error) {
       let message = error.message;
       try {
@@ -99,11 +107,9 @@ export class SupabaseService {
       }
       return { ok: false, error: message };
     }
-
     if (data?.error) {
       return { ok: false, error: data.error };
     }
-
     return { ok: true };
   }
 }
