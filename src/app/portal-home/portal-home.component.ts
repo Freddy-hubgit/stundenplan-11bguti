@@ -15,7 +15,7 @@ interface PortalTile {
   styleUrls: ['./portal-home.component.css'],
 })
 export class PortalHomeComponent implements OnInit {
-  userEmail: string | null = null;
+  displayName: string | null = null;
   isStaff = false;
 
   tiles: PortalTile[] = [
@@ -30,10 +30,8 @@ export class PortalHomeComponent implements OnInit {
   constructor(private supabase: SupabaseService, private router: Router) {}
 
   async ngOnInit(): Promise<void> {
-    const session = await this.supabase.getSession();
-    this.userEmail = session?.user?.email ?? null;
-
     const profile = await this.supabase.getMyProfile();
+    this.displayName = profile?.full_name?.trim() || profile?.email || null;
     this.isStaff = profile?.role === 'admin' || profile?.role === 'support';
 
     if (this.isStaff) {

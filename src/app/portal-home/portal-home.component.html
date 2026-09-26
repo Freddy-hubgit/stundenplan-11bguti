@@ -1,8 +1,8 @@
 <div class="portal-shell">
   <header class="portal-header">
     <h1>Schulportal</h1>
-    <div class="user-bar" *ngIf="userEmail">
-      <span>{{ userEmail }}</span>
+    <div class="user-bar" *ngIf="displayName">
+      <span>{{ displayName }}</span>
       <button class="logout-btn" (click)="logout()">Abmelden</button>
     </div>
   </header>

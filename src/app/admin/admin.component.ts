@@ -11,8 +11,7 @@ export class AdminComponent implements OnInit {
   loading = true;
   loadError = '';
 
-  isAdmin = false;
-
+  newName = '';
   newEmail = '';
   newPassword = '';
   newRole: 'user' | 'support' | 'admin' = 'user';
@@ -23,8 +22,6 @@ export class AdminComponent implements OnInit {
   constructor(private supabase: SupabaseService) {}
 
   async ngOnInit(): Promise<void> {
-    const me = await this.supabase.getMyProfile();
-    this.isAdmin = me?.role === 'admin';
     await this.reload();
   }
 
@@ -37,6 +34,10 @@ export class AdminComponent implements OnInit {
       this.loadError = e?.message ?? 'Konnte Konten nicht laden.';
     }
     this.loading = false;
+  }
+
+  displayName(p: Profile): string {
+    return p.full_name?.trim() || p.email;
   }
 
   async createAccount(): Promise<void> {
@@ -52,7 +53,8 @@ export class AdminComponent implements OnInit {
     const result = await this.supabase.createUserAccount(
       this.newEmail,
       this.newPassword,
-      this.newRole
+      this.newRole,
+      this.newName
     );
     this.creating = false;
 
@@ -61,7 +63,8 @@ export class AdminComponent implements OnInit {
       return;
     }
 
-    this.createSuccess = `Konto fuer ${this.newEmail} wurde angelegt.`;
+    this.createSuccess = `Konto fuer ${this.newName || this.newEmail} wurde angelegt.`;
+    this.newName = '';
     this.newEmail = '';
     this.newPassword = '';
     this.newRole = 'user';

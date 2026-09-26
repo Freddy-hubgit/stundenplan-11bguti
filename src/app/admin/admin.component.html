@@ -9,6 +9,11 @@
 
     <form (ngSubmit)="createAccount()" class="create-form">
       <label class="field">
+        <span>Name</span>
+        <input type="text" [(ngModel)]="newName" name="newName" placeholder="z. B. Max Mustermann" />
+      </label>
+
+      <label class="field">
         <span>E-Mail</span>
         <input type="email" [(ngModel)]="newEmail" name="newEmail" required />
       </label>
@@ -22,8 +27,8 @@
         <span>Rolle</span>
         <select [(ngModel)]="newRole" name="newRole">
           <option value="user">Nutzer</option>
-          <option *ngIf="isAdmin" value="support">Support</option>
-          <option *ngIf="isAdmin" value="admin">Admin</option>
+          <option value="support">Support</option>
+          <option value="admin">Admin</option>
         </select>
       </label>
 
@@ -45,6 +50,7 @@
     <table *ngIf="!loading && !loadError" class="profile-table">
       <thead>
         <tr>
+          <th>Name</th>
           <th>E-Mail</th>
           <th>Rolle</th>
           <th>Erstellt am</th>
@@ -52,6 +58,7 @@
       </thead>
       <tbody>
         <tr *ngFor="let p of profiles">
+          <td>{{ displayName(p) }}</td>
           <td>{{ p.email }}</td>
           <td><span class="role-badge" [class]="p.role">{{ p.role }}</span></td>
           <td>{{ p.created_at | date:'dd.MM.yyyy HH:mm' }}</td>

@@ -7,6 +7,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_RAlat6kd4uEdZvjrFODVcQ_JQQnkJB7';
 export interface Profile {
   id: string;
   email: string;
+  full_name: string | null;
   role: 'user' | 'support' | 'admin';
   created_at: string;
 }
@@ -61,14 +62,14 @@ export class SupabaseService {
   async createUserAccount(
     email: string,
     password: string,
-    role: 'user' | 'support' | 'admin'
+    role: 'user' | 'support' | 'admin',
+    name: string
   ): Promise<{ ok: boolean; error?: string }> {
     const { data, error } = await this.client.functions.invoke('create-user', {
-      body: { email, password, role },
+      body: { email, password, role, name },
     });
 
     if (error) {
-      // Supabase legt die eigentliche Fehlermeldung des Funktionsaufrufs oft im Response-Body ab
       let message = error.message;
       try {
         const context = (error as any).context;
