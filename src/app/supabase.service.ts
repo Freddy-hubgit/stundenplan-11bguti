@@ -31,6 +31,26 @@ export class SupabaseService {
     });
   }
 
+  // Loest einen Login-Bezeichner (Name ODER E-Mail) zu einer E-Mail auf.
+  // Gibt { email } bei eindeutigem Treffer zurueck, sonst { error }.
+  async resolveLoginEmail(identifier: string): Promise<{ email?: string; error?: string }> {
+    const trimmed = identifier.trim();
+    if (!trimmed) return { error: 'Bitte Name oder E-Mail eingeben.' };
+
+    if (trimmed.includes('@')) {
+      return { email: trimmed };
+    }
+
+    const { data, error } = await this.client.rpc('get_login_email', { p_name: trimmed });
+    if (error) return { error: 'Anmeldung gerade nicht moeglich.' };
+
+    const matches: string[] = data ?? [];
+    if (matches.length === 0) return { error: 'Kein Konto mit diesem Namen gefunden.' };
+    if (matches.length > 1) return { error: 'Mehrere Konten mit diesem Namen. Bitte mit E-Mail anmelden.' };
+
+    return { email: matches[0] };
+  }
+
   async signIn(email: string, password: string) {
     return this.client.auth.signInWithPassword({ email, password });
   }
@@ -65,7 +85,7 @@ export class SupabaseService {
     role: 'user' | 'support' | 'admin',
     name: string
   ): Promise<{ ok: boolean; error?: string }> {
-    const { data, error } = await this.client.functions.invoke('create-user', {
+    const { data, error } = await this.client.functions.invoke('quick-responder', {
       body: { email, password, role, name },
     });
 

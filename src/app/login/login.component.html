@@ -5,8 +5,8 @@
 
     <form (ngSubmit)="submit()">
       <label class="field">
-        <span>E-Mail</span>
-        <input type="email" [(ngModel)]="email" name="email" required autocomplete="email" />
+        <span>Name oder E-Mail</span>
+        <input type="text" [(ngModel)]="identifier" name="identifier" required autocomplete="username" />
       </label>
 
       <label class="field">

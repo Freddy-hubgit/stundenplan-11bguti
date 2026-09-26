@@ -8,7 +8,7 @@ import { SupabaseService } from '../supabase.service';
   styleUrls: ['./login.component.css'],
 })
 export class LoginComponent {
-  email = '';
+  identifier = '';
   password = '';
   errorMessage = '';
   loading = false;
@@ -19,12 +19,18 @@ export class LoginComponent {
     this.errorMessage = '';
     this.loading = true;
 
-    const result = await this.supabase.signIn(this.email, this.password);
+    const resolved = await this.supabase.resolveLoginEmail(this.identifier);
+    if (resolved.error || !resolved.email) {
+      this.errorMessage = resolved.error ?? 'Anmeldung fehlgeschlagen.';
+      this.loading = false;
+      return;
+    }
 
+    const result = await this.supabase.signIn(resolved.email, this.password);
     this.loading = false;
 
     if (result.error) {
-      this.errorMessage = result.error.message;
+      this.errorMessage = 'Name/E-Mail oder Passwort falsch.';
       return;
     }
 
