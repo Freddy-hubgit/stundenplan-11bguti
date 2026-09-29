@@ -10,7 +10,9 @@ export class AdminComponent implements OnInit {
   profiles: Profile[] = [];
   loading = true;
   loadError = '';
+  myId: string | null = null;
 
+  // Neues Konto
   newName = '';
   newEmail = '';
   newPassword = '';
@@ -19,15 +21,22 @@ export class AdminComponent implements OnInit {
   createError = '';
   createSuccess = '';
 
-  resetTargetId: string | null = null;
-  resetPasswordValue = '';
-  resetting = false;
-  resetError = '';
-  resetSuccess = '';
+  // Konto bearbeiten
+  editTargetId: string | null = null;
+  editName = '';
+  editEmail = '';
+  editPassword = '';
+  editSaving = false;
+  editError = '';
+  editSuccess = '';
+  confirmingDelete = false;
+  deleting = false;
 
   constructor(private supabase: SupabaseService) {}
 
   async ngOnInit(): Promise<void> {
+    const me = await this.supabase.getMyProfile();
+    this.myId = me?.id ?? null;
     await this.reload();
   }
 
@@ -77,43 +86,91 @@ export class AdminComponent implements OnInit {
     await this.reload();
   }
 
-  startReset(p: Profile): void {
-    this.resetTargetId = p.id;
-    this.resetPasswordValue = '';
-    this.resetError = '';
-    this.resetSuccess = '';
+  startEdit(p: Profile): void {
+    this.editTargetId = p.id;
+    this.editName = p.full_name ?? '';
+    this.editEmail = p.email;
+    this.editPassword = '';
+    this.editError = '';
+    this.editSuccess = '';
+    this.confirmingDelete = false;
   }
 
-  cancelReset(): void {
-    this.resetTargetId = null;
-    this.resetPasswordValue = '';
+  cancelEdit(): void {
+    this.editTargetId = null;
+    this.editPassword = '';
+    this.editError = '';
+    this.editSuccess = '';
+    this.confirmingDelete = false;
   }
 
-  async confirmReset(p: Profile): Promise<void> {
-    this.resetError = '';
-    this.resetSuccess = '';
+  async saveEdit(p: Profile): Promise<void> {
+    this.editError = '';
+    this.editSuccess = '';
 
-    if (this.resetPasswordValue.length < 6) {
-      this.resetError = 'Passwort muss mindestens 6 Zeichen haben.';
+    const newEmail = this.editEmail.trim();
+    const newName = this.editName.trim();
+
+    if (!newEmail) {
+      this.editError = 'E-Mail darf nicht leer sein.';
       return;
     }
 
-    this.resetting = true;
-    const result = await this.supabase.resetPassword(p.id, this.resetPasswordValue);
-    this.resetting = false;
+    // Nur tatsächlich geänderte Felder an den Server schicken
+    const changes: { email?: string; name?: string; password?: string } = {};
+    if (newEmail !== p.email) changes.email = newEmail;
+    if (newName !== (p.full_name ?? '')) changes.name = newName;
+    if (this.editPassword) {
+      if (this.editPassword.length < 6) {
+        this.editError = 'Passwort muss mindestens 6 Zeichen haben.';
+        return;
+      }
+      changes.password = this.editPassword;
+    }
+
+    if (Object.keys(changes).length === 0) {
+      this.editError = 'Keine Änderungen vorgenommen.';
+      return;
+    }
+
+    this.editSaving = true;
+    const result = await this.supabase.updateUserAccount(p.id, changes);
+    this.editSaving = false;
 
     if (!result.ok) {
-      this.resetError = result.error ?? 'Zurücksetzen fehlgeschlagen.';
+      this.editError = result.error ?? 'Speichern fehlgeschlagen.';
       return;
     }
 
-    this.resetSuccess = `Passwort für ${this.displayName(p)} wurde geändert.`;
-    this.resetPasswordValue = '';
+    this.editSuccess = 'Änderungen gespeichert.';
+    this.editPassword = '';
+    await this.reload();
     setTimeout(() => {
-      if (this.resetTargetId === p.id) {
-        this.resetTargetId = null;
-        this.resetSuccess = '';
-      }
-    }, 2000);
+      if (this.editTargetId === p.id) this.cancelEdit();
+    }, 1500);
+  }
+
+  requestDelete(): void {
+    this.confirmingDelete = true;
+  }
+
+  cancelDelete(): void {
+    this.confirmingDelete = false;
+  }
+
+  async confirmDelete(p: Profile): Promise<void> {
+    this.editError = '';
+    this.deleting = true;
+    const result = await this.supabase.deleteUserAccount(p.id);
+    this.deleting = false;
+
+    if (!result.ok) {
+      this.editError = result.error ?? 'Löschen fehlgeschlagen.';
+      this.confirmingDelete = false;
+      return;
+    }
+
+    this.cancelEdit();
+    await this.reload();
   }
 }

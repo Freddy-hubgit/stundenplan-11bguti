@@ -71,7 +71,7 @@
 
 /* Ohne diese Regel erben die aufklappenden <option>-Einträge die
    Standardfarben des Browsers (heller Hintergrund) während der Text
-   weiss bleibt -> unsichtbar. */
+   weiß bleibt -> unsichtbar. */
 .create-form select option {
   background: #12151c;
   color: #fff;
@@ -152,7 +152,8 @@ button.primary:disabled {
   color: #ffcf94;
 }
 
-.reset-btn {
+/* Kleine Buttons in der Tabelle / im Bearbeiten-Bereich */
+.row-btn {
   background: rgba(255,255,255,0.08);
   border: 1px solid rgba(255,255,255,0.15);
   color: #fff;
@@ -162,19 +163,52 @@ button.primary:disabled {
   cursor: pointer;
 }
 
-.reset-btn:hover {
+.row-btn:hover {
   background: rgba(255,255,255,0.14);
 }
 
-.reset-row {
+.row-btn.danger {
+  color: #ff9a9a;
+  border-color: rgba(255,90,90,0.35);
+}
+
+.row-btn.danger:hover {
+  background: rgba(255,90,90,0.12);
+}
+
+.row-btn.danger.solid {
+  background: rgba(255,90,90,0.85);
+  color: #fff;
+  border-color: transparent;
+}
+
+.row-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* Bearbeiten-Bereich unter der Tabellenzeile */
+.edit-row {
   margin-top: 8px;
-  padding: 10px;
+  padding: 12px;
   background: rgba(255,255,255,0.04);
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 8px;
 }
 
-.reset-row input {
+.edit-row .field {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 12px;
+}
+
+.edit-row .field span {
+  display: block;
+  margin-bottom: 4px;
+  opacity: 0.8;
+}
+
+.edit-row input {
   width: 100%;
   box-sizing: border-box;
   background: rgba(255,255,255,0.06);
@@ -183,10 +217,25 @@ button.primary:disabled {
   padding: 7px 9px;
   color: #fff;
   font-size: 13px;
-  margin-bottom: 8px;
 }
 
-.reset-row .reset-actions {
+.edit-row input:focus {
+  outline: none;
+  border-color: #37C9B0;
+}
+
+.edit-actions {
   display: flex;
+  align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
+}
+
+.edit-actions .spacer {
+  flex: 1;
+}
+
+.confirm-text {
+  font-size: 13px;
+  color: #ff9a9a;
 }

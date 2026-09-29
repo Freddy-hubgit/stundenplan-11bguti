@@ -59,8 +59,7 @@ export class SupabaseService {
     return this.client.auth.signOut();
   }
 
-  // Selbstbedienung: eingeloggter Nutzer aendert sein eigenes Passwort.
-  // Braucht keine Edge Function, da Supabase das fuer die eigene Sitzung direkt erlaubt.
+  // Selbstbedienung: eingeloggter Nutzer ändert sein eigenes Passwort.
   async updatePassword(newPassword: string): Promise<{ ok: boolean; error?: string }> {
     const { error } = await this.client.auth.updateUser({ password: newPassword });
     if (error) return { ok: false, error: error.message };
@@ -99,9 +98,20 @@ export class SupabaseService {
     return this.unwrapFunctionResult(data, error);
   }
 
-  async resetPassword(userId: string, newPassword: string): Promise<{ ok: boolean; error?: string }> {
-    const { data, error } = await this.client.functions.invoke('reset-password', {
-      body: { userId, newPassword },
+  // Ändert E-Mail, Name und/oder Passwort eines Kontos (nur Felder, die im Objekt stehen).
+  async updateUserAccount(
+    userId: string,
+    changes: { email?: string; name?: string; password?: string }
+  ): Promise<{ ok: boolean; error?: string }> {
+    const { data, error } = await this.client.functions.invoke('manage-user', {
+      body: { action: 'update', userId, ...changes },
+    });
+    return this.unwrapFunctionResult(data, error);
+  }
+
+  async deleteUserAccount(userId: string): Promise<{ ok: boolean; error?: string }> {
+    const { data, error } = await this.client.functions.invoke('manage-user', {
+      body: { action: 'delete', userId },
     });
     return this.unwrapFunctionResult(data, error);
   }

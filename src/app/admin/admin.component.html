@@ -67,30 +67,65 @@
             <td>
               <button
                 type="button"
-                class="reset-btn"
-                *ngIf="resetTargetId !== p.id"
-                (click)="startReset(p)"
+                class="row-btn"
+                *ngIf="editTargetId !== p.id"
+                (click)="startEdit(p)"
               >
-                Passwort zurücksetzen
+                Bearbeiten
               </button>
             </td>
           </tr>
-          <tr *ngIf="resetTargetId === p.id">
+
+          <tr *ngIf="editTargetId === p.id">
             <td colspan="5">
-              <div class="reset-row">
-                <input
-                  type="password"
-                  [(ngModel)]="resetPasswordValue"
-                  name="resetPassword-{{ p.id }}"
-                  placeholder="Neues Passwort (min. 6 Zeichen)"
-                />
-                <div class="message error" *ngIf="resetError">{{ resetError }}</div>
-                <div class="message success" *ngIf="resetSuccess">{{ resetSuccess }}</div>
-                <div class="reset-actions">
-                  <button type="button" class="primary" [disabled]="resetting" (click)="confirmReset(p)">
-                    {{ resetting ? 'Setze zurück ...' : 'Bestätigen' }}
+              <div class="edit-row">
+                <label class="field">
+                  <span>Name</span>
+                  <input type="text" [(ngModel)]="editName" name="editName-{{ p.id }}" placeholder="z. B. Max Mustermann" />
+                </label>
+
+                <label class="field">
+                  <span>E-Mail</span>
+                  <input type="email" [(ngModel)]="editEmail" name="editEmail-{{ p.id }}" />
+                </label>
+
+                <label class="field">
+                  <span>Neues Passwort</span>
+                  <input
+                    type="password"
+                    [(ngModel)]="editPassword"
+                    name="editPassword-{{ p.id }}"
+                    placeholder="Leer lassen = unverändert"
+                    autocomplete="new-password"
+                  />
+                </label>
+
+                <div class="message error" *ngIf="editError">{{ editError }}</div>
+                <div class="message success" *ngIf="editSuccess">{{ editSuccess }}</div>
+
+                <div class="edit-actions" *ngIf="!confirmingDelete">
+                  <button type="button" class="primary" [disabled]="editSaving" (click)="saveEdit(p)">
+                    {{ editSaving ? 'Speichere ...' : 'Speichern' }}
                   </button>
-                  <button type="button" class="reset-btn" (click)="cancelReset()">Abbrechen</button>
+                  <button type="button" class="row-btn" (click)="cancelEdit()">Abbrechen</button>
+                  <span class="spacer"></span>
+                  <button
+                    type="button"
+                    class="row-btn danger"
+                    *ngIf="p.id !== myId"
+                    (click)="requestDelete()"
+                  >
+                    Löschen
+                  </button>
+                </div>
+
+                <div class="edit-actions" *ngIf="confirmingDelete">
+                  <span class="confirm-text">Konto von {{ displayName(p) }} wirklich löschen?</span>
+                  <span class="spacer"></span>
+                  <button type="button" class="row-btn danger solid" [disabled]="deleting" (click)="confirmDelete(p)">
+                    {{ deleting ? 'Lösche ...' : 'Ja, löschen' }}
+                  </button>
+                  <button type="button" class="row-btn" (click)="cancelDelete()">Nein</button>
                 </div>
               </div>
             </td>
