@@ -11,7 +11,12 @@
 
       <label class="field">
         <span>Passwort</span>
-        <input type="password" [(ngModel)]="password" name="password" required autocomplete="current-password" />
+        <div class="password-wrapper">
+          <input [type]="passwordVisible ? 'text' : 'password'" [(ngModel)]="password" name="password" required autocomplete="current-password" />
+          <button type="button" class="toggle-password" (click)="togglePasswordVisibility()" [attr.aria-label]="passwordVisible ? 'Passwort verstecken' : 'Passwort anzeigen'">
+            {{ passwordVisible ? '👁️' : '👁️‍🗨️' }}
+          </button>
+        </div>
       </label>
 
       <div class="message error" *ngIf="errorMessage">{{ errorMessage }}</div>

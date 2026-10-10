@@ -12,8 +12,13 @@ export class LoginComponent {
   password = '';
   errorMessage = '';
   loading = false;
+  passwordVisible = false;
 
   constructor(private supabase: SupabaseService, private router: Router) {}
+
+  togglePasswordVisibility(): void {
+    this.passwordVisible = !this.passwordVisible;
+  }
 
   async submit(): Promise<void> {
     this.errorMessage = '';
