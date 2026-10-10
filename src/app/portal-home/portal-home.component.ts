@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { SupabaseService } from '../supabase.service';
+import { SettingsService } from '../settings.service';
 
 interface PortalTile {
   title: string;
@@ -23,7 +24,17 @@ export class PortalHomeComponent implements OnInit {
     },
   ];
 
-  constructor(private supabase: SupabaseService) {}
+  settingsOpen = false;
+
+  constructor(private supabase: SupabaseService, public settings: SettingsService) {}
+
+  openSettings(): void {
+    this.settingsOpen = true;
+  }
+
+  closeSettings(): void {
+    this.settingsOpen = false;
+  }
 
   async ngOnInit(): Promise<void> {
     const profile = await this.supabase.getMyProfile();

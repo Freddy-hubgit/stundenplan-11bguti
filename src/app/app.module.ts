@@ -11,6 +11,7 @@ import { AdminComponent } from './admin/admin.component';
 import { ProfileMenuComponent } from './profile-menu/profile-menu.component';
 import { AuthGuard } from './auth.guard';
 import { AdminGuard } from './admin.guard';
+import { SettingsModalComponent } from './settings-modal/settings-modal.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -27,6 +28,7 @@ const routes: Routes = [
     LoginComponent,
     AdminComponent,
     ProfileMenuComponent,
+    SettingsModalComponent,
   ],
   imports: [
     BrowserModule,

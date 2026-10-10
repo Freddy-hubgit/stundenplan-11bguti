@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Profile, SupabaseService } from '../supabase.service';
+import { SettingsService } from '../settings.service';
 
 @Component({
   selector: 'app-admin',
@@ -32,7 +33,17 @@ export class AdminComponent implements OnInit {
   confirmingDelete = false;
   deleting = false;
 
-  constructor(private supabase: SupabaseService) {}
+  settingsOpen = false;
+
+  constructor(private supabase: SupabaseService, public settings: SettingsService) {}
+
+  openSettings(): void {
+    this.settingsOpen = true;
+  }
+
+  closeSettings(): void {
+    this.settingsOpen = false;
+  }
 
   async ngOnInit(): Promise<void> {
     const me = await this.supabase.getMyProfile();

@@ -1,0 +1,194 @@
+:root {
+  --bg: #0A0D12;
+  --bg-elevated: #0D1117;
+  --surface: #12161E;
+  --surface-2: #171C26;
+  --border: #232935;
+  --border-soft: #1B212C;
+  --text: #E8EAED;
+  --text-dim: #8B93A1;
+  --text-faint: #4C5566;
+  --accent-cyan: #4FD8E8;
+  --accent-cyan-dim: rgba(79, 216, 232, 0.14);
+  --radius-lg: 14px;
+}
+
+:host {
+  display: block;
+}
+
+:host-context(.theme-light) {
+  --bg: #F4F6F9;
+  --bg-elevated: #FFFFFF;
+  --surface: #FFFFFF;
+  --surface-2: #F0F2F6;
+  --border: #DDE1E8;
+  --border-soft: #E9ECF1;
+  --text: #181B21;
+  --text-dim: #565F6E;
+  --text-faint: #8891A0;
+  --accent-cyan: #4FD8E8;
+  --accent-cyan-dim: rgba(79, 216, 232, 0.14);
+  --radius-lg: 14px;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(6, 8, 11, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 16px;
+}
+
+:host-context(.theme-light) .modal-backdrop {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.modal {
+  width: 100%;
+  max-width: 420px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: 22px;
+}
+
+.modal.modal-wide {
+  max-width: 760px;
+}
+
+.settings-layout {
+  display: grid;
+  grid-template-columns: 170px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 600px) {
+  .settings-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.settings-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: sticky;
+  top: 0;
+}
+
+.settings-nav-btn {
+  text-align: left;
+  padding: 10px 12px;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  color: var(--text-dim);
+  font-family: inherit;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+
+.settings-nav-btn:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.settings-nav-btn.active {
+  background: var(--accent-cyan-dim);
+  color: var(--accent-cyan);
+  font-weight: 600;
+}
+
+.settings-content {
+  min-width: 0;
+}
+
+.settings-section {
+  margin-bottom: 20px;
+}
+
+.profile-label {
+  display: block;
+  font-size: 12.5px;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+
+.chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  padding: 6px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  color: var(--text);
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.chip:hover {
+  border-color: var(--border-soft);
+}
+
+.chip.active {
+  background: var(--accent-cyan-dim);
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+
+.modal h2 {
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: var(--text);
+}
+
+.modal-actions {
+  display: flex;
+  align-items: center;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.spacer {
+  flex: 1;
+}
+
+.nav-btn {
+  padding: 8px 16px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.nav-btn:hover {
+  border-color: var(--border-soft);
+}
+
+.nav-btn.primary {
+  background: var(--accent-cyan);
+  border-color: var(--accent-cyan);
+  color: #06110f;
+  font-weight: 600;
+}
+
+.nav-btn.primary:hover {
+  opacity: 0.9;
+}

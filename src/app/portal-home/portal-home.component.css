@@ -6,6 +6,85 @@
   font-family: system-ui, sans-serif;
 }
 
+.portal-shell.theme-light {
+  background: #F4F6F9;
+  color: #181B21;
+}
+
+.portal-shell.theme-light .tile {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: #DDE1E8;
+  color: #181B21;
+}
+
+.portal-shell.theme-light .tile:hover {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.portal-shell.theme-light .tile-desc {
+  opacity: 0.7;
+  color: #565F6E;
+}
+
+.portal-shell.theme-light .settings-btn {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: #DDE1E8;
+  color: #181B21;
+}
+
+.portal-shell.theme-light .settings-btn:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+/* Hintergrund-Varianten */
+.portal-shell:not(.bg-aurora):not(.bg-sunset):not(.bg-forest) {
+  background-image:
+    radial-gradient(circle at 8% 8%, rgba(79, 216, 232, 0.09), transparent 45%),
+    radial-gradient(circle at 92% 6%, rgba(255, 159, 74, 0.07), transparent 45%);
+}
+
+.portal-shell.bg-aurora {
+  background-image:
+    radial-gradient(circle at 8% 8%, rgba(60, 230, 180, 0.16), transparent 45%),
+    radial-gradient(circle at 92% 90%, rgba(120, 140, 255, 0.14), transparent 45%);
+}
+
+.portal-shell.bg-sunset {
+  background-image:
+    radial-gradient(circle at 8% 8%, rgba(255, 120, 70, 0.17), transparent 45%),
+    radial-gradient(circle at 92% 90%, rgba(255, 70, 130, 0.14), transparent 45%);
+}
+
+.portal-shell.bg-forest {
+  background-image:
+    radial-gradient(circle at 8% 8%, rgba(90, 210, 90, 0.16), transparent 45%),
+    radial-gradient(circle at 92% 90%, rgba(60, 160, 100, 0.13), transparent 45%);
+}
+
+.portal-shell.theme-light:not(.bg-aurora):not(.bg-sunset):not(.bg-forest) {
+  background-image:
+    radial-gradient(circle at 8% 8%, rgba(79, 216, 232, 0.09), transparent 45%),
+    radial-gradient(circle at 92% 6%, rgba(255, 159, 74, 0.07), transparent 45%);
+}
+
+.portal-shell.theme-light.bg-aurora {
+  background-image:
+    radial-gradient(circle at 8% 8%, rgba(60, 230, 180, 0.16), transparent 45%),
+    radial-gradient(circle at 92% 90%, rgba(120, 140, 255, 0.14), transparent 45%);
+}
+
+.portal-shell.theme-light.bg-sunset {
+  background-image:
+    radial-gradient(circle at 8% 8%, rgba(255, 120, 70, 0.17), transparent 45%),
+    radial-gradient(circle at 92% 90%, rgba(255, 70, 130, 0.14), transparent 45%);
+}
+
+.portal-shell.theme-light.bg-forest {
+  background-image:
+    radial-gradient(circle at 8% 8%, rgba(90, 210, 90, 0.16), transparent 45%),
+    radial-gradient(circle at 92% 90%, rgba(60, 160, 100, 0.13), transparent 45%);
+}
+
 .portal-header {
   display: flex;
   align-items: center;
@@ -17,6 +96,27 @@
 .portal-header h1 {
   font-size: 28px;
   margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.settings-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.settings-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
 }
 
 .user-bar {

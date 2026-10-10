@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, HostListener, ViewEncapsulation, ViewChild, ElementRef } from '@angular/core';
 import html2canvas from 'html2canvas';
+import { SettingsService, SubjectColor } from '../settings.service';
 
 /* =====================================================================
    TYPEN
@@ -36,11 +37,6 @@ interface DayDef {
   label: string;
   short: string;
   jsIdx: number; // JS Date.getDay() Index (0 = So ... 6 = Sa)
-}
-
-interface SubjectColor {
-  border: string;
-  bg: string;
 }
 
 interface PositionedLesson extends Lesson {
@@ -184,6 +180,8 @@ type EditorMode = "new" | "edit";
   private readonly rangeEnd: number = Math.max(...this.periods.map(p => this.toMinutes(p.end))) + 15;
   private readonly rangeTotal: number = this.rangeEnd - this.rangeStart;
 
+  constructor(private settings: SettingsService) {}
+
   /* ---------------- Zustand ---------------- */
 
   selectedDate: Date = new Date();
@@ -250,36 +248,7 @@ type EditorMode = "new" | "edit";
 
   /* ---------------- Fach-Farben (manuell überschreibbar, pro Fachname gespeichert) ---------------- */
 
-  private readonly SUBJECT_COLOR_STORAGE_KEY = "stundenplan-subject-colors";
-
-  // Fachname -> Index in subjectPalette. Fächer ohne Eintrag bekommen weiterhin
-  // automatisch eine Farbe anhand ihres Namens zugewiesen.
-  private subjectColorOverrides: Record<string, number> = {};
-
-  private loadSubjectColors(): void {
-    try {
-      const raw = localStorage.getItem(this.SUBJECT_COLOR_STORAGE_KEY);
-      if (!raw) return;
-      const parsed = JSON.parse(raw);
-      if (parsed && typeof parsed === "object") {
-        this.subjectColorOverrides = parsed;
-      }
-    } catch {
-      // Ungültige/gelöschte Daten im Speicher ignorieren.
-    }
-  }
-
-  private persistSubjectColors(): void {
-    try {
-      localStorage.setItem(this.SUBJECT_COLOR_STORAGE_KEY, JSON.stringify(this.subjectColorOverrides));
-    } catch {
-      // z.B. Privater Modus ohne Speicherzugriff.
-    }
-  }
-
   /* ---------------- Einstellungen: Darstellung (Hell/Dunkel, Hintergrund) ---------------- */
-
-  private readonly APPEARANCE_STORAGE_KEY = "stundenplan-appearance";
 
   readonly themeOptions: { key: "dark" | "light"; label: string }[] = [
     { key: "dark", label: "Dunkel" },
@@ -293,8 +262,14 @@ type EditorMode = "new" | "edit";
     { key: "forest", label: "Wald" },
   ];
 
-  theme: "dark" | "light" = "dark";
-  backgroundKey: string = "default";
+  get theme(): "dark" | "light" {
+    return this.settings.theme;
+  }
+
+  get backgroundKey(): string {
+    return this.settings.backgroundKey;
+  }
+
   settingsOpen: boolean = false;
   settingsCategory: "profil" | "faecher" | "darstellung" | "daten" = "profil";
 
@@ -303,34 +278,12 @@ type EditorMode = "new" | "edit";
   }
   subjectRenameDrafts: Record<string, string> = {};
 
-  private loadAppearance(): void {
-    try {
-      const raw = localStorage.getItem(this.APPEARANCE_STORAGE_KEY);
-      if (!raw) return;
-      const parsed = JSON.parse(raw);
-      if (parsed.theme === "dark" || parsed.theme === "light") this.theme = parsed.theme;
-      if (typeof parsed.background === "string") this.backgroundKey = parsed.background;
-    } catch {
-      // Ungültige/gelöschte Daten im Speicher ignorieren.
-    }
-  }
-
-  private persistAppearance(): void {
-    try {
-      localStorage.setItem(this.APPEARANCE_STORAGE_KEY, JSON.stringify({ theme: this.theme, background: this.backgroundKey }));
-    } catch {
-      // z.B. Privater Modus ohne Speicherzugriff.
-    }
-  }
-
   setTheme(t: "dark" | "light"): void {
-    this.theme = t;
-    this.persistAppearance();
+    this.settings.setTheme(t);
   }
 
   setBackground(key: string): void {
-    this.backgroundKey = key;
-    this.persistAppearance();
+    this.settings.setBackground(key);
   }
 
   /* ---------------- Einstellungen: Fächer verwalten ---------------- */
@@ -342,16 +295,11 @@ type EditorMode = "new" | "edit";
   }
 
   subjectColorIndex(subject: string): number | null {
-    return this.subjectColorOverrides[subject] ?? null;
+    return this.settings.subjectColorIndex(subject);
   }
 
   setSubjectColor(subject: string, idx: number | null): void {
-    if (idx !== null) {
-      this.subjectColorOverrides[subject] = idx;
-    } else {
-      delete this.subjectColorOverrides[subject];
-    }
-    this.persistSubjectColors();
+    this.settings.setSubjectColor(subject, idx);
   }
 
   renameSubject(oldName: string): void {
@@ -362,11 +310,7 @@ type EditorMode = "new" | "edit";
       if (l.subject === oldName) l.subject = newName;
     });
 
-    if (this.subjectColorOverrides[oldName] !== undefined) {
-      this.subjectColorOverrides[newName] = this.subjectColorOverrides[oldName];
-      delete this.subjectColorOverrides[oldName];
-      this.persistSubjectColors();
-    }
+    this.settings.renameSubjectColor(oldName, newName);
 
     delete this.subjectRenameDrafts[oldName];
     this.subjectRenameDrafts[newName] = newName;
@@ -496,7 +440,7 @@ type EditorMode = "new" | "edit";
     return {
       exportedAt: new Date().toISOString(),
       lessons: this.lessons,
-      subjectColorOverrides: this.subjectColorOverrides,
+      subjectColorOverrides: this.settings.getSubjectColorOverrides(),
       profile: {
         track: this.selectedTrack,
         sciences: this.selectedSciences,
@@ -556,8 +500,7 @@ type EditorMode = "new" | "edit";
       this.lessons = data.lessons;
 
       if (data.subjectColorOverrides && typeof data.subjectColorOverrides === "object") {
-        this.subjectColorOverrides = data.subjectColorOverrides;
-        this.persistSubjectColors();
+        this.settings.setSubjectColorOverrides(data.subjectColorOverrides);
       }
       if (data.profile) {
         if (data.profile.track === "Informatik" || data.profile.track === "Umwelttechnik") {
@@ -574,12 +517,11 @@ type EditorMode = "new" | "edit";
       }
       if (data.appearance) {
         if (data.appearance.theme === "dark" || data.appearance.theme === "light") {
-          this.theme = data.appearance.theme;
+          this.settings.setTheme(data.appearance.theme);
         }
         if (typeof data.appearance.background === "string") {
-          this.backgroundKey = data.appearance.background;
+          this.settings.setBackground(data.appearance.background);
         }
-        this.persistAppearance();
       }
 
       window.alert("Import erfolgreich.");
@@ -673,8 +615,6 @@ type EditorMode = "new" | "edit";
   ngOnInit(): void {
     this.loadProfile();
     this.enforceCompulsoryScience();
-    this.loadSubjectColors();
-    this.loadAppearance();
     this.isMobile = window.matchMedia("(max-width:920px)").matches;
     this.updateGridHeight();
     this.timerId = setInterval(() => {
@@ -717,7 +657,7 @@ type EditorMode = "new" | "edit";
   }
 
   private subjectColor(name: string): SubjectColor {
-    const overrideIdx = this.subjectColorOverrides[name];
+    const overrideIdx = this.settings.subjectColorIndex(name);
     if (overrideIdx !== undefined && this.subjectPalette[overrideIdx]) {
       return this.subjectPalette[overrideIdx];
     }
@@ -1119,7 +1059,7 @@ type EditorMode = "new" | "edit";
     this.editorTrack = target.track || "";
     this.editorLanguage = target.language || "";
     this.editorScienceGroup = target.scienceGroup || "";
-    this.editorColorIndex = this.subjectColorOverrides[target.subject] ?? null;
+    this.editorColorIndex = this.settings.subjectColorIndex(target.subject) ?? null;
     this.editorCancelled = !!target.cancelled;
     this.editorOpen = true;
   }
@@ -1152,11 +1092,10 @@ type EditorMode = "new" | "edit";
     }
 
     if (this.editorColorIndex !== null) {
-      this.subjectColorOverrides[newLesson.subject] = this.editorColorIndex;
+      this.settings.setSubjectColor(newLesson.subject, this.editorColorIndex);
     } else {
-      delete this.subjectColorOverrides[newLesson.subject];
+      this.settings.setSubjectColor(newLesson.subject, null);
     }
-    this.persistSubjectColors();
 
     this.closeEditor();
   }

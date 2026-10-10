@@ -1,0 +1,38 @@
+<div class="modal-backdrop" *ngIf="open" (click)="onBackdropClick()">
+  <div class="modal modal-wide" (click)="$event.stopPropagation()">
+    <h2>Einstellungen</h2>
+
+    <div class="settings-layout">
+      <div class="settings-nav">
+        <button class="settings-nav-btn active">Darstellung</button>
+      </div>
+
+      <div class="settings-content">
+        <div class="settings-section">
+          <span class="profile-label">Theme</span>
+          <div class="chip-group">
+            <button *ngFor="let t of themeOptions"
+                    class="chip"
+                    [class.active]="currentTheme === t.key"
+                    (click)="currentTheme = t.key; settings.setTheme(t.key)">{{ t.label }}</button>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <span class="profile-label">Hintergrund</span>
+          <div class="chip-group">
+            <button *ngFor="let bg of backgroundOptions"
+                    class="chip"
+                    [class.active]="currentBackground === bg.key"
+                    (click)="currentBackground = bg.key; settings.setBackground(bg.key)">{{ bg.label }}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <div class="spacer"></div>
+      <button class="nav-btn primary" (click)="close()">Schließen</button>
+    </div>
+  </div>
+</div>
