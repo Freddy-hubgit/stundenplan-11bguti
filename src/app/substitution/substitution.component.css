@@ -1,6 +1,6 @@
 .portal-shell { --panel: rgba(255,255,255,.05); --line: rgba(255,255,255,.16); --input: #151c27; --muted: #acb9cc; --accent: #ffd08c; }
 .theme-light { --panel: rgba(255,255,255,.85); --line: #c8d0dd; --input: #fff; --muted: #505e71; --accent: #85520a; }
-.plan-content { max-width: 1000px; }
+.plan-content, .portal-header { max-width: 1100px; margin-left: auto; margin-right: auto; }
 .back, a { color: inherit; } .back { display: block; margin-bottom: 12px; text-decoration: none; }
 .intro { margin-bottom: 24px; color: var(--muted); }
 .panel { background: var(--panel); border: 1px solid var(--line); padding: 24px; border-radius: 14px; margin: 20px 0; }

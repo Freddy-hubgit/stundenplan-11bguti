@@ -54,7 +54,7 @@
         <header class="day-heading"><h3 [id]="'day-' + day.date">{{ day.label }} <span *ngIf="day.today" class="today-label">Heute</span></h3><span class="day-count">{{ day.entries.length }} {{ day.entries.length === 1 ? 'Eintrag' : 'Einträge' }}</span></header>
       <article class="panel entry" *ngFor="let entry of day.entries; trackBy: trackId" [class.cancelled-entry]="entry.kind === 'cancelled'">
         <div class="entry-header"><h3>{{ entry.teacher }} fehlt</h3><span class="badge">{{ entry.kind === 'replacement' ? 'Vertretung' : 'Ausgefallen' }}</span></div>
-        <dl><dt>Zeitraum</dt><dd>{{ entry.start_time.slice(0,5) }}–{{ entry.end_time.slice(0,5) }} Uhr</dd>
+        <dl *ngIf="entry.kind === 'replacement'">
           <ng-container *ngIf="entry.kind === 'replacement'"><dt>Ersatzlehrkraft</dt><dd>{{ entry.replacement_teacher }}</dd><dt>Raum</dt><dd>{{ entry.room || 'Wie im Stundenplan' }}</dd></ng-container></dl>
         <p class="note" *ngIf="entry.note">{{ entry.note }}</p>
         <div *ngIf="isStaff" class="actions"><button type="button" [disabled]="saving" (click)="edit(entry)">Bearbeiten</button><button type="button" class="danger" [disabled]="saving" (click)="deletingId = entry.id">Löschen</button></div>
