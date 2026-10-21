@@ -45,7 +45,6 @@ with sync_playwright() as p:
     staff.get_by_role('button',name='Eintrag speichern',exact=True).click()
     staff.get_by_text('Eintrag gespeichert.',exact=True).wait_for()
     user=open_as('user')
-    user.get_by_label('Datum',exact=True).fill('2026-10-19')
     user.get_by_text('Frau Ersatz',exact=True).wait_for()
     assert user.get_by_role('button',name='Bearbeiten',exact=True).count()==0
     user.get_by_role('link',name='Zum Stundenplan').click()
@@ -75,7 +74,6 @@ with sync_playwright() as p:
     user.locator('.lesson.cancelled').wait_for()
     assert user.locator('.lesson.substituted').count()==0
     admin=open_as('admin',390)
-    admin.get_by_label('Datum',exact=True).fill('2026-10-19')
     admin.get_by_role('button',name='Löschen',exact=True).click()
     admin.get_by_role('button',name='Löschen bestätigen',exact=True).click()
     admin.get_by_text('Eintrag gelöscht.',exact=True).wait_for()

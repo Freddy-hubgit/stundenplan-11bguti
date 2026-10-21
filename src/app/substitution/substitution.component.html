@@ -3,7 +3,26 @@
     <button type="button" class="settings-btn" (click)="settingsOpen = true" aria-label="Einstellungen öffnen">⚙</button></header>
   <div class="plan-content">
     <p class="intro">Fehlende Lehrkräfte, Vertretungen und Unterrichtsausfälle auf einen Blick.</p>
-    <div class="date-bar"><label for="plan-date">Datum</label><input id="plan-date" type="date" [(ngModel)]="selectedDate" (ngModelChange)="changeDate()"><button type="button" (click)="refresh()">Aktualisieren</button></div>
+    <nav class="week-toolbar" aria-label="Wochenauswahl">
+      <div class="week-navigation">
+        <button type="button" (click)="shiftWeek(-1)" aria-label="Vorherige Woche">←</button>
+        <div class="calendar-picker" (click)="$event.stopPropagation()">
+          <button type="button" class="calendar-trigger" (click)="toggleCalendar()" [attr.aria-expanded]="calendarOpen" aria-controls="week-calendar" aria-label="Kalender öffnen">
+            <span aria-hidden="true">▦</span> {{ weekLabel }} <span aria-hidden="true">⌄</span>
+          </button>
+          <div *ngIf="calendarOpen" id="week-calendar" class="calendar" role="region" aria-label="Woche im Kalender auswählen">
+            <div class="calendar-header"><button type="button" (click)="shiftMonth(-1)" aria-label="Vorheriger Monat">‹</button><strong aria-live="polite">{{ monthLabel }}</strong><button type="button" (click)="shiftMonth(1)" aria-label="Nächster Monat">›</button></div>
+            <div class="calendar-grid">
+              <span class="weekday" *ngFor="let name of weekdays">{{ name }}</span>
+              <button type="button" *ngFor="let day of calendarDays; trackBy: trackDay" class="calendar-day" [class.outside]="day.outside" [class.in-week]="day.inWeek" [class.selected]="day.selected" [class.today]="day.today" [attr.aria-label]="day.label" [attr.aria-pressed]="day.selected" [attr.aria-current]="day.today ? 'date' : null" (click)="selectDate(day.date)">{{ day.number }}<span *ngIf="day.hasEntries" class="entry-dot" aria-hidden="true"></span></button>
+            </div>
+            <p class="calendar-help">Wähle einen Tag, um die ganze Woche anzuzeigen.</p>
+          </div>
+        </div>
+        <button type="button" (click)="shiftWeek(1)" aria-label="Nächste Woche">→</button>
+      </div>
+      <div class="actions"><button type="button" (click)="today()">Diese Woche</button><button type="button" (click)="refresh()">Aktualisieren</button></div>
+    </nav>
     <p *ngIf="loading" role="status">Vertretungsplan wird geladen …</p>
     <p *ngIf="loadError" role="alert" class="error">{{ loadError }}</p>
     <p *ngIf="error" role="alert" class="error">{{ error }}</p>
@@ -28,9 +47,11 @@
         </fieldset>
       </form>
     </section>
-    <section aria-labelledby="plan-title"><h2 id="plan-title">Änderungen am {{ selectedDate | date:'dd.MM.yyyy' }}</h2>
-      <p *ngIf="!loading && !loadError && !visibleEntries.length" class="panel muted">Für diesen Tag sind keine Vertretungen oder Ausfälle eingetragen.</p>
-      <article class="panel entry" *ngFor="let entry of visibleEntries; trackBy: trackId" [class.cancelled-entry]="entry.kind === 'cancelled'">
+    <section aria-labelledby="plan-title"><h2 id="plan-title">Wochenübersicht · {{ weekLabel }}</h2>
+      <section *ngFor="let day of weekDays; trackBy: trackDay" class="day-group" [class.is-today]="day.today" [attr.aria-labelledby]="'day-' + day.date">
+        <header class="day-heading"><h3 [id]="'day-' + day.date">{{ day.label }} <span *ngIf="day.today" class="today-label">Heute</span></h3><span class="day-count">{{ day.entries.length }} {{ day.entries.length === 1 ? 'Eintrag' : 'Einträge' }}</span></header>
+        <p *ngIf="!loading && !loadError && !day.entries.length" class="day-empty">Keine Vertretungen oder Ausfälle eingetragen.</p>
+      <article class="panel entry" *ngFor="let entry of day.entries; trackBy: trackId" [class.cancelled-entry]="entry.kind === 'cancelled'">
         <div class="entry-header"><h3>{{ entry.teacher }} fehlt</h3><span class="badge">{{ entry.kind === 'replacement' ? 'Vertretung' : 'Ausgefallen' }}</span></div>
         <dl><dt>Zeitraum</dt><dd>{{ entry.start_time.slice(0,5) }}–{{ entry.end_time.slice(0,5) }} Uhr</dd>
           <ng-container *ngIf="entry.kind === 'replacement'"><dt>Ersatzlehrkraft</dt><dd>{{ entry.replacement_teacher }}</dd><dt>Raum</dt><dd>{{ entry.room || 'Wie im Stundenplan' }}</dd></ng-container></dl>
@@ -38,6 +59,7 @@
         <div *ngIf="isStaff" class="actions"><button type="button" [disabled]="saving" (click)="edit(entry)">Bearbeiten</button><button type="button" class="danger" [disabled]="saving" (click)="deletingId = entry.id">Löschen</button></div>
         <div class="confirm" *ngIf="deletingId === entry.id"><p>Eintrag wirklich löschen? Im Stundenplan gilt danach wieder der reguläre Unterricht.</p><button type="button" class="danger" [disabled]="saving" (click)="remove(entry.id)">Löschen bestätigen</button> <button type="button" [disabled]="saving" (click)="deletingId = null">Behalten</button></div>
       </article>
+      </section>
     </section>
     <p class="muted">Automatische Aktualisierung alle 15 Sekunden. <a routerLink="/stundenplan">Zum Stundenplan →</a></p>
   </div>
