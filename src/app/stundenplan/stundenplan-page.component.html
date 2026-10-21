@@ -237,6 +237,7 @@
       <div class="settings-layout">
 
         <div class="settings-nav">
+          <button class="settings-nav-btn" [class.active]="settingsCategory === 'konto'" (click)="setSettingsCategory('konto')">Account</button>
           <button class="settings-nav-btn" [class.active]="settingsCategory === 'profil'" (click)="setSettingsCategory('profil')">Profil</button>
           <button class="settings-nav-btn" [class.active]="settingsCategory === 'faecher'" (click)="setSettingsCategory('faecher')">Fächer verwalten</button>
           <button class="settings-nav-btn" [class.active]="settingsCategory === 'darstellung'" (click)="setSettingsCategory('darstellung')">Darstellung</button>
@@ -244,6 +245,7 @@
         </div>
 
         <div class="settings-content">
+          <app-account-settings *ngIf="settingsCategory === 'konto'"></app-account-settings>
 
           <div *ngIf="settingsCategory === 'profil'">
             <div class="settings-section">

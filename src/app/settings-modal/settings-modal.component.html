@@ -1,13 +1,16 @@
 <div class="modal-backdrop" *ngIf="open" (click)="onBackdropClick()">
-  <div class="modal modal-wide" (click)="$event.stopPropagation()">
+  <div role="dialog" aria-modal="true" aria-label="Einstellungen" class="modal modal-wide" (click)="$event.stopPropagation()">
     <h2>Einstellungen</h2>
 
     <div class="settings-layout">
       <div class="settings-nav">
-        <button class="settings-nav-btn active">Darstellung</button>
+        <button type="button" class="settings-nav-btn" [class.active]="settingsCategory === 'darstellung'" [attr.aria-pressed]="settingsCategory === 'darstellung'" (click)="settingsCategory = 'darstellung'">Darstellung</button>
+        <button type="button" class="settings-nav-btn" [class.active]="settingsCategory === 'konto'" [attr.aria-pressed]="settingsCategory === 'konto'" (click)="settingsCategory = 'konto'">Account</button>
       </div>
 
       <div class="settings-content">
+        <app-account-settings *ngIf="settingsCategory === 'konto'"></app-account-settings>
+        <div *ngIf="settingsCategory === 'darstellung'">
         <div class="settings-section">
           <span class="profile-label">Theme</span>
           <div class="chip-group">
@@ -28,6 +31,8 @@
           </div>
         </div>
       </div>
+    </div>
+
     </div>
 
     <div class="modal-actions">

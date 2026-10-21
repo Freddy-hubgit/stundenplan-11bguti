@@ -12,6 +12,7 @@ import { ProfileMenuComponent } from './profile-menu/profile-menu.component';
 import { AuthGuard } from './auth.guard';
 import { AdminGuard } from './admin.guard';
 import { SettingsModalComponent } from './settings-modal/settings-modal.component';
+import { AccountSettingsComponent } from './account-settings/account-settings.component';
 import { SupportComponent } from './support/support.component';
 
 const routes: Routes = [
@@ -32,6 +33,7 @@ const routes: Routes = [
     ProfileMenuComponent,
     SettingsModalComponent,
     SupportComponent,
+    AccountSettingsComponent,
   ],
   imports: [
     BrowserModule,

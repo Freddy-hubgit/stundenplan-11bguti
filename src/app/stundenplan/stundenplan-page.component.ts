@@ -271,9 +271,9 @@ type EditorMode = "new" | "edit";
   }
 
   settingsOpen: boolean = false;
-  settingsCategory: "profil" | "faecher" | "darstellung" | "daten" = "profil";
+  settingsCategory: "profil" | "faecher" | "darstellung" | "daten" | "konto" = "profil";
 
-  setSettingsCategory(cat: "profil" | "faecher" | "darstellung" | "daten"): void {
+  setSettingsCategory(cat: "profil" | "faecher" | "darstellung" | "daten" | "konto"): void {
     this.settingsCategory = cat;
   }
   subjectRenameDrafts: Record<string, string> = {};

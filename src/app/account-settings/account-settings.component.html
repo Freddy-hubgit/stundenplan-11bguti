@@ -1,0 +1,18 @@
+<p *ngIf="loading" role="status">Kontodaten werden geladen …</p>
+<p *ngIf="loadError" role="alert">{{ loadError }}</p>
+<div *ngIf="profile" class="account-details">
+  <h3>Dein Konto</h3>
+  <dl><dt>Name</dt><dd>{{ profile.full_name || 'Nicht angegeben' }}</dd>
+    <dt>E-Mail</dt><dd>{{ profile.email }}</dd>
+    <dt>Rolle</dt><dd>{{ profile.role === 'admin' ? 'Admin' : profile.role === 'support' ? 'Support' : 'Nutzer' }}</dd></dl>
+</div>
+<form (ngSubmit)="submitPasswordChange()">
+  <h3>Passwort ändern</h3>
+  <label>Neues Passwort<input type="password" name="newPassword" [(ngModel)]="newPassword" required minlength="6" autocomplete="new-password" [disabled]="saving || loggingOut"></label>
+  <label>Passwort bestätigen<input type="password" name="confirmPassword" [(ngModel)]="confirmPassword" required minlength="6" autocomplete="new-password" [disabled]="saving || loggingOut"></label>
+  <p class="error" *ngIf="passwordError" role="alert">{{ passwordError }}</p>
+  <p class="success" *ngIf="passwordSuccess" role="status">{{ passwordSuccess }}</p>
+  <button type="submit" [disabled]="saving || loggingOut">{{ saving ? 'Speichere …' : 'Passwort speichern' }}</button>
+</form>
+<div class="logout"><p class="error" *ngIf="logoutError" role="alert">{{ logoutError }}</p>
+  <button type="button" class="danger" (click)="logout()" [disabled]="saving || loggingOut">{{ loggingOut ? 'Abmelden …' : 'Abmelden' }}</button></div>
