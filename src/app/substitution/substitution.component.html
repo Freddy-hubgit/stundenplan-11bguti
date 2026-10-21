@@ -1,0 +1,45 @@
+<main class="portal-shell" [class.theme-light]="settings.theme === 'light'" [class.bg-aurora]="settings.backgroundKey === 'aurora'" [class.bg-sunset]="settings.backgroundKey === 'sunset'" [class.bg-forest]="settings.backgroundKey === 'forest'">
+  <header class="portal-header"><div><a routerLink="/" class="back">← Hauptmenü</a><h1>Vertretungsplan</h1></div>
+    <button type="button" class="settings-btn" (click)="settingsOpen = true" aria-label="Einstellungen öffnen">⚙</button></header>
+  <div class="plan-content">
+    <p class="intro">Fehlende Lehrkräfte, Vertretungen und Unterrichtsausfälle auf einen Blick.</p>
+    <div class="date-bar"><label for="plan-date">Datum</label><input id="plan-date" type="date" [(ngModel)]="selectedDate" (ngModelChange)="changeDate()"><button type="button" (click)="refresh()">Aktualisieren</button></div>
+    <p *ngIf="loading" role="status">Vertretungsplan wird geladen …</p>
+    <p *ngIf="loadError" role="alert" class="error">{{ loadError }}</p>
+    <p *ngIf="error" role="alert" class="error">{{ error }}</p>
+    <p *ngIf="success" role="status" class="success">{{ success }}</p>
+    <section *ngIf="isStaff" class="panel" aria-labelledby="entry-title">
+      <h2 id="entry-title">{{ editingId ? 'Eintrag bearbeiten' : 'Lehrkraft als fehlend eintragen' }}</h2>
+      <form (ngSubmit)="save()">
+        <fieldset [disabled]="saving">
+          <div class="form-grid">
+            <label>Datum des Eintrags<input type="date" name="date" [(ngModel)]="draft.date" required></label>
+            <label>Fehlende Lehrkraft<input name="teacher" [(ngModel)]="draft.teacher" list="known-teachers" maxlength="160" required placeholder="Lehrkraft aus dem Stundenplan wählen"></label>
+            <datalist id="known-teachers"><option *ngFor="let teacher of teachers" [value]="teacher"></option></datalist>
+            <label>Von<input type="time" name="start" [(ngModel)]="draft.start_time" required></label>
+            <label>Bis<input type="time" name="end" [(ngModel)]="draft.end_time" required></label>
+            <div><label for="entry-kind">Änderung</label><select id="entry-kind" name="kind" [(ngModel)]="draft.kind"><option value="replacement">Vertretung</option><option value="cancelled">Unterricht fällt aus</option></select></div>
+            <label *ngIf="draft.kind === 'replacement'">Ersatzlehrkraft<input name="replacement" [(ngModel)]="draft.replacement_teacher" maxlength="160" required></label>
+            <label *ngIf="draft.kind === 'replacement'">Ersatzraum (optional)<input name="room" [(ngModel)]="draft.room" maxlength="100" placeholder="Sonst bisheriger Raum"></label>
+          </div>
+          <label>Hinweis (optional)<textarea name="note" [(ngModel)]="draft.note" rows="2" maxlength="2000" placeholder="Weitere Informationen für die Schüler"></textarea></label>
+          <p class="muted">Der Eintrag gilt für alle Stunden dieser Lehrkraft im angegebenen Zeitraum. Verwende die gleiche Schreibweise wie im Stundenplan.</p>
+          <div class="actions"><button type="submit" class="primary">{{ saving ? 'Speichere …' : editingId ? 'Änderungen speichern' : 'Eintrag speichern' }}</button><button *ngIf="editingId" type="button" (click)="reset()">Abbrechen</button></div>
+        </fieldset>
+      </form>
+    </section>
+    <section aria-labelledby="plan-title"><h2 id="plan-title">Änderungen am {{ selectedDate | date:'dd.MM.yyyy' }}</h2>
+      <p *ngIf="!loading && !loadError && !visibleEntries.length" class="panel muted">Für diesen Tag sind keine Vertretungen oder Ausfälle eingetragen.</p>
+      <article class="panel entry" *ngFor="let entry of visibleEntries; trackBy: trackId" [class.cancelled-entry]="entry.kind === 'cancelled'">
+        <div class="entry-header"><h3>{{ entry.teacher }} fehlt</h3><span class="badge">{{ entry.kind === 'replacement' ? 'Vertretung' : 'Ausgefallen' }}</span></div>
+        <dl><dt>Zeitraum</dt><dd>{{ entry.start_time.slice(0,5) }}–{{ entry.end_time.slice(0,5) }} Uhr</dd>
+          <ng-container *ngIf="entry.kind === 'replacement'"><dt>Ersatzlehrkraft</dt><dd>{{ entry.replacement_teacher }}</dd><dt>Raum</dt><dd>{{ entry.room || 'Wie im Stundenplan' }}</dd></ng-container></dl>
+        <p class="note" *ngIf="entry.note">{{ entry.note }}</p>
+        <div *ngIf="isStaff" class="actions"><button type="button" [disabled]="saving" (click)="edit(entry)">Bearbeiten</button><button type="button" class="danger" [disabled]="saving" (click)="deletingId = entry.id">Löschen</button></div>
+        <div class="confirm" *ngIf="deletingId === entry.id"><p>Eintrag wirklich löschen? Im Stundenplan gilt danach wieder der reguläre Unterricht.</p><button type="button" class="danger" [disabled]="saving" (click)="remove(entry.id)">Löschen bestätigen</button> <button type="button" [disabled]="saving" (click)="deletingId = null">Behalten</button></div>
+      </article>
+    </section>
+    <p class="muted">Automatische Aktualisierung alle 15 Sekunden. <a routerLink="/stundenplan">Zum Stundenplan →</a></p>
+  </div>
+  <app-settings-modal [open]="settingsOpen" (openChange)="settingsOpen = $event"></app-settings-modal>
+</main>

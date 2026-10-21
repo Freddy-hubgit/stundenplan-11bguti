@@ -1087,3 +1087,14 @@
       color:var(--text-faint);
       text-align:center;
     }
+/* Date-specific changes supplied by the shared substitution plan. */
+.lesson.substituted { border-color: #ffbf69; border-style: dashed; background: rgba(255,191,105,.09); padding: 17px 7px 3px; overflow-y: auto; }
+.lesson .original-teacher { text-decoration: line-through; opacity: .65; font-size: 11px; }
+.lesson .replacement-tag { position: absolute; top: 5px; left: 7px; color: #ffbf69; background: var(--bg-elevated); border-radius: 5px; padding: 3px 6px; font-size: 10px; font-weight: 700; }
+.lesson .substitution-details { display: block; color: inherit; font-size: 10px; margin-top: 4px; }
+
+.lesson.substituted .subj { font-size: 11px; line-height: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lesson.substituted .meta { font-size: 11px; line-height: 12px; margin-top: 0; }
+.lesson.substituted .room { font-size: 10px; line-height: 11px; margin-top: 0; }
+.lesson.substituted .original-teacher, .lesson.substituted .time, .lesson.substituted .substitution-details { display: none; }
+.lesson .replacement-tag { top: 3px; padding: 0; font-size: 9px; line-height: 11px; text-decoration: none; }

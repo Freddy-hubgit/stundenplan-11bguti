@@ -45,3 +45,36 @@ Browserprüfung: Entwicklungsserver auf Port 4200 starten und mit vorhandenem Py
 und Chromium `/usr/bin/chromium` `python tests/support-browser.py` ausführen. Diese Prüfung
 simuliert die Supabase-API und prüft Benutzeroberfläche, Rollenansichten, Nachrichten,
 Aktualisierung, Statuswechsel und Fehlerfälle. Sie ersetzt keinen Live-Test nach der Migration.
+
+## Vertretungsplan aktivieren
+
+Zusätzlich `migrations/202610210002_substitution_plan.sql` einmalig im SQL-Editor
+als Datenbankadministrator ausführen. Diese Migration ist unabhängig von der Ticketmigration,
+setzt aber ebenfalls die bestehende `profiles`-Tabelle und geschützte Rollen voraus.
+
+Alle angemeldeten Nutzer sehen den Vertretungsplan. Nur Support und Admins können
+fehlende Lehrkräfte für ein Datum und einen Zeitraum eintragen, ändern und löschen.
+Es werden Ersatzlehrkraft, optional Ersatzraum und Hinweis gespeichert. Alternativ
+kann Unterricht als ausgefallen markiert werden. Einträge derselben Lehrkraft dürfen
+sich am selben Tag nicht überschneiden; konkurrierende Schreibvorgänge werden serialisiert.
+
+Der Stundenplan ordnet Einträge anhand von Datum, Lehrkraft (ohne Beachtung der
+Groß-/Kleinschreibung und äußerer Leerzeichen) und Zeitüberschneidung zu. Die Schreibweise
+muss zum Stundenplan passen; die Eingabe schlägt die vorhandenen Lehrkraftbezeichnungen vor.
+Bei zusammengesetzten Lehrkraftbezeichnungen gilt der Eintrag für diese gesamte Bezeichnung.
+Teilvertretungen teilen eine Stunde in reguläre und geänderte Zeitabschnitte. Reguläre
+Stunden bleiben unverändert gespeichert; Vertretungen und Ausfälle gelten nur am eingetragenen
+Datum und werden auch bei der aktuellen/nächsten Stunde berücksichtigt. Beide Ansichten
+aktualisieren die gemeinsamen Daten alle 15 Sekunden. Kalender-/JSON-Exporte bleiben Exporte
+des regulären Wochenstundenplans, ohne die tagesbezogenen Vertretungen.
+
+Tests (mit den oben beschriebenen Werkzeugen):
+
+```sh
+PGLITE_MODULE_PATH=/tmp/support-db-tests/node_modules/@electric-sql/pglite/dist/index.js node tests/substitution-database.mjs
+python tests/substitution-browser.py
+```
+
+Die Browserprüfung nutzt eine simulierte Supabase-API, die Datenbankprüfung eine lokale
+PostgreSQL-Instanz in PGlite. Die Live-Migration und das Live-Verhalten müssen nach der
+Einrichtung im tatsächlichen Supabase-Projekt überprüft werden.

@@ -1,3 +1,5 @@
+import { DEFAULT_LESSONS, DayKey, DayTrack, LanguageChoice, Lesson, Period, SCIENCE_SUBJECTS } from '../timetable-data';
+import { SubstitutionService, Substitution, EffectiveLesson, splitSubstitutions, dateKey } from '../substitution.service';
 import { Component, OnInit, OnDestroy, HostListener, ViewEncapsulation, ViewChild, ElementRef } from '@angular/core';
 import html2canvas from 'html2canvas';
 import { SettingsService, SubjectColor } from '../settings.service';
@@ -6,32 +8,6 @@ import { SettingsService, SubjectColor } from '../settings.service';
    TYPEN
    ===================================================================== */
 
-type DayKey = "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat" | "Sun";
-
-type DayTrack = "Informatik" | "Umwelttechnik";
-
-type LanguageChoice = "Spanisch" | "Frei";
-
-const SCIENCE_SUBJECTS: readonly string[] = ["Chemie", "Physik", "Biologie"];
-
-interface Period {
-  start: string; // "HH:MM"
-  end: string;   // "HH:MM"
-}
-
-interface Lesson {
-  subject: string;
-  teacher: string;
-  room: string;
-  day: DayKey;
-  start: string; // "HH:MM"
-  end: string;   // "HH:MM"
-  track?: DayTrack;      // nur gesetzt, wenn die Stunde nur für einen Schwerpunkt gilt
-  language?: "Spanisch"; // nur gesetzt, wenn die Stunde nur für Spanisch-Schüler gilt
-  scienceGroup?: "Chemie" | "Physik" | "Biologie"; // nur nötig, wenn der Fachname vom Standardnamen abweicht (z.B. "Technische Mikrobiologie" -> "Biologie")
-  cancelled?: boolean; // Stunde fällt aus – wird durchgestrichen angezeigt, zählt nicht als aktuelle/nächste Stunde
-}
-
 interface DayDef {
   key: DayKey;
   label: string;
@@ -39,7 +15,7 @@ interface DayDef {
   jsIdx: number; // JS Date.getDay() Index (0 = So ... 6 = Sa)
 }
 
-interface PositionedLesson extends Lesson {
+interface PositionedLesson extends EffectiveLesson {
   top: number;      // in %
   height: number;   // in %
   isLive: boolean;
@@ -104,48 +80,7 @@ type EditorMode = "new" | "edit";
   // Oberfläche geändert werden (bearbeiten/hinzufügen/löschen).
   // "track" -> nur für einen Schwerpunkt sichtbar (Informatik / Umwelttechnik)
   // "language" -> nur sichtbar, wenn "Spanisch" gewählt ist
-  lessons: Lesson[] = [
-    // Montag
-    { subject: "Informatik", teacher: "Herr Hansen", room: "B115", day: "Mon", start: "07:30", end: "09:00", track: "Informatik" },
-    { subject: "Umweltökonomie", teacher: "Herr Ott", room: "B118", day: "Mon", start: "08:15", end: "09:00", track: "Umwelttechnik" },
-    { subject: "Technische Wissenschaft", teacher: "Frau Von Willich", room: "B115", day: "Mon", start: "09:15", end: "10:45", track: "Informatik" },
-    { subject: "Umweltökonomie", teacher: "Herr Ott", room: "B118", day: "Mon", start: "09:15", end: "10:45", track: "Umwelttechnik" },
-    { subject: "Mathe", teacher: "Herr von Lindenfels", room: "B211", day: "Mon", start: "11:00", end: "12:30" },
-    { subject: "Deutsch", teacher: "Herr Bendig", room: "B211", day: "Mon", start: "13:00", end: "13:45" },
-    { subject: "Deutsch", teacher: "Herr Bendig", room: "B211", day: "Mon", start: "13:45", end: "14:30" },
-    { subject: "Spanisch", teacher: "WEIT?", room: "A411", day: "Mon", start: "14:45", end: "16:15", language: "Spanisch" },
-
-    // Dienstag
-    { subject: "Chemie", teacher: "Frau Malcomess", room: "B207", day: "Tue", start: "07:30", end: "09:00", track: "Informatik" },
-    { subject: "Technische Mikrobiologie", teacher: "HENR?", room: "B214", day: "Tue", start: "07:30", end: "09:00", track: "Informatik", scienceGroup: "Biologie" },
-    { subject: "Informatik", teacher: "Herr Hansen", room: "B115", day: "Tue", start: "09:15", end: "10:45", track: "Informatik" },
-    { subject: "Umwelttechnik", teacher: "Herr Meinecke", room: "B211", day: "Tue", start: "09:15", end: "10:45", track: "Umwelttechnik" },
-    { subject: "Umwelttechnik", teacher: "Herr Meinecke", room: "B211", day: "Tue", start: "11:00", end: "11:45", track: "Umwelttechnik" },
-    { subject: "Technische Wissenschaft", teacher: "Frau Von Willich", room: "B115", day: "Tue", start: "11:00", end: "12:30", track: "Informatik" },
-    { subject: "Religion", teacher: "Herr Lenz", room: "B208", day: "Tue", start: "13:00", end: "14:30" },
-    { subject: "Spanisch", teacher: "WEIT?, CHAP?", room: "A411, A113", day: "Tue", start: "14:45", end: "16:15", language: "Spanisch" },
-
-    // Mittwoch
-    { subject: "Physik", teacher: "BORM?", room: "B211", day: "Wed", start: "07:30", end: "09:00", track: "Umwelttechnik" },
-    { subject: "Deutsch", teacher: "Her Bendig", room: "B211", day: "Wed", start: "09:15", end: "10:45" },
-    { subject: "PoWi", teacher: "Herr van Dyck", room: "B211", day: "Wed", start: "11:00", end: "12:30" },
-    { subject: "Englisch", teacher: "Frau Klebsch", room: "B211", day: "Wed", start: "13:00", end: "14:30" },
-
-    // Donnerstag
-    { subject: "Mathe", teacher: "Herr von Lindenfels", room: "B211", day: "Thu", start: "07:30", end: "09:00" },
-    { subject: "Englisch", teacher: "Frau Klebsch", room: "B211", day: "Thu", start: "09:15", end: "10:45" },
-    { subject: "Sport", teacher: "Faru Roos, Herr Sommer", room: "S3", day: "Thu", start: "11:00", end: "12:30" },
-    { subject: "Physik", teacher: "Herr Bahmer", room: "B207", day: "Thu", start: "13:00", end: "14:30", track: "Informatik" },
-    { subject: "Biologie", teacher: "BECK?", room: "A401", day: "Thu", start: "13:00", end: "14:30", track: "Umwelttechnik" },
-    { subject: "Spanisch", teacher: "CHAP?", room: "A113", day: "Thu", start: "14:45", end: "16:15", language: "Spanisch" },
-
-    // Freitag
-    { subject: "Biologie", teacher: "JELI?", room: "A407", day: "Fri", start: "07:30", end: "09:00", track: "Informatik" },
-    { subject: "Chemie", teacher: "Herr Meinecke", room: "B211", day: "Fri", start: "07:30", end: "09:00", track: "Umwelttechnik" },
-    { subject: "Informatik", teacher: "Herr Hansen", room: "B115", day: "Fri", start: "09:15", end: "10:45", track: "Informatik" },
-    { subject: "Umwelttechnik", teacher: "Herr Meinecke", room: "B211", day: "Fri", start: "09:15", end: "10:45", track: "Umwelttechnik" },
-    { subject: "Geschichte", teacher: "Frau Klebsch", room: "B211", day: "Fri", start: "11:00", end: "12:30" },
-  ];
+  lessons: Lesson[] = DEFAULT_LESSONS.map(lesson => ({ ...lesson }));
 
   private readonly dayDefs: DayDef[] = [
     { key: "Mon", label: "Montag", short: "Mo", jsIdx: 1 },
@@ -180,7 +115,7 @@ type EditorMode = "new" | "edit";
   private readonly rangeEnd: number = Math.max(...this.periods.map(p => this.toMinutes(p.end))) + 15;
   private readonly rangeTotal: number = this.rangeEnd - this.rangeStart;
 
-  constructor(private settings: SettingsService) {}
+  constructor(private settings: SettingsService, private substitutionsService: SubstitutionService) {}
 
   /* ---------------- Zustand ---------------- */
 
@@ -612,7 +547,25 @@ type EditorMode = "new" | "edit";
     this.editorColorIndex = idx;
   }
 
+  substitutions: Substitution[] = [];
+  substitutionsError = '';
+  private substitutionTimer?: ReturnType<typeof setInterval>;
+  private loadingSubstitutions = false;
+  private substitutionsDestroyed = false;
+
+  async loadSubstitutions(): Promise<void> {
+    if (this.loadingSubstitutions || this.substitutionsDestroyed) return;
+    this.loadingSubstitutions = true;
+    try {
+      this.substitutions = await this.substitutionsService.list();
+      this.substitutionsError = '';
+    } catch { this.substitutionsError = 'Vertretungen konnten nicht aktualisiert werden. Die angezeigten Daten sind möglicherweise nicht aktuell.'; }
+    finally { this.loadingSubstitutions = false; }
+  }
+
   ngOnInit(): void {
+    void this.loadSubstitutions();
+    this.substitutionTimer = setInterval(() => void this.loadSubstitutions(), 15000);
     this.loadProfile();
     this.enforceCompulsoryScience();
     this.isMobile = window.matchMedia("(max-width:920px)").matches;
@@ -623,6 +576,8 @@ type EditorMode = "new" | "edit";
   }
 
   ngOnDestroy(): void {
+    this.substitutionsDestroyed = true;
+    clearInterval(this.substitutionTimer);
     if (this.timerId) clearInterval(this.timerId);
   }
 
@@ -694,8 +649,8 @@ type EditorMode = "new" | "edit";
   // Wie lessonsForDay, aber ohne ausgefallene Stunden – für "aktuell"/"nächste
   // Stunde"-Berechnungen. Im Raster selbst werden ausgefallene Stunden weiterhin
   // angezeigt (nur durchgestrichen), siehe buildDayColumn/lessonsForDay.
-  private activeLessonsForDay(dayKey: DayKey): Lesson[] {
-    return this.lessonsForDay(dayKey).filter(l => !l.cancelled);
+  private activeLessonsForDay(dayKey: DayKey, date: Date = this.now): Lesson[] {
+    return ([] as EffectiveLesson[]).concat(...this.lessonsForDay(dayKey).map(l => splitSubstitutions(l, dateKey(date), this.substitutions))).filter(l => !l.cancelled).sort((a, b) => a.start.localeCompare(b.start));
   }
 
   // Alle Uhrzeiten aus dem Perioden-Raster, aufsteigend sortiert, ohne Duplikate.
@@ -820,19 +775,14 @@ type EditorMode = "new" | "edit";
     const live = this.liveLesson;
     const todayKey = this.todayKey;
 
-    const lessons: PositionedLesson[] = this.lessonsForDay(def.key).map(l => {
-      const top = this.pctFromMinutes(this.toMinutes(l.start));
-      const bottom = this.pctFromMinutes(this.toMinutes(l.end));
-      const isLive = !!live && def.key === todayKey && l.start === live.start;
-      return {
-        ...l,
-        top,
-        height: Math.max(bottom - top, 4),
-        isLive,
-        color: this.subjectColor(l.subject),
-        sourceIndex: this.lessons.indexOf(l),
-      };
-    });
+    const lessons: PositionedLesson[] = ([] as PositionedLesson[]).concat(...this.lessonsForDay(def.key).map(l =>
+      splitSubstitutions(l, dateKey(date), this.substitutions).map(effective => {
+        const top = this.pctFromMinutes(this.toMinutes(effective.start));
+        const bottom = this.pctFromMinutes(this.toMinutes(effective.end));
+        const isLive = isToday && !effective.cancelled && !!live && def.key === todayKey && effective.start === live.start;
+        return { ...effective, top, height: Math.max(bottom - top, 4), isLive,
+          color: this.subjectColor(l.subject), sourceIndex: this.lessons.indexOf(l) };
+      })));
 
     return { def, date, isToday, lessons };
   }
@@ -904,7 +854,7 @@ type EditorMode = "new" | "edit";
       d.setDate(d.getDate() + i);
       const key = this.dayKeyFromDate(d);
       if (!key) continue;
-      const list = this.activeLessonsForDay(key);
+      const list = this.activeLessonsForDay(key, d);
       if (list.length) {
         return { lesson: list[0], date: d, sameDay: false, minutesUntil: 0 };
       }
@@ -985,7 +935,7 @@ type EditorMode = "new" | "edit";
   }
 
   trackByLesson(_index: number, lesson: PositionedLesson): string {
-    return lesson.day + ":" + lesson.sourceIndex;
+    return lesson.day + ":" + lesson.sourceIndex + ":" + lesson.start;
   }
 
   trackByMark(_index: number, mark: TimeMark): number {

@@ -13,10 +13,12 @@ import { AuthGuard } from './auth.guard';
 import { AdminGuard } from './admin.guard';
 import { SettingsModalComponent } from './settings-modal/settings-modal.component';
 import { AccountSettingsComponent } from './account-settings/account-settings.component';
+import { SubstitutionComponent } from './substitution/substitution.component';
 import { SupportComponent } from './support/support.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
+  { path: 'vertretungsplan', component: SubstitutionComponent, canActivate: [AuthGuard] },
   { path: 'support', component: SupportComponent, canActivate: [AuthGuard] },
   { path: '', component: PortalHomeComponent, canActivate: [AuthGuard] },
   { path: 'stundenplan', component: StundenplanPageComponent, canActivate: [AuthGuard] },
@@ -33,6 +35,7 @@ const routes: Routes = [
     ProfileMenuComponent,
     SettingsModalComponent,
     SupportComponent,
+    SubstitutionComponent,
     AccountSettingsComponent,
   ],
   imports: [

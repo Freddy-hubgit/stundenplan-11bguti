@@ -16,6 +16,7 @@ interface PortalTile {
 })
 export class PortalHomeComponent implements OnInit {
   tiles: PortalTile[] = [
+    { title: 'Vertretungsplan', description: 'Fehlende Lehrkräfte, Ersatzlehrer und Unterrichtsausfälle', route: '/vertretungsplan', icon: '🔄' },
     {
       title: 'Stundenplan',
       description: 'Dein Wochenstundenplan mit Live-Ansicht',

@@ -5,6 +5,7 @@
      [class.bg-forest]="backgroundKey === 'forest'">
 
   <div class="app">
+  <p *ngIf="substitutionsError" role="alert">{{ substitutionsError }} <button type="button" (click)="loadSubstitutions()">Erneut laden</button></p>
 
   <header class="dash">
     <div class="clock-block">
@@ -59,6 +60,8 @@
                  *ngFor="let lesson of col.lessons; trackBy: trackByLesson"
                  [class.is-live]="lesson.isLive"
                  [class.hovered]="isLessonHovered(lesson)"
+                 [title]="lesson.substitution ? lesson.originalTeacher + ' fehlt. ' + (lesson.substitution.kind === 'replacement' ? 'Vertretung: ' + lesson.teacher + ' / Raum ' + lesson.room : 'Ausgefallen') + ' / ' + lesson.start + '–' + lesson.end + ' / ' + lesson.substitution.note : ''"
+                 [class.substituted]="lesson.substitution?.kind === 'replacement'"
                  [class.cancelled]="lesson.cancelled"
                  [style.top.%]="lesson.top"
                  [style.height.%]="lesson.height"
@@ -69,10 +72,13 @@
                  (click)="openEditLesson(lesson, $event)">
               <button class="edit-btn" (click)="openEditLesson(lesson, $event)" aria-label="Stunde bearbeiten">✎</button>
               <div class="subj">{{ lesson.subject }}</div>
+              <div class="original-teacher" *ngIf="lesson.substitution">{{ lesson.originalTeacher }}</div>
               <div class="meta">{{ lesson.teacher }}</div>
+              <a *ngIf="lesson.substitution" class="substitution-details" routerLink="/vertretungsplan" (click)="$event.stopPropagation()" [title]="lesson.substitution.note || 'Alle Informationen im Vertretungsplan'">{{ lesson.substitution.start_time.slice(0,5) }}–{{ lesson.substitution.end_time.slice(0,5) }} · Details</a>
               <div class="room">Raum {{ lesson.room }}</div>
               <div class="time">{{ lesson.start }}–{{ lesson.end }}</div>
               <div class="live-tag" *ngIf="lesson.isLive">LIVE</div>
+              <a class="replacement-tag" *ngIf="lesson.substitution?.kind === 'replacement'" routerLink="/vertretungsplan" (click)="$event.stopPropagation()" aria-label="Vertretungsdetails anzeigen">VERTRETUNG ↗</a>
               <div class="cancelled-tag" *ngIf="lesson.cancelled">AUSGEFALLEN</div>
             </div>
 
