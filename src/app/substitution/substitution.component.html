@@ -32,7 +32,8 @@
       <form (ngSubmit)="save()">
         <fieldset [disabled]="saving">
           <div class="form-grid">
-            <label>Datum des Eintrags<input type="date" name="date" [(ngModel)]="draft.date" required></label>
+            <label>Datum des Eintrags<input type="date" name="date" [(ngModel)]="draft.date" (ngModelChange)="changeStartDate()" required></label>
+            <label *ngIf="!editingId">Bis einschließlich<input type="date" name="endDate" [(ngModel)]="endDate" [min]="draft.date" required></label>
             <label>Fehlende Lehrkraft<input name="teacher" [(ngModel)]="draft.teacher" list="known-teachers" maxlength="160" required placeholder="Lehrkraft aus dem Stundenplan wählen"></label>
             <datalist id="known-teachers"><option *ngFor="let teacher of teachers" [value]="teacher"></option></datalist>
             <label>Von<input type="time" name="start" [(ngModel)]="draft.start_time" required></label>
@@ -42,15 +43,15 @@
             <label *ngIf="draft.kind === 'replacement'">Ersatzraum (optional)<input name="room" [(ngModel)]="draft.room" maxlength="100" placeholder="Sonst bisheriger Raum"></label>
           </div>
           <label>Hinweis (optional)<textarea name="note" [(ngModel)]="draft.note" rows="2" maxlength="2000" placeholder="Weitere Informationen für die Schüler"></textarea></label>
-          <p class="muted">Der Eintrag gilt für alle Stunden dieser Lehrkraft im angegebenen Zeitraum. Verwende die gleiche Schreibweise wie im Stundenplan.</p>
+          <p class="muted">Der Zeitraum gilt einschließlich Anfangs- und Enddatum, täglich zu den angegebenen Uhrzeiten. Die Einträge können danach pro Tag bearbeitet oder gelöscht werden. Verwende die gleiche Schreibweise wie im Stundenplan.</p>
           <div class="actions"><button type="submit" class="primary">{{ saving ? 'Speichere …' : editingId ? 'Änderungen speichern' : 'Eintrag speichern' }}</button><button *ngIf="editingId" type="button" (click)="reset()">Abbrechen</button></div>
         </fieldset>
       </form>
     </section>
     <section aria-labelledby="plan-title"><h2 id="plan-title">Wochenübersicht · {{ weekLabel }}</h2>
-      <section *ngFor="let day of weekDays; trackBy: trackDay" class="day-group" [class.is-today]="day.today" [attr.aria-labelledby]="'day-' + day.date">
+      <p *ngIf="!loading && !loadError && !daysWithEntries.length" class="panel week-empty" role="status">In dieser Woche hast du keine Vertretungen oder Unterrichtsausfälle.</p>
+      <section *ngFor="let day of daysWithEntries; trackBy: trackDay" class="day-group" [class.is-today]="day.today" [attr.aria-labelledby]="'day-' + day.date">
         <header class="day-heading"><h3 [id]="'day-' + day.date">{{ day.label }} <span *ngIf="day.today" class="today-label">Heute</span></h3><span class="day-count">{{ day.entries.length }} {{ day.entries.length === 1 ? 'Eintrag' : 'Einträge' }}</span></header>
-        <p *ngIf="!loading && !loadError && !day.entries.length" class="day-empty">Keine Vertretungen oder Ausfälle eingetragen.</p>
       <article class="panel entry" *ngFor="let entry of day.entries; trackBy: trackId" [class.cancelled-entry]="entry.kind === 'cancelled'">
         <div class="entry-header"><h3>{{ entry.teacher }} fehlt</h3><span class="badge">{{ entry.kind === 'replacement' ? 'Vertretung' : 'Ausgefallen' }}</span></div>
         <dl><dt>Zeitraum</dt><dd>{{ entry.start_time.slice(0,5) }}–{{ entry.end_time.slice(0,5) }} Uhr</dd>

@@ -1,6 +1,6 @@
 """Browser checks against a simulated API; start ng serve on port 4200 first."""
 from browser_fixtures import *
-from datetime import datetime
+from datetime import datetime, date, timedelta
 entries=[]
 
 def plan_mock(route, role):
@@ -8,6 +8,13 @@ def plan_mock(route, role):
     args=route.request.post_data_json or {} if route.request.method=='POST' else {}
     if '/rpc/substitution_list' in url:
         result=entries
+    elif '/rpc/substitution_save_range' in url:
+        start=date.fromisoformat(args['entry_date']); end=date.fromisoformat(args['end_date'])
+        result=[]
+        for index in range((end-start).days+1):
+            key=f'range-{len(entries)}-{index}'
+            entries.append(dict(id=key,date=(start+timedelta(days=index)).isoformat(),teacher=args['absent_teacher'],start_time=args['starts'],end_time=args['ends'],kind=args['entry_kind'],replacement_teacher=args['replacement'],room=args['new_room'],note=args['info'],updated_at=now))
+            result.append(key)
     elif '/rpc/substitution_save' in url:
         entry=dict(id=args['entry_id'] or '10000000-0000-0000-0000-000000000001',date=args['entry_date'],
                    teacher=args['absent_teacher'],start_time=args['starts'],end_time=args['ends'],
@@ -36,6 +43,7 @@ with sync_playwright() as p:
         return page
     staff=open_as('support')
     staff.get_by_label('Datum des Eintrags',exact=True).fill('2026-10-19')
+    staff.get_by_label('Bis einschließlich',exact=True).fill('2026-10-19')
     staff.get_by_label('Fehlende Lehrkraft',exact=True).fill('Herr Hansen')
     staff.get_by_label('Von',exact=True).fill('08:15')
     staff.get_by_label('Bis',exact=True).fill('09:00')
@@ -81,6 +89,18 @@ with sync_playwright() as p:
     user.goto(BASE+'/stundenplan',wait_until='domcontentloaded')
     user.locator('.lesson').first.wait_for()
     assert user.locator('.lesson.cancelled, .lesson.substituted').count()==0
+    ranged=open_as('support')
+    ranged.get_by_label('Datum des Eintrags',exact=True).fill('2026-10-21')
+    ranged.get_by_label('Bis einschließlich',exact=True).fill('2026-10-23')
+    ranged.get_by_label('Fehlende Lehrkraft',exact=True).fill('Herr Hansen')
+    ranged.get_by_label('Ersatzlehrkraft',exact=True).fill('Frau Drei Tage')
+    ranged.get_by_role('button',name='Eintrag speichern',exact=True).click()
+    ranged.get_by_text('Abwesenheit für den gesamten Zeitraum gespeichert.',exact=True).wait_for()
+    assert len(entries)==3
+    user.goto(BASE+'/vertretungsplan',wait_until='domcontentloaded')
+    user.get_by_text('Frau Drei Tage',exact=True).first.wait_for()
+    assert user.locator('.day-group').count()==3
+    assert user.get_by_text('Frau Drei Tage',exact=True).count()==3
     assert not errors,errors
     print('PASS: staff create/edit, read-only users, replacement teacher/room/details, partial-hour split, cancellation, admin delete, mobile layout; simulated API')
     browser.close()

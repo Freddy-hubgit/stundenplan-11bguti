@@ -38,8 +38,10 @@ export function splitSubstitutions(lesson: Lesson, date: string, entries: Substi
 export class SubstitutionService {
   constructor(private api: SupabaseService) {}
   list(): Promise<Substitution[]> { return this.api.supportRpc('substitution_list'); }
-  save(entry: SubstitutionInput, id: string | null): Promise<string> {
-    return this.api.supportRpc('substitution_save', { entry_id: id, entry_date: entry.date,
+  save(entry: SubstitutionInput, id: string | null, endDate: string = entry.date): Promise<string | string[]> {
+    const range = !id && endDate !== entry.date;
+    return this.api.supportRpc(range ? 'substitution_save_range' : 'substitution_save', {
+      ...(range ? { end_date: endDate } : { entry_id: id }), entry_date: entry.date,
       absent_teacher: entry.teacher, starts: entry.start_time, ends: entry.end_time,
       entry_kind: entry.kind, replacement: entry.replacement_teacher, new_room: entry.room, info: entry.note });
   }

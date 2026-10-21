@@ -78,3 +78,14 @@ python tests/substitution-browser.py
 Die Browserprüfung nutzt eine simulierte Supabase-API, die Datenbankprüfung eine lokale
 PostgreSQL-Instanz in PGlite. Die Live-Migration und das Live-Verhalten müssen nach der
 Einrichtung im tatsächlichen Supabase-Projekt überprüft werden.
+
+### Abwesenheiten über mehrere Tage
+
+Für Datumsbereiche zusätzlich `migrations/202610210003_substitution_date_range.sql`
+einmalig im Supabase-SQL-Editor ausführen. Die Migration setzt die Vertretungsplan-Migration
+`202610210002` voraus. Anfangs- und Enddatum sind eingeschlossen (maximal 366 Tage).
+Die gleichen Uhrzeiten und Vertretungsinformationen gelten an jedem Tag. Alle Tages-Einträge
+werden atomar gespeichert; bei einem Konflikt wird nichts aus diesem Vorgang gespeichert.
+Bestehende Einträge bleiben unverändert. Anschließend können die Tage einzeln bearbeitet
+oder gelöscht werden. In der Wochenübersicht erscheinen nur Tage mit Einträgen; eine leere
+Woche zeigt stattdessen eine gemeinsame Meldung.

@@ -22,16 +22,20 @@ with sync_playwright() as p:
         page.clock.install(time=datetime(2026,10,21,10,0))
         page.goto(BASE+'/vertretungsplan',wait_until='domcontentloaded')
         page.get_by_text('Mittwochslehrer fehlt',exact=True).wait_for()
-        assert page.locator('.day-group').count()==7
+        assert page.locator('.day-group').count()==2
         monday=page.locator('.day-group').first
         assert monday.locator('.entry h3').all_text_contents()==['Früher Lehrer fehlt','Montagslehrer fehlt']
         assert page.locator('.day-group.is-today').count()==1
         assert page.get_by_text('Andere Woche fehlt',exact=True).count()==0
-        assert page.locator('.day-empty').count()==5
+        assert page.locator('.day-empty').count()==0
         page.get_by_role('button',name='Nächste Woche',exact=True).click()
         page.get_by_text('Andere Woche fehlt',exact=True).wait_for()
         page.get_by_text('Sonntagslehrer fehlt',exact=True).wait_for()
         assert page.get_by_text('Montagslehrer fehlt',exact=True).count()==0
+        page.get_by_role('button',name='Nächste Woche',exact=True).click()
+        page.get_by_text('In dieser Woche hast du keine Vertretungen oder Unterrichtsausfälle.',exact=True).wait_for()
+        assert page.locator('.day-group').count()==0
+        page.get_by_role('button',name='Vorherige Woche',exact=True).click()
         page.get_by_role('button',name='Vorherige Woche',exact=True).click()
         page.get_by_text('Montagslehrer fehlt',exact=True).wait_for()
         page.get_by_role('button',name='Kalender öffnen',exact=True).click()

@@ -11,6 +11,7 @@ export class SubstitutionComponent implements OnInit, OnDestroy {
   entries: Substitution[] = [];
   selectedDate = dateKey(new Date());
   draft: SubstitutionInput = this.emptyDraft();
+  endDate = this.selectedDate;
   editingId: string | null = null;
   deletingId: string | null = null;
   teachers = Array.from(new Set(DEFAULT_LESSONS.map(l => l.teacher))).sort();
@@ -45,6 +46,7 @@ export class SubstitutionComponent implements OnInit, OnDestroy {
           .sort((a, b) => a.start_time.localeCompare(b.start_time) || a.teacher.localeCompare(b.teacher, 'de')) };
     });
   }
+  get daysWithEntries() { return this.weekDays.filter(day => day.entries.length > 0); }
   get weekLabel(): string {
     const days = this.weekDays;
     return this.parseDate(days[0].date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }) + ' – '
@@ -102,16 +104,20 @@ export class SubstitutionComponent implements OnInit, OnDestroy {
     catch { this.loadError = 'Vertretungsplan konnte nicht geladen werden. Bitte erneut versuchen.'; }
     finally { this.loading = false; this.refreshing = false; }
   }
-  changeDate(): void { if (!this.editingId) this.draft.date = this.selectedDate; }
+  changeDate(): void {
+    if (!this.editingId) { this.draft.date = this.selectedDate; this.endDate = this.selectedDate; }
+  }
+  changeStartDate(): void { if (!this.endDate || this.endDate < this.draft.date) this.endDate = this.draft.date; }
   edit(entry: Substitution): void {
     if (this.saving) return;
     this.editingId = entry.id;
     this.draft = { date: entry.date, teacher: entry.teacher, start_time: entry.start_time.slice(0, 5),
       end_time: entry.end_time.slice(0, 5), kind: entry.kind, replacement_teacher: entry.replacement_teacher,
       room: entry.room, note: entry.note };
+    this.endDate = entry.date;
     this.error = ''; this.success = '';
   }
-  reset(): void { this.editingId = null; this.draft = this.emptyDraft(); this.error = ''; }
+  reset(): void { this.editingId = null; this.draft = this.emptyDraft(); this.endDate = this.selectedDate; this.error = ''; }
   async save(): Promise<void> {
     if (!this.isStaff || this.saving) return;
     this.error = ''; this.success = '';
@@ -119,14 +125,19 @@ export class SubstitutionComponent implements OnInit, OnDestroy {
       || this.draft.start_time >= this.draft.end_time || (this.draft.kind === 'replacement' && !this.draft.replacement_teacher.trim())) {
       this.error = 'Bitte Datum, fehlende Lehrkraft, einen gültigen Zeitraum und bei Vertretung eine Ersatzlehrkraft angeben.'; return;
     }
+    const rangeDays = (Date.parse(this.endDate + 'T00:00:00Z') - Date.parse(this.draft.date + 'T00:00:00Z')) / 86400000;
+    if (!this.editingId && (!Number.isFinite(rangeDays) || rangeDays < 0 || rangeDays > 365)) {
+      this.error = 'Bitte einen gültigen Datumsbereich mit höchstens 366 Tagen wählen.'; return;
+    }
     this.saving = true;
     this.revision++;
     try {
-      await this.api.save({ ...this.draft, replacement_teacher: this.draft.kind === 'cancelled' ? '' : this.draft.replacement_teacher }, this.editingId);
-      this.selectedDate = this.draft.date; this.reset(); this.success = 'Eintrag gespeichert.';
+      const multipleDays = !this.editingId && this.endDate !== this.draft.date;
+      await this.api.save({ ...this.draft, replacement_teacher: this.draft.kind === 'cancelled' ? '' : this.draft.replacement_teacher }, this.editingId, this.endDate);
+      this.selectedDate = this.draft.date; this.reset(); this.success = multipleDays ? 'Abwesenheit für den gesamten Zeitraum gespeichert.' : 'Eintrag gespeichert.';
       await this.reloadSavedEntries();
     } catch (e: any) {
-      this.error = e?.code === '23P01' ? 'Für diese Lehrkraft überschneidet sich bereits ein Eintrag an diesem Tag.'
+      this.error = e?.code === '23P01' ? 'Für diese Lehrkraft gibt es im gewählten Zeitraum bereits einen überschneidenden Eintrag. Es wurde nichts gespeichert.'
         : 'Speichern fehlgeschlagen. Bitte erneut versuchen. Deine Eingaben bleiben erhalten.';
     } finally { this.saving = false; }
   }
