@@ -12,9 +12,11 @@ import { ProfileMenuComponent } from './profile-menu/profile-menu.component';
 import { AuthGuard } from './auth.guard';
 import { AdminGuard } from './admin.guard';
 import { SettingsModalComponent } from './settings-modal/settings-modal.component';
+import { SupportComponent } from './support/support.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
+  { path: 'support', component: SupportComponent, canActivate: [AuthGuard] },
   { path: '', component: PortalHomeComponent, canActivate: [AuthGuard] },
   { path: 'stundenplan', component: StundenplanPageComponent, canActivate: [AuthGuard] },
   { path: 'admin', component: AdminComponent, canActivate: [AuthGuard, AdminGuard] },
@@ -29,6 +31,7 @@ const routes: Routes = [
     AdminComponent,
     ProfileMenuComponent,
     SettingsModalComponent,
+    SupportComponent,
   ],
   imports: [
     BrowserModule,

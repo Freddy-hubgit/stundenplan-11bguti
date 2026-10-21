@@ -1,0 +1,69 @@
+<main class="portal-shell" [class.theme-light]="settings.theme === 'light'"
+      [class.bg-aurora]="settings.backgroundKey === 'aurora'" [class.bg-sunset]="settings.backgroundKey === 'sunset'"
+      [class.bg-forest]="settings.backgroundKey === 'forest'">
+  <div class="support-content">
+    <a routerLink="/" class="back">← Hauptmenü</a>
+    <header class="portal-header"><div><h1>{{ isStaff ? 'Support-Tickets' : 'Support & Tickets' }}</h1>
+      <p>{{ isStaff ? 'Hilf Nutzern direkt im Ticket-Chat.' : 'Wir helfen dir weiter. Beschreibe dein Anliegen in einem Ticket.' }}</p></div>
+      <app-profile-menu></app-profile-menu>
+    </header>
+    <p *ngIf="loading" role="status">Support wird geladen …</p>
+    <div *ngIf="error" class="error" role="alert">{{ error }} <button type="button" (click)="refresh()">Erneut laden</button></div>
+    <div *ngIf="refreshError" class="error" role="alert">{{ refreshError }} <button type="button" (click)="refresh()">Erneut laden</button></div>
+    <ng-container *ngIf="profile && !loading">
+      <section class="panel team-section" aria-labelledby="team-title">
+        <h2 id="team-title">Dein Support-Team</h2>
+        <p class="muted">Support und Administration können deine Tickets lesen und beantworten.</p>
+        <p *ngIf="teamError" role="alert">{{ teamError }} <button type="button" (click)="loadTeam()">Erneut laden</button></p>
+        <div class="team-grid"><div class="member" *ngFor="let member of team; trackBy: trackId">
+          <span class="avatar" aria-hidden="true">{{ member.role === 'admin' ? '🛡️' : '💬' }}</span>
+          <div><strong>{{ member.full_name }}</strong><span class="role">{{ member.role === 'admin' ? 'Admin' : 'Support' }}</span></div>
+        </div></div>
+        <p *ngIf="!team.length && !teamError" class="muted">Zurzeit sind keine Teammitglieder eingetragen.</p>
+      </section>
+      <section class="panel" *ngIf="!isStaff" aria-labelledby="new-title">
+        <h2 id="new-title">Neues Ticket</h2>
+        <form (ngSubmit)="create()" class="new-ticket">
+          <label>Betreff<input name="subject" [(ngModel)]="subject" required maxlength="160" placeholder="Wobei brauchst du Hilfe?" [disabled]="busy"></label>
+          <label>Deine Nachricht<textarea name="firstMessage" [(ngModel)]="firstMessage" required maxlength="5000" rows="3" [disabled]="busy"></textarea></label>
+          <button class="primary" type="submit" [disabled]="busy || !subject.trim() || !firstMessage.trim()">Ticket erstellen</button>
+        </form>
+      </section>
+      <div class="ticket-layout">
+        <section class="panel ticket-list" aria-labelledby="tickets-title">
+          <h2 id="tickets-title">{{ isStaff ? 'Alle Tickets' : 'Meine Tickets' }}</h2>
+          <label for="ticket-filter">Status</label>
+          <select id="ticket-filter" name="filter" [(ngModel)]="filter"><option value="open">Offen</option><option value="closed">Geschlossen</option><option value="all">Alle</option></select>
+          <p class="muted small">Aktualisierung alle 5 Sekunden.</p>
+          <p *ngIf="!visibleTickets.length" class="muted">Keine Tickets in dieser Ansicht.</p>
+          <button type="button" class="ticket" *ngFor="let ticket of visibleTickets; trackBy: trackId"
+                  [class.active]="selected?.id === ticket.id" [attr.aria-pressed]="selected?.id === ticket.id" [disabled]="busy" (click)="select(ticket)">
+            <strong>{{ ticket.subject }}</strong><span *ngIf="isStaff">{{ ticket.owner_name }}</span>
+            <span class="muted small">{{ ticket.status === 'open' ? 'Offen' : 'Geschlossen' }} · {{ ticket.updated_at | date:'dd.MM.yyyy HH:mm' }}</span>
+          </button>
+        </section>
+        <section class="panel chat" aria-labelledby="chat-title">
+          <ng-container *ngIf="selected; else noTicket">
+            <div class="chat-header"><div><h2 id="chat-title">{{ selected.subject }}</h2>
+              <p class="muted">{{ selected.owner_name }} · {{ selected.status === 'open' ? 'Offen' : 'Geschlossen' }}</p></div>
+              <button *ngIf="isStaff" type="button" [disabled]="busy || messagesLoading" (click)="changeStatus()">{{ selected.status === 'open' ? 'Ticket schließen' : 'Wieder öffnen' }}</button>
+            </div>
+            <p *ngIf="messagesLoading" role="status">Nachrichten werden geladen …</p>
+            <div class="messages" role="log" aria-label="Ticketverlauf" aria-live="polite" aria-relevant="additions">
+              <article class="message" *ngFor="let message of messages; trackBy: trackId" [class.own]="message.sender_id === profile.id">
+                <div class="message-meta"><strong>{{ message.sender_name }}</strong><span>{{ message.sender_role === 'admin' ? 'Admin' : message.sender_role === 'support' ? 'Support' : 'Nutzer' }} · {{ message.created_at | date:'dd.MM.yyyy HH:mm' }}</span></div>
+                <p>{{ message.body }}</p>
+              </article>
+            </div>
+            <form *ngIf="selected.status === 'open'" (ngSubmit)="send()" class="reply-form">
+              <label>Nachricht<textarea name="reply" [(ngModel)]="reply" required maxlength="5000" rows="3" [disabled]="busy" placeholder="Schreibe eine Antwort …"></textarea></label>
+              <button class="primary" type="submit" [disabled]="busy || messagesLoading || !reply.trim()">Nachricht senden</button>
+            </form>
+            <p *ngIf="selected.status === 'closed'" class="muted">Dieses Ticket ist geschlossen. Der Support kann es wieder öffnen.</p>
+          </ng-container>
+          <ng-template #noTicket><h2 id="chat-title">Dein Ticket-Chat</h2><p class="muted">Wähle ein Ticket aus, um den Gesprächsverlauf zu sehen.</p></ng-template>
+        </section>
+      </div>
+    </ng-container>
+  </div>
+</main>

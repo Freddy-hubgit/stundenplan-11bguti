@@ -40,6 +40,13 @@ export class PortalHomeComponent implements OnInit {
     const profile = await this.supabase.getMyProfile();
     const isStaff = profile?.role === 'admin' || profile?.role === 'support';
 
+    this.tiles = [...this.tiles, {
+      title: isStaff ? 'Support-Tickets' : 'Support & Tickets',
+      description: isStaff ? 'Offene Tickets ansehen und im Chat beantworten' : 'Support-Team kennenlernen und Hilfe im Chat erhalten',
+      route: '/support',
+      icon: '💬',
+    }];
+
     if (isStaff) {
       this.tiles = [
         ...this.tiles,

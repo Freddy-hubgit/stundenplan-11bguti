@@ -86,6 +86,12 @@ export class SupabaseService {
     return (data as Profile[]) ?? [];
   }
 
+  async supportRpc<T>(name: string, args?: Record<string, unknown>): Promise<T> {
+    const { data, error } = await this.client.rpc(name, args);
+    if (error) throw error;
+    return data as T;
+  }
+
   async createUserAccount(
     email: string,
     password: string,
