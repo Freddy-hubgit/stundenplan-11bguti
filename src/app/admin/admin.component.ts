@@ -17,7 +17,7 @@ export class AdminComponent implements OnInit {
   newName = '';
   newEmail = '';
   newPassword = '';
-  newRole: 'user' | 'support' | 'admin' = 'user';
+  newRole: 'user' | 'teacher' | 'support' | 'admin' = 'user';
   creating = false;
   createError = '';
   createSuccess = '';

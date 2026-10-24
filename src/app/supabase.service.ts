@@ -8,7 +8,7 @@ export interface Profile {
   id: string;
   email: string;
   full_name: string | null;
-  role: 'user' | 'support' | 'admin';
+  role: 'user' | 'teacher' | 'support' | 'admin';
   created_at: string;
 }
 
@@ -95,10 +95,10 @@ export class SupabaseService {
   async createUserAccount(
     email: string,
     password: string,
-    role: 'user' | 'support' | 'admin',
+    role: 'user' | 'teacher' | 'support' | 'admin',
     name: string
   ): Promise<{ ok: boolean; error?: string }> {
-    const { data, error } = await this.client.functions.invoke('quick-responder', {
+    const { data, error } = await this.client.functions.invoke(role === 'teacher' ? 'create-teacher' : 'quick-responder', {
       body: { email, password, role, name },
     });
     return this.unwrapFunctionResult(data, error);

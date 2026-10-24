@@ -121,3 +121,48 @@ Die Migration wurde lokal getestet und nicht im Live-Projekt ausgeführt.
 PGLITE_MODULE_PATH=/tmp/support-db-tests/node_modules/@electric-sql/pglite/dist/index.js node tests/portal-events-database.mjs
 python tests/portal-events-browser.py
 ```
+
+## Rolle „Lehrer“ und Kalender-/Ticketrechte
+
+1. `migrations/202610240005_teacher_permissions.sql` einmalig im Supabase-SQL-Editor
+   ausführen. Voraussetzung sind die Ticket- und Kalender-Migrationen (`202610210001`
+   und `202610240004`). Die Migration erweitert die übliche `profiles_role_check`-
+   Textrollen-Constraint, ohne Profilrichtlinien oder bestehende Konten zu ersetzen.
+   Abweichende Rollentypen/zusätzliche Constraints müssen im tatsächlichen Schema geprüft
+   werden; Fehler rollen die Migration zurück.
+2. Die neue Edge Function aus `functions/create-teacher/index.ts` als `create-teacher`
+   bereitstellen, z.B. über Supabase → Edge Functions oder mit angemeldeter Supabase CLI:
+
+   ```sh
+   supabase functions deploy create-teacher --project-ref amwowtaxrgfcojlsxhzk
+   ```
+
+   `SUPABASE_URL` und `SUPABASE_SERVICE_ROLE_KEY` stellt Supabase im Edge-Runtime bereit.
+   Diese Schlüssel niemals in die Webseite kopieren. Die Funktion prüft das Benutzer-Token
+   mit Supabase Auth und anschließend die aktuelle Profilrolle. Nur Support/Admin dürfen
+   Lehrer anlegen. Eingesendete Rollen werden ignoriert; die Rolle ist serverseitig immer
+   `teacher`. Schlägt die Profilanlage fehl, wird das neu angelegte Auth-Konto zurückgenommen;
+   ein ebenfalls fehlgeschlagenes Aufräumen wird ausdrücklich als Fehler gemeldet.
+   Bestehende Funktionen `quick-responder` und `manage-user` werden nicht ersetzt.
+
+| Rolle | Kalender | Videokonferenz | Support-Tickets | Kontenverwaltung |
+| --- | --- | --- | --- | --- |
+| Nutzer (`user`) | Kein Zugriff | Lesen/teilnehmen | Eigene Tickets | Nein |
+| Lehrer (`teacher`) | Lesen | Lesen/teilnehmen | Kein Zugriff | Nein |
+| Support / Admin | Verwalten | Verwalten/teilnehmen | Alle Tickets | Ja |
+
+Normale Nutzer erhalten aus `portal_events_list` nur Besprechungen, keine normalen Termine.
+Lehrer können auch frühere eigene Tickets nach einem Rollenwechsel nicht mehr lesen oder
+beantworten. Frontend-Kacheln und Routenschutz spiegeln diese serverseitigen Rechte wider.
+Lehrerkonten können nach SQL-Migration und Function-Deployment in der Verwaltung über die
+neue Rollenoption „Lehrer“ angelegt werden. Die bestehenden Profil-RLS-Regeln müssen weiterhin
+verhindern, dass normale Nutzer ihre eigene Rolle verändern.
+
+```sh
+PGLITE_MODULE_PATH=/tmp/support-db-tests/node_modules/@electric-sql/pglite/dist/index.js node tests/teacher-permissions-database.mjs
+node tests/create-teacher-function.cjs
+python tests/teacher-permissions-browser.py
+```
+
+Datenbank und Function-Handler sind lokal geprüft; die Handler-Prüfung simuliert das Supabase-SDK.
+Die Live-Migration und die neue Edge Function wurden von der Entwicklungsumgebung nicht deployed.

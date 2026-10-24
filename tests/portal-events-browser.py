@@ -7,7 +7,7 @@ events=[]
 def event_mock(route,role):
     url=route.request.url
     args=route.request.post_data_json or {} if route.request.method=='POST' else {}
-    if '/rpc/portal_events_list' in url: result=sorted(events,key=lambda e:e['starts_at'])
+    if '/rpc/portal_events_list' in url: result=sorted([e for e in events if role!='user' or e['kind']=='meeting'],key=lambda e:e['starts_at'])
     elif '/rpc/portal_event_save' in url:
         id=args['entry_id'] or f'00000000-1111-0000-0000-{len(events)+1:012d}'
         entry=dict(id=id,kind=args['entry_kind'],title=args['entry_title'],description=args['details'],starts_at=args['starts'],
@@ -49,10 +49,10 @@ with sync_playwright() as p:
         user.get_by_role('button',name='Zum Kalender hinzufügen (.ics)',exact=True).click()
     data=Path(info.value.path()).read_text()
     assert 'BEGIN:VCALENDAR' in data and 'DTSTART:20261026T090000Z' in data and 'URL:'+generated in data
-    user.goto(BASE+'/kalender',wait_until='domcontentloaded')
-    user.get_by_role('button',name='Montag, 26. Oktober 2026, 1 Termine',exact=True).click()
-    user.get_by_role('heading',name='Jitsi Klassenbesprechung',exact=True).wait_for()
-    assert user.locator('.day').count()==42
+    calendar_user=page_as('teacher',path='/kalender')
+    calendar_user.get_by_role('button',name='Montag, 26. Oktober 2026, 1 Termine',exact=True).click()
+    calendar_user.get_by_role('heading',name='Jitsi Klassenbesprechung',exact=True).wait_for()
+    assert calendar_user.locator('.day').count()==42
     admin=page_as('admin',390,'/kalender')
     admin.get_by_role('button',name='+ Termin erstellen',exact=True).click()
     admin.get_by_label('Titel',exact=True).fill('Schulveranstaltung')

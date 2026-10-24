@@ -5,7 +5,7 @@ from playwright.sync_api import sync_playwright
 
 BASE = 'http://127.0.0.1:4200'
 PROJECT = 'amwowtaxrgfcojlsxhzk'
-ids = {r: f'00000000-0000-0000-0000-00000000000{n}' for n, r in enumerate(['user', 'other', 'support', 'admin'], 1)}
+ids = {r: f'00000000-0000-0000-0000-00000000000{n}' for n, r in enumerate(['user', 'other', 'support', 'admin', 'teacher'], 1)}
 tickets, messages = [], []
 now = '2026-10-21T12:00:00Z'
 

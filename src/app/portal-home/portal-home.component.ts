@@ -16,7 +16,6 @@ interface PortalTile {
 })
 export class PortalHomeComponent implements OnInit {
   tiles: PortalTile[] = [
-    { title: 'Kalender', description: 'Termine, Veranstaltungen und Besprechungen', route: '/kalender', icon: '📅' },
     { title: 'Videokonferenz', description: 'Jitsi-Besprechungen ansehen und teilnehmen', route: '/videokonferenz', icon: '📹' },
     { title: 'Vertretungsplan', description: 'Fehlende Lehrkräfte, Ersatzlehrer und Unterrichtsausfälle', route: '/vertretungsplan', icon: '🔄' },
     {
@@ -46,7 +45,9 @@ export class PortalHomeComponent implements OnInit {
     this.greeting = name ? `Hi, ${name}` : 'Hi!';
     const isStaff = profile?.role === 'admin' || profile?.role === 'support';
 
-    this.tiles = [...this.tiles, {
+    if (profile && profile.role !== 'user') this.tiles = [...this.tiles, { title: 'Kalender', description: 'Termine, Veranstaltungen und Besprechungen', route: '/kalender', icon: '📅' }];
+
+    if (profile && profile.role !== 'teacher') this.tiles = [...this.tiles, {
       title: isStaff ? 'Support-Tickets' : 'Support & Tickets',
       description: isStaff ? 'Offene Tickets ansehen und im Chat beantworten' : 'Support-Team kennenlernen und Hilfe im Chat erhalten',
       route: '/support',

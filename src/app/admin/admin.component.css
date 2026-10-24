@@ -351,3 +351,4 @@ button.primary:disabled {
   font-size: 13px;
   color: #ff9a9a;
 }
+.role-badge.teacher { background: rgba(140,187,255,.14); color: #8cbbff; }
