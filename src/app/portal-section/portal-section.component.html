@@ -1,0 +1,14 @@
+<main class="portal-shell" [class.theme-light]="settings.theme === 'light'"
+      [class.bg-aurora]="settings.backgroundKey === 'aurora'" [class.bg-sunset]="settings.backgroundKey === 'sunset'" [class.bg-forest]="settings.backgroundKey === 'forest'">
+  <header class="portal-header">
+    <div><a routerLink="/">← Hauptmenü</a><h1>{{ route.snapshot.data.title }}</h1></div>
+    <button type="button" class="settings-btn" (click)="settingsOpen = true" aria-label="Einstellungen öffnen">⚙</button>
+  </header>
+  <section class="empty-section">
+    <h2>{{ route.snapshot.data.title }} wird eingerichtet</h2>
+    <p>{{ route.snapshot.data.description }}</p>
+    <p>Dieser Bereich ist noch nicht verfügbar.</p>
+    <a routerLink="/">Zurück zum Hauptmenü →</a>
+  </section>
+  <app-settings-modal [open]="settingsOpen" (openChange)="settingsOpen = $event"></app-settings-modal>
+</main>

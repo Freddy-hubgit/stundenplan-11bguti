@@ -182,3 +182,8 @@
   .portal-header h1 { font-size: 23px; }
   .header-actions { gap: 8px; }
 }
+
+.tile[data-route="/kalender"] { --tile-accent: #8cbbff; --tile-tint: rgba(140,187,255,.09); }
+.tile[data-route="/videokonferenz"] { --tile-accent: #f29cbe; --tile-tint: rgba(242,156,190,.09); }
+.portal-shell.theme-light .tile[data-route="/kalender"] { --tile-accent: #315f9f; }
+.portal-shell.theme-light .tile[data-route="/videokonferenz"] { --tile-accent: #a14770; }

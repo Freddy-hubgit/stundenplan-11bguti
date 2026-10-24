@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule, Routes } from '@angular/router';
 
 import { AppComponent } from './app.component';
+import { PortalSectionComponent } from './portal-section/portal-section.component';
 import { PortalHomeComponent } from './portal-home/portal-home.component';
 import { StundenplanPageComponent } from './stundenplan/stundenplan-page.component';
 import { LoginComponent } from './login/login.component';
@@ -17,6 +18,8 @@ import { SubstitutionComponent } from './substitution/substitution.component';
 import { SupportComponent } from './support/support.component';
 
 const routes: Routes = [
+  { path: 'kalender', component: PortalSectionComponent, canActivate: [AuthGuard], data: { title: 'Kalender', description: 'Hier ist Platz für Termine und Veranstaltungen.' } },
+  { path: 'videokonferenz', component: PortalSectionComponent, canActivate: [AuthGuard], data: { title: 'Videokonferenz', description: 'Hier ist Platz für Videokonferenzen und Besprechungslinks.' } },
   { path: 'login', component: LoginComponent },
   { path: 'vertretungsplan', component: SubstitutionComponent, canActivate: [AuthGuard] },
   { path: 'support', component: SupportComponent, canActivate: [AuthGuard] },
@@ -29,6 +32,7 @@ const routes: Routes = [
   declarations: [
     AppComponent,
     PortalHomeComponent,
+    PortalSectionComponent,
     StundenplanPageComponent,
     LoginComponent,
     AdminComponent,
