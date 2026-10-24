@@ -4,7 +4,7 @@
      [class.bg-sunset]="settings.backgroundKey === 'sunset'"
      [class.bg-forest]="settings.backgroundKey === 'forest'">
   <header class="portal-header">
-    <h1>Schulportal</h1>
+    <h1>{{ greeting }}</h1>
     <div class="header-actions">
       <button type="button" class="settings-btn" (click)="openSettings()" title="Einstellungen" aria-label="Einstellungen öffnen">⚙</button>
     </div>

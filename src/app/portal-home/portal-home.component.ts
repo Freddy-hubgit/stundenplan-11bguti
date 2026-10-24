@@ -28,6 +28,7 @@ export class PortalHomeComponent implements OnInit {
   ];
 
   settingsOpen = false;
+  greeting = 'Hi!';
 
   constructor(private supabase: SupabaseService, public settings: SettingsService) {}
 
@@ -41,6 +42,8 @@ export class PortalHomeComponent implements OnInit {
 
   async ngOnInit(): Promise<void> {
     const profile = await this.supabase.getMyProfile();
+    const name = profile?.full_name?.trim();
+    this.greeting = name ? `Hi, ${name}` : 'Hi!';
     const isStaff = profile?.role === 'admin' || profile?.role === 'support';
 
     this.tiles = [...this.tiles, {

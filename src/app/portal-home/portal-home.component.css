@@ -82,6 +82,8 @@
 .portal-header h1 {
   font-size: 28px;
   margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .header-actions {
