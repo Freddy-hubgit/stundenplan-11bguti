@@ -36,10 +36,16 @@ with sync_playwright() as p:
         ctx.route(f'https://{PROJECT}.supabase.co/**',lambda r:plan_mock(r,role))
         page=ctx.new_page(); page.on('pageerror',lambda e:errors.append(str(e)))
         # Freeze the displayed week; API token expiry remains in the future.
-        page.clock.install(time=datetime(2026,10,21,10,0))
+        page.clock.install(time=datetime(2026,10,19,8,30) if role=='user' else datetime(2026,10,21,10,0))
         page.goto(BASE,wait_until='domcontentloaded')
-        page.get_by_role('link',name='Vertretungsplan').click()
-        page.get_by_role('heading',name='Vertretungsplan',exact=True).wait_for()
+        if role=='user':
+            page.get_by_role('heading',name='Hi, User',exact=True).wait_for()
+            assert page.get_by_role('link',name='Vertretungsplan',exact=False).count()==0
+            page.goto(BASE+'/vertretungsplan',wait_until='domcontentloaded');page.wait_for_url(BASE+'/')
+            page.get_by_role('link',name='Stundenplan',exact=False).click()
+        else:
+            page.get_by_role('link',name='Vertretungsplan').click()
+            page.get_by_role('heading',name='Vertretungsplan',exact=True).wait_for()
         return page
     staff=open_as('support')
     staff.get_by_label('Datum des Eintrags',exact=True).fill('2026-10-19')
@@ -55,7 +61,6 @@ with sync_playwright() as p:
     user=open_as('user')
     user.get_by_text('Frau Ersatz',exact=True).wait_for()
     assert user.get_by_role('button',name='Bearbeiten',exact=True).count()==0
-    user.get_by_role('link',name='Zum Stundenplan').click()
     replacement=user.locator('.lesson.substituted')
     replacement.wait_for()
     assert replacement.count()==1
@@ -68,7 +73,7 @@ with sync_playwright() as p:
     assert teacher_box['y']+teacher_box['height'] <= card_box['y']+card_box['height']
     user.screenshot(path='/tmp/substitution-timetable.png',full_page=True)
     # A different week must not inherit a date-specific change.
-    user.get_by_role('button',name='Nächste Woche').click()
+    user.get_by_role('button',name='Nächster Tag').click()
     assert user.locator('.lesson.substituted').count()==0
     user.clock.set_fixed_time(datetime(2026,10,19,8,30))
     user.goto(BASE+'/stundenplan',wait_until='domcontentloaded')
@@ -98,9 +103,9 @@ with sync_playwright() as p:
     ranged.get_by_text('Abwesenheit für den gesamten Zeitraum gespeichert.',exact=True).wait_for()
     assert len(entries)==3
     user.goto(BASE+'/vertretungsplan',wait_until='domcontentloaded')
-    user.get_by_text('Frau Drei Tage',exact=True).first.wait_for()
-    assert user.locator('.day-group').count()==3
-    assert user.get_by_text('Frau Drei Tage',exact=True).count()==3
+    user.wait_for_url(BASE+'/')
+    assert ranged.locator('.day-group').count()==3
+    assert ranged.get_by_text('Frau Drei Tage',exact=True).count()==3
     assert not errors,errors
     print('PASS: staff create/edit, read-only users, replacement teacher/room/details, partial-hour split, cancellation, admin delete, mobile layout; simulated API')
     browser.close()

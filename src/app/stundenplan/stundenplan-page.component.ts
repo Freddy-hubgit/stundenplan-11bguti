@@ -1,3 +1,4 @@
+import { SupabaseService } from '../supabase.service';
 import { DEFAULT_LESSONS, DayKey, DayTrack, LanguageChoice, Lesson, Period, SCIENCE_SUBJECTS } from '../timetable-data';
 import { SubstitutionService, Substitution, EffectiveLesson, splitSubstitutions, dateKey } from '../substitution.service';
 import { Component, OnInit, OnDestroy, HostListener, ViewEncapsulation, ViewChild, ElementRef } from '@angular/core';
@@ -115,7 +116,7 @@ type EditorMode = "new" | "edit";
   private readonly rangeEnd: number = Math.max(...this.periods.map(p => this.toMinutes(p.end))) + 15;
   private readonly rangeTotal: number = this.rangeEnd - this.rangeStart;
 
-  constructor(private settings: SettingsService, private substitutionsService: SubstitutionService) {}
+  constructor(private settings: SettingsService, private substitutionsService: SubstitutionService, private auth: SupabaseService) {}
 
   /* ---------------- Zustand ---------------- */
 
@@ -123,8 +124,17 @@ type EditorMode = "new" | "edit";
   showWeekend: boolean = false;
   isMobile: boolean = false;
   mobileViewMode: "day" | "week" = "day";
+  canUseWeeklyView = false;
+  get singleDayView(): boolean { return !this.canUseWeeklyView || (this.isMobile && this.mobileViewMode === 'day'); }
+  private async loadViewRole(): Promise<void> {
+    try {
+      const profile = await this.auth.getMyProfile();
+      this.canUseWeeklyView = profile?.role === 'support' || profile?.role === 'admin';
+    } catch { this.canUseWeeklyView = false; }
+  }
 
   setMobileViewMode(mode: "day" | "week"): void {
+    if (mode === "week" && !this.canUseWeeklyView) return;
     this.mobileViewMode = mode;
   }
   now: Date = new Date();
@@ -564,6 +574,7 @@ type EditorMode = "new" | "edit";
   }
 
   ngOnInit(): void {
+    void this.loadViewRole();
     void this.loadSubstitutions();
     this.substitutionTimer = setInterval(() => void this.loadSubstitutions(), 15000);
     this.loadProfile();
@@ -752,7 +763,7 @@ type EditorMode = "new" | "edit";
   }
 
   get displayedDays(): DayColumn[] {
-    const showSingleDay = this.isMobile && this.mobileViewMode === "day";
+    const showSingleDay = this.singleDayView;
     const entries: { def: DayDef; date: Date }[] = showSingleDay
       ? [{ def: this.mobileDayDef, date: this.selectedDate }]
       : this.weekDates(this.selectedDate);
@@ -905,7 +916,7 @@ type EditorMode = "new" | "edit";
   }
 
   goPrev(): void {
-    if (this.isMobile && this.mobileViewMode === "day") {
+    if (this.singleDayView) {
       this.shiftDay(-1);
     } else {
       this.shiftWeek(-1);
@@ -913,7 +924,7 @@ type EditorMode = "new" | "edit";
   }
 
   goNext(): void {
-    if (this.isMobile && this.mobileViewMode === "day") {
+    if (this.singleDayView) {
       this.shiftDay(1);
     } else {
       this.shiftWeek(1);

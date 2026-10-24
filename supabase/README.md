@@ -195,3 +195,18 @@ Die Funktion erlaubt Support dieselben vier Zielrollen wie Admins, einschließli
 Vergabe von Support- und Adminrechten. Nutzer und Lehrer bleiben ausgeschlossen.
 Der Schutz des letzten Admins und die sofortige Rechteprüfung bei eigenen Rollenänderungen
 bleiben erhalten. Keine Edge Function muss dafür erneut deployed werden.
+
+### Zugriff auf Vertretungsplan und Stundenplanansichten
+
+Die separate Seite `/vertretungsplan` samt Hauptmenü-Kachel ist nur für Support/Admin
+zugänglich; direkte Seitenaufrufe anderer Rollen führen ins Hauptmenü. Nutzer und Lehrer
+sehen im Stundenplan ausschließlich die Tagesansicht mit Tag-für-Tag-Navigation.
+Support/Admin behalten die Wochenübersicht und auf Mobilgeräten den Tag-/Woche-Umschalter.
+Vertretungen, Ersatzlehrkräfte, Räume und Unterrichtsausfälle bleiben im Stundenplan sichtbar.
+Die bisherige Leseschnittstelle `substitution_list` wird weiterhin für diese Darstellung benötigt;
+die Rollenbeschränkung betrifft die separate Verwaltungs-/Übersichtsseite, nicht diese Datenquelle.
+Es ist keine zusätzliche SQL-Migration erforderlich.
+
+```sh
+python tests/timetable-view-permissions-browser.py
+```

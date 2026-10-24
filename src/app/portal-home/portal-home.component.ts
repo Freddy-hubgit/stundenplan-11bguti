@@ -17,10 +17,9 @@ interface PortalTile {
 export class PortalHomeComponent implements OnInit {
   tiles: PortalTile[] = [
     { title: 'Videokonferenz', description: 'Jitsi-Besprechungen ansehen und teilnehmen', route: '/videokonferenz', icon: '📹' },
-    { title: 'Vertretungsplan', description: 'Fehlende Lehrkräfte, Ersatzlehrer und Unterrichtsausfälle', route: '/vertretungsplan', icon: '🔄' },
     {
       title: 'Stundenplan',
-      description: 'Dein Wochenstundenplan mit Live-Ansicht',
+      description: 'Dein Stundenplan mit Live-Ansicht',
       route: '/stundenplan',
       icon: '🗓️',
     },
@@ -55,6 +54,7 @@ export class PortalHomeComponent implements OnInit {
     }];
 
     if (isStaff) {
+      this.tiles = [...this.tiles, { title: 'Vertretungsplan', description: 'Fehlende Lehrkräfte, Ersatzlehrer und Unterrichtsausfälle', route: '/vertretungsplan', icon: '🔄' }];
       this.tiles = [
         ...this.tiles,
         {

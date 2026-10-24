@@ -22,7 +22,7 @@ const routes: Routes = [
   { path: 'kalender', component: PortalSectionComponent, canActivate: [AuthGuard, FeatureAccessGuard], data: { allowedRoles: ['teacher', 'support', 'admin'], title: 'Kalender', description: 'Hier ist Platz für Termine und Veranstaltungen.' } },
   { path: 'videokonferenz', component: PortalSectionComponent, canActivate: [AuthGuard], data: { title: 'Videokonferenz', description: 'Hier ist Platz für Videokonferenzen und Besprechungslinks.' } },
   { path: 'login', component: LoginComponent },
-  { path: 'vertretungsplan', component: SubstitutionComponent, canActivate: [AuthGuard] },
+  { path: 'vertretungsplan', component: SubstitutionComponent, canActivate: [AuthGuard, AdminGuard] },
   { path: 'support', component: SupportComponent, canActivate: [AuthGuard, FeatureAccessGuard], data: { allowedRoles: ['user', 'support', 'admin'] } },
   { path: '', component: PortalHomeComponent, canActivate: [AuthGuard] },
   { path: 'stundenplan', component: StundenplanPageComponent, canActivate: [AuthGuard] },

@@ -74,11 +74,12 @@
               <div class="subj">{{ lesson.subject }}</div>
               <div class="original-teacher" *ngIf="lesson.substitution">{{ lesson.originalTeacher }}</div>
               <div class="meta">{{ lesson.teacher }}</div>
-              <a *ngIf="lesson.substitution" class="substitution-details" routerLink="/vertretungsplan" (click)="$event.stopPropagation()" [title]="lesson.substitution.note || 'Alle Informationen im Vertretungsplan'">{{ lesson.substitution.start_time.slice(0,5) }}–{{ lesson.substitution.end_time.slice(0,5) }} · Details</a>
+              <a *ngIf="lesson.substitution && canUseWeeklyView" class="substitution-details" routerLink="/vertretungsplan" (click)="$event.stopPropagation()" [title]="lesson.substitution.note || 'Alle Informationen im Vertretungsplan'">{{ lesson.substitution.start_time.slice(0,5) }}–{{ lesson.substitution.end_time.slice(0,5) }} · Details</a>
               <div class="room">Raum {{ lesson.room }}</div>
               <div class="time">{{ lesson.start }}–{{ lesson.end }}</div>
               <div class="live-tag" *ngIf="lesson.isLive">LIVE</div>
-              <a class="replacement-tag" *ngIf="lesson.substitution?.kind === 'replacement'" routerLink="/vertretungsplan" (click)="$event.stopPropagation()" aria-label="Vertretungsdetails anzeigen">VERTRETUNG ↗</a>
+              <span class="replacement-tag" *ngIf="lesson.substitution?.kind === 'replacement' && !canUseWeeklyView">VERTRETUNG</span>
+              <a class="replacement-tag" *ngIf="lesson.substitution?.kind === 'replacement' && canUseWeeklyView" routerLink="/vertretungsplan" (click)="$event.stopPropagation()" aria-label="Vertretungsdetails anzeigen">VERTRETUNG ↗</a>
               <div class="cancelled-tag" *ngIf="lesson.cancelled">AUSGEFALLEN</div>
             </div>
 
@@ -107,7 +108,7 @@
       </div>
 
       <div class="panel controls-panel">
-        <div class="profile-group" *ngIf="isMobile">
+        <div class="profile-group" *ngIf="isMobile && canUseWeeklyView">
           <span class="profile-label">Ansicht</span>
           <div class="chip-group">
             <button class="chip chip-cyan" [class.active]="mobileViewMode === 'day'" (click)="setMobileViewMode('day')">Tag</button>
@@ -116,11 +117,11 @@
         </div>
 
         <div class="profile-group">
-          <span class="profile-label">Woche</span>
+          <span class="profile-label">{{ singleDayView ? 'Tag' : 'Woche' }}</span>
           <div class="nav-group stacked">
             <button class="nav-btn primary" (click)="goToday()">Heute</button>
-            <button class="nav-btn" (click)="goPrev()">← Vorherige Woche</button>
-            <button class="nav-btn" (click)="goNext()">Nächste Woche →</button>
+            <button class="nav-btn" (click)="goPrev()">{{ singleDayView ? '← Vorheriger Tag' : '← Vorherige Woche' }}</button>
+            <button class="nav-btn" (click)="goNext()">{{ singleDayView ? 'Nächster Tag →' : 'Nächste Woche →' }}</button>
           </div>
         </div>
 

@@ -12,11 +12,11 @@ with sync_playwright() as p:
     browser=p.chromium.launch(executable_path='/usr/bin/chromium',args=['--no-sandbox'])
     for width in [1280,390]:
         ctx=browser.new_context(viewport={'width':width,'height':1000})
-        ctx.add_init_script(f"localStorage.setItem('sb-{PROJECT}-auth-token', {json.dumps(json.dumps(session('user')))})")
+        ctx.add_init_script(f"localStorage.setItem('sb-{PROJECT}-auth-token', {json.dumps(json.dumps(session('support')))})")
         def route_api(route):
             if '/rpc/substitution_list' in route.request.url:
                 route.fulfill(status=200,content_type='application/json',body=json.dumps(entries))
-            else: mock(route,'user')
+            else: mock(route,'support')
         ctx.route(f'https://{PROJECT}.supabase.co/**',route_api)
         page=ctx.new_page(); errors=[]; page.on('pageerror',lambda e:errors.append(str(e)))
         page.clock.install(time=datetime(2026,10,21,10,0))
