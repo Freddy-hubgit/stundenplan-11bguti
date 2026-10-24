@@ -92,6 +92,17 @@ export class SupabaseService {
     return data as T;
   }
 
+  async changeUserRole(id: string, role: Profile['role']): Promise<{ ok: boolean; error?: string }> {
+    try {
+      await this.supportRpc('set_profile_role', { target_id: id, new_role: role });
+      return { ok: true };
+    } catch (e: any) {
+      return { ok: false, error: e?.code === 'PGRST202'
+        ? 'Die Rollenverwaltung muss noch in Supabase eingerichtet werden.'
+        : e?.message || 'Rolle konnte nicht geändert werden.' };
+    }
+  }
+
   async createUserAccount(
     email: string,
     password: string,

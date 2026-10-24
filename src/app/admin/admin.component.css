@@ -352,3 +352,7 @@ button.primary:disabled {
   color: #ff9a9a;
 }
 .role-badge.teacher { background: rgba(140,187,255,.14); color: #8cbbff; }
+
+.role-editor { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; padding: 16px 0; margin: 12px 0; border-top: 1px solid rgba(128,145,166,.25); border-bottom: 1px solid rgba(128,145,166,.25); }
+.role-editor .field { flex: 1; min-width: 160px; margin: 0; }
+.role-hint { font-size: 13px; opacity: .7; margin: 14px 0; }

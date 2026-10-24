@@ -1,3 +1,4 @@
+import { Router } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
 import { Profile, SupabaseService } from '../supabase.service';
 import { SettingsService } from '../settings.service';
@@ -12,6 +13,9 @@ export class AdminComponent implements OnInit {
   loading = true;
   loadError = '';
   myId: string | null = null;
+  myRole: Profile['role'] | null = null;
+  editRole: Profile['role'] = 'user';
+  roleSaving = false;
 
   // Neues Konto
   newName = '';
@@ -35,7 +39,7 @@ export class AdminComponent implements OnInit {
 
   settingsOpen = false;
 
-  constructor(private supabase: SupabaseService, public settings: SettingsService) {}
+  constructor(private supabase: SupabaseService, public settings: SettingsService, private router: Router) {}
 
   openSettings(): void {
     this.settingsOpen = true;
@@ -48,6 +52,7 @@ export class AdminComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     const me = await this.supabase.getMyProfile();
     this.myId = me?.id ?? null;
+    this.myRole = me?.role ?? null;
     await this.reload();
   }
 
@@ -98,6 +103,8 @@ export class AdminComponent implements OnInit {
   }
 
   startEdit(p: Profile): void {
+    if (this.editSaving || this.roleSaving) return;
+    this.editRole = p.role;
     this.editTargetId = p.id;
     this.editName = p.full_name ?? '';
     this.editEmail = p.email;
@@ -108,6 +115,7 @@ export class AdminComponent implements OnInit {
   }
 
   cancelEdit(): void {
+    if (this.editSaving || this.roleSaving) return;
     this.editTargetId = null;
     this.editPassword = '';
     this.editError = '';
@@ -115,7 +123,29 @@ export class AdminComponent implements OnInit {
     this.confirmingDelete = false;
   }
 
+  async saveRole(p: Profile): Promise<void> {
+    if (this.myRole !== 'admin' || this.roleSaving || this.editSaving || this.editRole === p.role) return;
+    this.roleSaving = true; this.editError = ''; this.editSuccess = '';
+    const result = await this.supabase.changeUserRole(p.id, this.editRole);
+    if (!result.ok) {
+      this.editError = result.error ?? 'Rolle konnte nicht geändert werden.';
+      this.roleSaving = false; return;
+    }
+    this.editSuccess = 'Rolle gespeichert.';
+    try {
+      if (p.id === this.myId) {
+        const me = await this.supabase.getMyProfile();
+        this.myRole = me?.role ?? null;
+        if (this.myRole !== 'admin' && this.myRole !== 'support') {
+          await this.router.navigateByUrl('/'); return;
+        }
+      }
+      await this.reload();
+    } finally { this.roleSaving = false; }
+  }
+
   async saveEdit(p: Profile): Promise<void> {
+    if (this.roleSaving || this.editSaving) return;
     this.editError = '';
     this.editSuccess = '';
 
@@ -162,6 +192,7 @@ export class AdminComponent implements OnInit {
   }
 
   requestDelete(): void {
+    if (this.roleSaving || this.editSaving) return;
     this.confirmingDelete = true;
   }
 
@@ -170,6 +201,7 @@ export class AdminComponent implements OnInit {
   }
 
   async confirmDelete(p: Profile): Promise<void> {
+    if (this.roleSaving || this.editSaving) return;
     this.editError = '';
     this.deleting = true;
     const result = await this.supabase.deleteUserAccount(p.id);

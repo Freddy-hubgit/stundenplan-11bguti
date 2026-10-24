@@ -166,3 +166,25 @@ python tests/teacher-permissions-browser.py
 
 Datenbank und Function-Handler sind lokal geprüft; die Handler-Prüfung simuliert das Supabase-SDK.
 Die Live-Migration und die neue Edge Function wurden von der Entwicklungsumgebung nicht deployed.
+
+### Rollen bestehender Konten bearbeiten
+
+Zusätzlich `migrations/202610240006_edit_profile_role.sql` einmalig im SQL-Editor
+anwenden (nach der Lehrer-Migration `202610240005`). Es ist kein neues Edge-Function-
+Deployment nötig. Admins können unter Verwaltung → Bearbeiten die Rolle auswählen und
+mit „Rolle speichern“ unabhängig von Name/E-Mail/Passwort ändern. Support darf bestehende
+Konten weiterhin bearbeiten, aber keine Rollen ändern. Nutzer und Lehrer haben keinen
+Zugriff auf die Kontenverwaltung.
+
+Die Datenbankfunktion prüft den aktuellen Adminstatus serverseitig und serialisiert
+Rollenänderungen. Sie verhindert, dass durch diese Funktion der letzte Admin seine Rolle
+verliert. Dieser Schutz gilt für Rollenänderungen, nicht für separat bestehende Konto-
+Löschfunktionen. Eine eigene Herabstufung ist möglich, wenn mindestens ein weiterer Admin
+existiert; beim Wechsel zu Nutzer/Lehrer verlässt die Oberfläche anschließend die Verwaltung.
+Maßgeblich bleibt die aktuelle Rolle in `profiles`, nicht ein möglicherweise älteres
+Rollenfeld im Auth-Token.
+
+```sh
+PGLITE_MODULE_PATH=/tmp/support-db-tests/node_modules/@electric-sql/pglite/dist/index.js node tests/teacher-permissions-database.mjs
+python tests/edit-role-browser.py
+```

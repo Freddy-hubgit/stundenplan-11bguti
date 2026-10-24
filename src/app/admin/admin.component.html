@@ -108,11 +108,21 @@
                   />
                 </label>
 
+                <div class="role-editor" *ngIf="myRole === 'admin'">
+                  <label class="field"><span>Rolle</span>
+                    <select [(ngModel)]="editRole" name="editRole-{{ p.id }}" aria-label="Kontorolle" [disabled]="roleSaving || editSaving">
+                      <option value="user">Nutzer</option><option value="teacher">Lehrer</option><option value="support">Support</option><option value="admin">Admin</option>
+                    </select>
+                  </label>
+                  <button type="button" class="primary" [disabled]="roleSaving || editSaving || editRole === p.role" (click)="saveRole(p)">{{ roleSaving ? 'Speichere Rolle …' : 'Rolle speichern' }}</button>
+                </div>
+                <p class="role-hint" *ngIf="myRole !== 'admin'">Rollen können nur von Admins geändert werden.</p>
+
                 <div class="message error" *ngIf="editError">{{ editError }}</div>
                 <div class="message success" *ngIf="editSuccess">{{ editSuccess }}</div>
 
                 <div class="edit-actions" *ngIf="!confirmingDelete">
-                  <button type="button" class="primary" [disabled]="editSaving" (click)="saveEdit(p)">
+                  <button type="button" class="primary" [disabled]="editSaving || roleSaving" (click)="saveEdit(p)">
                     {{ editSaving ? 'Speichere ...' : 'Speichern' }}
                   </button>
                   <button type="button" class="row-btn" (click)="cancelEdit()">Abbrechen</button>
