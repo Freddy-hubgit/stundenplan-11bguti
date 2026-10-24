@@ -89,3 +89,35 @@ werden atomar gespeichert; bei einem Konflikt wird nichts aus diesem Vorgang ges
 Bestehende Einträge bleiben unverändert. Anschließend können die Tage einzeln bearbeitet
 oder gelöscht werden. In der Wochenübersicht erscheinen nur Tage mit Einträgen; eine leere
 Woche zeigt stattdessen eine gemeinsame Meldung.
+
+## Kalender und Jitsi-Videokonferenzen
+
+Einmalig `migrations/202610240004_calendar_and_meetings.sql` im Supabase-SQL-Editor
+als Datenbankadministrator ausführen. Die Migration setzt nur die bestehende `profiles`-Tabelle
+mit geschützten Rollen voraus. Sie benötigt die Ticket-/Vertretungsplan-Migrationen nicht.
+Die Migration wurde lokal getestet und nicht im Live-Projekt ausgeführt.
+
+- Alle angemeldeten Nutzer sehen den gemeinsamen Kalender und die Besprechungen.
+- Support und Admins erstellen, bearbeiten und löschen Termine und Videokonferenzen.
+- Der Kalender zeigt eine Monatsansicht mit Tagesagenda; auch mehrtägige Termine erscheinen
+  an jedem betroffenen Tag. Zeiten werden in der lokalen Browser-Zeitzone eingegeben/angezeigt
+  und als UTC-Zeitpunkte gespeichert. `.ics`-Downloads ermöglichen den Import in andere Kalender.
+- Videokonferenzen erzeugen einen zufälligen, dauerhaft gespeicherten Raumlink auf `meet.jit.si`.
+  Bearbeiten ändert diesen Link nicht. Die Besprechungen erscheinen zusätzlich im Kalender;
+  vergangene Besprechungen sind in der Videoansicht über einen Filter erreichbar.
+- „Teilnehmen“ öffnet den externen Jitsi-Dienst in einem neuen Tab. Jitsi kann eine Anmeldung
+  zum Starten eines Raums verlangen. Raumzugang, Moderation, Kamera und Mikrofon werden von
+  Jitsi verwaltet; die Portal-Anmeldung ersetzt keine Jitsi-Anmeldung und schützt keinen bereits
+  geteilten Raumlink. Ein Löschen des Portal-Termins löscht keinen Raum beim externen Anbieter.
+- Es sind keine zusätzlichen API-Schlüssel oder Supabase-Realtime-Einstellungen notwendig.
+  Die Ansichten laden alle 30 Sekunden neu. Direkte Tabellenzugriffe sind gesperrt; RPCs prüfen
+  die Identität und Schreibrolle serverseitig. Meetinglinks müssen HTTPS verwenden.
+- Browserprüfungen simulieren die Supabase-API und prüfen unter anderem Raumlink, Kalender,
+  Export, Rollenansichten und Fehlerfälle. Ein tatsächlicher Jitsi-Videoanruf ist nicht Bestandteil
+  der lokalen Prüfung. Nach der Live-Migration einen Termin speichern und einen Jitsi-Raum
+  mit zwei Browsern/Geräten testen.
+
+```sh
+PGLITE_MODULE_PATH=/tmp/support-db-tests/node_modules/@electric-sql/pglite/dist/index.js node tests/portal-events-database.mjs
+python tests/portal-events-browser.py
+```

@@ -16,8 +16,8 @@ interface PortalTile {
 })
 export class PortalHomeComponent implements OnInit {
   tiles: PortalTile[] = [
-    { title: 'Kalender', description: 'Termine und Veranstaltungen · In Vorbereitung', route: '/kalender', icon: '📅' },
-    { title: 'Videokonferenz', description: 'Online-Besprechungen · In Vorbereitung', route: '/videokonferenz', icon: '📹' },
+    { title: 'Kalender', description: 'Termine, Veranstaltungen und Besprechungen', route: '/kalender', icon: '📅' },
+    { title: 'Videokonferenz', description: 'Jitsi-Besprechungen ansehen und teilnehmen', route: '/videokonferenz', icon: '📹' },
     { title: 'Vertretungsplan', description: 'Fehlende Lehrkräfte, Ersatzlehrer und Unterrichtsausfälle', route: '/vertretungsplan', icon: '🔄' },
     {
       title: 'Stundenplan',
