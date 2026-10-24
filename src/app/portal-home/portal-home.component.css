@@ -131,7 +131,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
   gap: 18px;
-  max-width: 1120px;
+  width: 100%;
 }
 
 .tile {
