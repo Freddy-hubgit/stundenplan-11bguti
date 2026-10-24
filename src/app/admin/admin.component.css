@@ -18,7 +18,8 @@
 
 .admin-shell.theme-light .create-form input,
 .admin-shell.theme-light .create-form select,
-.admin-shell.theme-light .edit-row input {
+.admin-shell.theme-light .edit-row input,
+.admin-shell.theme-light .edit-row select {
   background: rgba(0, 0, 0, 0.03);
   border-color: #DDE1E8;
   color: #181B21;
@@ -26,7 +27,8 @@
 
 .admin-shell.theme-light .create-form input:focus,
 .admin-shell.theme-light .create-form select:focus,
-.admin-shell.theme-light .edit-row input:focus {
+.admin-shell.theme-light .edit-row input:focus,
+.admin-shell.theme-light .edit-row select:focus {
   border-color: #37C9B0;
 }
 
@@ -320,7 +322,8 @@ button.primary:disabled {
   opacity: 0.8;
 }
 
-.edit-row input {
+.edit-row input,
+.edit-row select {
   width: 100%;
   box-sizing: border-box;
   background: rgba(255,255,255,0.06);
@@ -331,7 +334,8 @@ button.primary:disabled {
   font-size: 13px;
 }
 
-.edit-row input:focus {
+.edit-row input:focus,
+.edit-row select:focus {
   outline: none;
   border-color: #37C9B0;
 }

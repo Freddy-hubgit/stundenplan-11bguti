@@ -505,3 +505,23 @@
       text-align:center;
     }
   
+
+/* Shared defaults also cover controls added by future features. Component styles refine these. */
+:root { --control-bg: #151c27; --control-border: #344151; --control-text: #e8edf4; --control-accent: #70d9e5; }
+:where(.portal-shell, .admin-shell, .login-shell, .app-shell) { color-scheme: dark; }
+.theme-light { --control-bg: #fff; --control-border: #c4ceda; --control-text: #182332; --control-accent: #146c7b; color-scheme: light; }
+:where(button, input, select, textarea) { font: inherit; }
+:where(button) { border: 1px solid var(--control-border); border-radius: 9px; padding: 9px 14px; background: var(--control-bg); color: var(--control-text); cursor: pointer; transition: border-color .15s ease, background-color .15s ease; }
+:where(button):hover:not(:disabled) { border-color: var(--control-accent); }
+:where(button, input, select, textarea):disabled { cursor: not-allowed; opacity: .55; }
+:where(select, textarea, input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=hidden])) { border: 1px solid var(--control-border); border-radius: 9px; padding: 9px 12px; background-color: var(--control-bg); color: var(--control-text); }
+:where(select) { min-height: 38px; }
+:where(select option) { color: var(--control-text); background: var(--control-bg); }
+:where(button, input, select, textarea, a):focus-visible { outline: 2px solid var(--control-accent); outline-offset: 3px; }
+:where(input[type=checkbox], input[type=radio]) { appearance: none; -webkit-appearance: none; position: relative; display: inline-grid; place-content: center; vertical-align: middle; flex: 0 0 auto; width: 19px; height: 19px; margin: 0; padding: 0; border: 1px solid var(--control-border); border-radius: 5px; background: var(--control-bg); cursor: pointer; }
+:where(input[type=radio]) { border-radius: 50%; }
+:where(input[type=checkbox], input[type=radio]):checked { border-color: var(--control-accent); background: var(--control-accent); }
+:where(input[type=checkbox]):checked::after { content: ''; width: 5px; height: 9px; border: solid var(--control-bg); border-width: 0 2px 2px 0; transform: rotate(45deg) translateY(-1px); }
+:where(input[type=radio]):checked::after { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--control-bg); }
+:where(input[type=file])::file-selector-button { font: inherit; padding: 9px 14px; border: 1px solid var(--control-border); border-radius: 9px; background: var(--control-bg); color: var(--control-text); cursor: pointer; }
+@media (forced-colors: active) { :where(input[type=checkbox], input[type=radio]) { appearance: auto; } :where(input[type=checkbox], input[type=radio])::after { display: none; } }

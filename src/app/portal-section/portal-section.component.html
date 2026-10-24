@@ -14,7 +14,7 @@
     <section class="panel editor" *ngIf="editorOpen && isStaff" aria-labelledby="editor-heading">
       <h2 id="editor-heading">{{ editingId ? 'Termin bearbeiten' : isMeetings ? 'Neue Videokonferenz' : 'Neuer Termin' }}</h2>
       <form (ngSubmit)="save()"><fieldset [disabled]="busy">
-        <label>Titel<input name="title" [(ngModel)]="draft.title" required maxlength="160"></label>
+        <label>Titel<input #editorTitle name="title" [(ngModel)]="draft.title" required maxlength="160"></label>
         <div class="form-grid">
           <div *ngIf="!isMeetings"><label for="event-kind">Art</label><select id="event-kind" name="kind" [(ngModel)]="draft.kind" (ngModelChange)="setKind()"><option value="event">Termin / Veranstaltung</option><option value="meeting">Videokonferenz (Jitsi)</option></select></div>
           <label>Ort (optional)<input name="location" [(ngModel)]="draft.location" maxlength="200"></label>
@@ -29,7 +29,7 @@
     <section *ngIf="!isMeetings" class="panel calendar-panel" aria-label="Monatskalender">
       <div class="calendar-header"><button type="button" (click)="shiftMonth(-1)" aria-label="Vorheriger Monat">←</button><h2 aria-live="polite">{{ monthLabel }}</h2><button type="button" (click)="shiftMonth(1)" aria-label="Nächster Monat">→</button><button type="button" (click)="today()">Heute</button></div>
       <div class="month-grid"><span class="weekday" *ngFor="let day of weekdays">{{ day }}</span>
-        <button type="button" class="day" *ngFor="let day of calendarDays; trackBy: trackDay" [class.outside]="day.outside" [class.today]="day.today" [class.selected]="day.date === selectedDate" [attr.aria-label]="day.label + ', ' + day.count + ' Termine'" [attr.aria-pressed]="day.date === selectedDate" [attr.aria-current]="day.today ? 'date' : null" (click)="selectDay(day.date)"><span>{{ day.number }}</span><span *ngIf="day.count" class="event-count">{{ day.count }}<span class="count-label"> {{ day.count === 1 ? 'Termin' : 'Termine' }}</span></span></button>
+        <button type="button" class="day" *ngFor="let day of calendarDays; trackBy: trackDay" [class.outside]="day.outside" [class.today]="day.today" [class.selected]="day.date === selectedDate" [attr.aria-label]="day.label + ', ' + day.count + ' Termine'" [attr.aria-pressed]="day.date === selectedDate" [attr.aria-current]="day.today ? 'date' : null" (click)="openDay(day.date)"><span>{{ day.number }}</span><span *ngIf="day.count" class="event-count">{{ day.count }}<span class="count-label"> {{ day.count === 1 ? 'Termin' : 'Termine' }}</span></span></button>
       </div>
     </section>
     <div class="agenda-heading"><h2>{{ isMeetings ? 'Besprechungen' : selectedDateLabel }}</h2><label *ngIf="isMeetings" class="past-filter"><input type="checkbox" [(ngModel)]="showPast">Vergangene anzeigen</label></div>
@@ -44,5 +44,23 @@
     <p class="hint" *ngIf="isMeetings">„Teilnehmen“ öffnet Jitsi in einem neuen Tab. Zum Starten eines Raums kann Jitsi eine Anmeldung verlangen. Kamera, Mikrofon und Raumzugang werden dort verwaltet.</p>
     <p class="hint">Termine werden alle 30 Sekunden aktualisiert. Uhrzeiten werden in deiner lokalen Zeitzone angezeigt.</p>
   </div>
+  <dialog *ngIf="dayOpen" #dayDialog class="day-dialog" aria-labelledby="day-detail-title" (cancel)="closeDay($event)" (click)="dayBackdrop($event)">
+    <header class="day-detail-header"><div><span class="eyebrow">Tagesansicht</span><h2 id="day-detail-title">{{ selectedDateLabel }}</h2></div><button type="button" (click)="closeDay()" aria-label="Tagesansicht schließen">Schließen</button></header>
+    <p class="day-instruction">{{ isStaff ? 'Klicke auf eine Uhrzeit, um dort einen Termin anzulegen.' : 'Wähle einen Termin, um die Details zu sehen.' }}</p>
+    <section *ngIf="selectedTimelineEvent as item" class="day-event-details" aria-label="Termindetails">
+      <h3>{{ item.title }}</h3><p>{{ item.starts_at | date:'dd.MM.yyyy HH:mm' }} – {{ item.ends_at | date:'dd.MM.yyyy HH:mm' }}</p>
+      <p *ngIf="item.location">{{ item.location }}</p><p class="description">{{ item.description }}</p>
+      <div class="actions"><a *ngIf="meetingUrl(item)" class="button primary" [href]="meetingUrl(item)" target="_blank" rel="noopener noreferrer">Teilnehmen</a><button type="button" (click)="exportEvent(item)">Kalenderexport (.ics)</button><button *ngIf="isStaff" type="button" (click)="editFromDay(item)">Termin bearbeiten</button></div>
+    </section>
+    <div class="timeline-scroll" tabindex="0" aria-label="Uhrzeiten des ausgewählten Tages">
+      <div class="day-timeline" [style.height.px]="daySlots.length * 36">
+        <div class="time-slot" *ngFor="let slot of daySlots; trackBy: trackSlot">
+          <button *ngIf="isStaff; else readOnlySlot" class="quick-slot" type="button" (click)="newEntryAt(slot.instant)" [disabled]="busy" [attr.aria-label]="'Termin um ' + slot.fullLabel + ' erstellen'"><time>{{ slot.label }}</time><span aria-hidden="true">+ Termin</span></button>
+          <ng-template #readOnlySlot><div class="read-slot"><time>{{ slot.label }}</time></div></ng-template>
+        </div>
+        <div class="timeline-events"><button type="button" class="timeline-event" *ngFor="let block of timelineEvents; trackBy: trackBlock" [class.meeting-block]="block.event.kind === 'meeting'" [style.top.px]="block.top" [style.height.px]="block.height" [style.left.%]="block.left" [style.width.%]="block.width" (click)="selectedTimelineEvent = block.event" [title]="block.event.title + ' · ' + (block.event.starts_at | date:'HH:mm') + '–' + (block.event.ends_at | date:'HH:mm')"><strong>{{ block.event.title }}</strong><span>{{ block.event.starts_at | date:'HH:mm' }}–{{ block.event.ends_at | date:'HH:mm' }}</span></button></div>
+      </div>
+    </div>
+  </dialog>
   <app-settings-modal [open]="settingsOpen" (openChange)="settingsOpen = $event"></app-settings-modal>
 </main>
