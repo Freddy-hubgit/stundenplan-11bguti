@@ -42,8 +42,10 @@ with sync_playwright() as p:
     assert accounts[ids['admin']]['role']=='admin'
     support=open_as('support')
     support.locator('tr').filter(has_text='user@example.test').get_by_role('button',name='Bearbeiten',exact=True).click()
-    support.get_by_text('Rollen können nur von Admins geändert werden.',exact=True).wait_for()
-    assert support.get_by_label('Kontorolle',exact=True).count()==0
+    support.get_by_label('Kontorolle',exact=True).select_option('support')
+    support.get_by_role('button',name='Rolle speichern',exact=True).click()
+    support.get_by_text('Rolle gespeichert.',exact=True).wait_for()
+    assert accounts[ids['user']]['role']=='support'
     # Once another admin exists, a self-demotion updates navigation immediately.
     admin.locator('tr').filter(has_text='user@example.test').get_by_role('button',name='Bearbeiten',exact=True).click()
     admin.get_by_label('Kontorolle',exact=True).select_option('admin')
@@ -56,5 +58,5 @@ with sync_playwright() as p:
     admin.get_by_role('heading',name='Hi, Admin',exact=True).wait_for()
     assert admin.get_by_role('link',name='Verwaltung',exact=False).count()==0
     assert not errors,errors
-    print('PASS role editor, role-only RPC, last-admin error, support read-only, self-demotion navigation; simulated API')
+    print('PASS role editor, role-only RPC, last-admin error, support role changes, self-demotion navigation; simulated API')
     browser.close()

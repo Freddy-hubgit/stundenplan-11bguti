@@ -123,8 +123,10 @@ export class AdminComponent implements OnInit {
     this.confirmingDelete = false;
   }
 
+  get canEditRoles(): boolean { return this.myRole === 'admin' || this.myRole === 'support'; }
+
   async saveRole(p: Profile): Promise<void> {
-    if (this.myRole !== 'admin' || this.roleSaving || this.editSaving || this.editRole === p.role) return;
+    if (!this.canEditRoles || this.roleSaving || this.editSaving || this.editRole === p.role) return;
     this.roleSaving = true; this.editError = ''; this.editSuccess = '';
     const result = await this.supabase.changeUserRole(p.id, this.editRole);
     if (!result.ok) {

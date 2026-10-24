@@ -171,12 +171,11 @@ Die Live-Migration und die neue Edge Function wurden von der Entwicklungsumgebun
 
 Zusätzlich `migrations/202610240006_edit_profile_role.sql` einmalig im SQL-Editor
 anwenden (nach der Lehrer-Migration `202610240005`). Es ist kein neues Edge-Function-
-Deployment nötig. Admins können unter Verwaltung → Bearbeiten die Rolle auswählen und
-mit „Rolle speichern“ unabhängig von Name/E-Mail/Passwort ändern. Support darf bestehende
-Konten weiterhin bearbeiten, aber keine Rollen ändern. Nutzer und Lehrer haben keinen
+Deployment nötig. Nach Migration `202610240007` können Support und Admins unter Verwaltung → Bearbeiten die Rolle auswählen und
+mit „Rolle speichern“ unabhängig von Name/E-Mail/Passwort ändern. Nutzer und Lehrer haben keinen
 Zugriff auf die Kontenverwaltung.
 
-Die Datenbankfunktion prüft den aktuellen Adminstatus serverseitig und serialisiert
+Die Datenbankfunktion prüft den aktuellen Support-/Adminstatus serverseitig und serialisiert
 Rollenänderungen. Sie verhindert, dass durch diese Funktion der letzte Admin seine Rolle
 verliert. Dieser Schutz gilt für Rollenänderungen, nicht für separat bestehende Konto-
 Löschfunktionen. Eine eigene Herabstufung ist möglich, wenn mindestens ein weiterer Admin
@@ -188,3 +187,11 @@ Rollenfeld im Auth-Token.
 PGLITE_MODULE_PATH=/tmp/support-db-tests/node_modules/@electric-sql/pglite/dist/index.js node tests/teacher-permissions-database.mjs
 python tests/edit-role-browser.py
 ```
+
+### Rollenänderungen durch Support
+
+`migrations/202610240007_support_edit_roles.sql` einmalig im SQL-Editor ausführen.
+Die Funktion erlaubt Support dieselben vier Zielrollen wie Admins, einschließlich der
+Vergabe von Support- und Adminrechten. Nutzer und Lehrer bleiben ausgeschlossen.
+Der Schutz des letzten Admins und die sofortige Rechteprüfung bei eigenen Rollenänderungen
+bleiben erhalten. Keine Edge Function muss dafür erneut deployed werden.
