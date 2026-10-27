@@ -123,19 +123,19 @@ type EditorMode = "new" | "edit";
   selectedDate: Date = new Date();
   showWeekend: boolean = false;
   isMobile: boolean = false;
-  mobileViewMode: "day" | "week" = "day";
-  canUseWeeklyView = false;
-  get singleDayView(): boolean { return !this.canUseWeeklyView || (this.isMobile && this.mobileViewMode === 'day'); }
-  private async loadViewRole(): Promise<void> {
+  viewMode: "day" | "week" = "day";
+  canManageTimetable = false;
+  get singleDayView(): boolean { return this.viewMode === 'day'; }
+  private async loadTimetablePermissions(): Promise<void> {
     try {
       const profile = await this.auth.getMyProfile();
-      this.canUseWeeklyView = profile?.role === 'support' || profile?.role === 'admin';
-    } catch { this.canUseWeeklyView = false; }
+      this.canManageTimetable = profile?.role === 'support' || profile?.role === 'admin';
+    } catch { this.canManageTimetable = false; }
   }
 
-  setMobileViewMode(mode: "day" | "week"): void {
-    if (mode === "week" && !this.canUseWeeklyView) return;
-    this.mobileViewMode = mode;
+  setViewMode(mode: "day" | "week"): void {
+    this.viewMode = mode;
+    try { localStorage.setItem('stundenplan-view-mode', mode); } catch { /* View switching also works without storage. */ }
   }
   now: Date = new Date();
 
@@ -408,7 +408,7 @@ type EditorMode = "new" | "edit";
   }
 
   onImportFile(event: Event): void {
-    if (!this.canUseWeeklyView) return;
+    if (!this.canManageTimetable) return;
     const input = event.target as HTMLInputElement;
     const file = input.files && input.files[0];
     if (!file) return;
@@ -426,14 +426,14 @@ type EditorMode = "new" | "edit";
   importPasteText: string = "";
 
   importFromPastedText(): void {
-    if (!this.canUseWeeklyView) return;
+    if (!this.canManageTimetable) return;
     if (!this.importPasteText.trim()) return;
     this.applyImportedJson(this.importPasteText);
     this.importPasteText = "";
   }
 
   private applyImportedJson(raw: string): void {
-    if (!this.canUseWeeklyView) return;
+    if (!this.canManageTimetable) return;
     try {
       const data = JSON.parse(raw);
       if (!data || !Array.isArray(data.lessons)) {
@@ -576,7 +576,12 @@ type EditorMode = "new" | "edit";
   }
 
   ngOnInit(): void {
-    void this.loadViewRole();
+    this.viewMode = window.matchMedia('(max-width:920px)').matches ? 'day' : 'week';
+    try {
+      const saved = localStorage.getItem('stundenplan-view-mode');
+      if (saved === 'day' || saved === 'week') this.viewMode = saved;
+    } catch { /* Keep the responsive default. */ }
+    void this.loadTimetablePermissions();
     void this.loadSubstitutions();
     this.substitutionTimer = setInterval(() => void this.loadSubstitutions(), 15000);
     this.loadProfile();
@@ -980,6 +985,7 @@ type EditorMode = "new" | "edit";
   }
 
   onTouchEnd(e: TouchEvent): void {
+    if (!this.singleDayView) { this.touchStartX = null; return; }
     if (this.touchStartX === null) return;
     const dx = e.changedTouches[0].clientX - this.touchStartX;
     if (Math.abs(dx) > 55) this.shiftDay(dx < 0 ? 1 : -1);
@@ -989,7 +995,7 @@ type EditorMode = "new" | "edit";
   /* ---------------- Editor: Fach hinzufügen / bearbeiten / löschen ---------------- */
 
   openNewLesson(): void {
-    if (!this.canUseWeeklyView) return;
+    if (!this.canManageTimetable) return;
     this.editorMode = "new";
     this.editorIndex = null;
     this.editorDay = this.mobileDayDef ? this.mobileDayDef.key : "Mon";
@@ -1007,7 +1013,7 @@ type EditorMode = "new" | "edit";
 
   openEditLesson(lesson: PositionedLesson, event?: Event): void {
     if (event) event.stopPropagation();
-    if (!this.canUseWeeklyView) return;
+    if (!this.canManageTimetable) return;
     const idx = lesson.sourceIndex;
     const target = this.lessons[idx];
     if (!target) return;
@@ -1033,7 +1039,7 @@ type EditorMode = "new" | "edit";
   }
 
   saveLesson(): void {
-    if (!this.canUseWeeklyView) return;
+    if (!this.canManageTimetable) return;
     if (!this.editorSubject.trim()) return; // Fach ist Pflichtfeld
 
     const newLesson: Lesson = {
@@ -1064,7 +1070,7 @@ type EditorMode = "new" | "edit";
   }
 
   deleteLesson(): void {
-    if (!this.canUseWeeklyView) return;
+    if (!this.canManageTimetable) return;
     if (this.editorIndex !== null) {
       this.lessons.splice(this.editorIndex, 1);
     }

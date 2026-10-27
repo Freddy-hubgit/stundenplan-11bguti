@@ -199,9 +199,10 @@ bleiben erhalten. Keine Edge Function muss dafür erneut deployed werden.
 ### Zugriff auf Vertretungsplan und Stundenplanansichten
 
 Die separate Seite `/vertretungsplan` samt Hauptmenü-Kachel ist nur für Support/Admin
-zugänglich; direkte Seitenaufrufe anderer Rollen führen ins Hauptmenü. Nutzer und Lehrer
-sehen im Stundenplan ausschließlich die Tagesansicht mit Tag-für-Tag-Navigation.
-Support/Admin behalten die Wochenübersicht und auf Mobilgeräten den Tag-/Woche-Umschalter.
+zugänglich; direkte Seitenaufrufe anderer Rollen führen ins Hauptmenü. Alle Rollen können im Stundenplan zwischen Tages- und Wochenansicht wechseln.
+Die Auswahl wird lokal gespeichert; ohne gespeicherte Auswahl startet die mobile Ansicht
+mit einem Tag und der Desktop mit einer Woche. Auf Mobilgeräten lässt sich die Wochenansicht
+horizontal scrollen. Bearbeiten, Löschen und Importieren bleiben Support/Admin vorbehalten.
 Vertretungen, Ersatzlehrkräfte, Räume und Unterrichtsausfälle bleiben im Stundenplan sichtbar.
 Die bisherige Leseschnittstelle `substitution_list` wird weiterhin für diese Darstellung benötigt;
 die Rollenbeschränkung betrifft die separate Verwaltungs-/Übersichtsseite, nicht diese Datenquelle.

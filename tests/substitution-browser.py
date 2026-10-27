@@ -43,6 +43,7 @@ with sync_playwright() as p:
             assert page.get_by_role('link',name='Vertretungsplan',exact=False).count()==0
             page.goto(BASE+'/vertretungsplan',wait_until='domcontentloaded');page.wait_for_url(BASE+'/')
             page.get_by_role('link',name='Stundenplan',exact=False).click()
+            page.get_by_role('button',name='Tag',exact=True).click()
         else:
             page.get_by_role('link',name='Vertretungsplan').click()
             page.get_by_role('heading',name='Vertretungsplan',exact=True).wait_for()

@@ -24,19 +24,26 @@ with sync_playwright() as p:
             page.goto(BASE+'/stundenplan',wait_until='domcontentloaded')
             replacement=page.locator('.lesson.substituted');replacement.wait_for()
             assert 'Frau Ersatz' in replacement.inner_text() and 'B999' in replacement.inner_text()
+            assert page.get_by_role('button',name='Tag',exact=True).count()==1
+            assert page.get_by_role('button',name='Woche',exact=True).count()==1
             if not staff:
-                assert page.locator('.day-col').count()==1
-                assert page.get_by_role('button',name='Woche',exact=True).count()==0
+                assert page.get_by_role('button',name='+ Stunde hinzufügen',exact=True).count()==0
                 assert page.get_by_role('link',name='VERTRETUNG',exact=False).count()==0
-                page.get_by_role('button',name='Nächster Tag',exact=False).click()
-                assert page.locator('.lesson.substituted').count()==0
-                assert page.locator('.day-col').count()==1
-            elif width>920:
-                page.get_by_role('button',name='Nächste Woche',exact=False).wait_for()
-                assert page.locator('.day-col').count()==5
-            else:
-                page.get_by_role('button',name='Woche',exact=True).click()
-                assert page.locator('.day-col').count()==5
+            page.get_by_role('button',name='Woche',exact=True).click()
+            assert page.locator('.day-col').count()==5
+            assert page.locator('.day-header').count()==5
+            page.reload(wait_until='domcontentloaded')
+            page.locator('.lesson.substituted').wait_for()
+            assert page.locator('.day-col').count()==5
+            assert page.get_by_role('button',name='Woche',exact=True).get_attribute('aria-pressed')=='true'
+            page.get_by_role('button',name='Tag',exact=True).click()
+            assert page.locator('.day-col').count()==1
+            page.get_by_role('button',name='Nächster Tag',exact=False).click()
+            assert page.locator('.lesson.substituted').count()==0
+            assert page.locator('.day-col').count()==1
+            page.reload(wait_until='domcontentloaded')
+            page.locator('.lesson').first.wait_for()
+            assert page.locator('.day-col').count()==1
             assert page.locator('body').evaluate('(e)=>e.scrollWidth<=innerWidth')
             ctx.close()
             print('PASS timetable access',role,width)

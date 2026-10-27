@@ -24,18 +24,23 @@
     </div>
   </header>
 
+  <div class="timetable-view-switch" role="group" aria-label="Stundenplanansicht">
+    <span>Ansicht</span>
+    <button type="button" class="chip chip-cyan" [class.active]="singleDayView" [attr.aria-pressed]="singleDayView" (click)="setViewMode('day')">Tag</button>
+    <button type="button" class="chip chip-cyan" [class.active]="!singleDayView" [attr.aria-pressed]="!singleDayView" (click)="setViewMode('week')">Woche</button>
+  </div>
   <div class="layout">
 
-    <div class="board" #boardRef (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)">
+    <div class="board" [class.week-view]="!singleDayView" #boardRef (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)">
 
-      <div class="mobile-daybar" *ngIf="isMobile">
+      <div class="mobile-daybar" *ngIf="isMobile && singleDayView">
         <div class="mobile-daylabel">
           {{ mobileDayDef.label }}
           <span class="sub">{{ mobileDayDate.getDate() }}.{{ mobileDayDate.getMonth() + 1 }}.{{ mobileDayDate.getFullYear() }}</span>
         </div>
       </div>
 
-      <div class="day-headers" *ngIf="!isMobile" [style.grid-template-columns]="'repeat(' + displayedDays.length + ', 1fr)'">
+      <div class="day-headers" *ngIf="!isMobile || !singleDayView" [style.grid-template-columns]="'repeat(' + displayedDays.length + ', 1fr)'">
         <div class="day-header" *ngFor="let col of displayedDays; trackBy: trackByDay" [class.is-today]="col.isToday">
           {{ col.def.short }}
           <span class="num">{{ col.date.getDate() }}.{{ col.date.getMonth() + 1 }}.</span>
@@ -70,16 +75,16 @@
                  (mouseenter)="onLessonEnter(lesson)"
                  (mouseleave)="onLessonLeave(lesson)"
                  (click)="openEditLesson(lesson, $event)">
-              <button *ngIf="canUseWeeklyView" class="edit-btn" (click)="openEditLesson(lesson, $event)" aria-label="Stunde bearbeiten">✎</button>
+              <button *ngIf="canManageTimetable" class="edit-btn" (click)="openEditLesson(lesson, $event)" aria-label="Stunde bearbeiten">✎</button>
               <div class="subj">{{ lesson.subject }}</div>
               <div class="original-teacher" *ngIf="lesson.substitution">{{ lesson.originalTeacher }}</div>
               <div class="meta">{{ lesson.teacher }}</div>
-              <a *ngIf="lesson.substitution && canUseWeeklyView" class="substitution-details" routerLink="/vertretungsplan" (click)="$event.stopPropagation()" [title]="lesson.substitution.note || 'Alle Informationen im Vertretungsplan'">{{ lesson.substitution.start_time.slice(0,5) }}–{{ lesson.substitution.end_time.slice(0,5) }} · Details</a>
+              <a *ngIf="lesson.substitution && canManageTimetable" class="substitution-details" routerLink="/vertretungsplan" (click)="$event.stopPropagation()" [title]="lesson.substitution.note || 'Alle Informationen im Vertretungsplan'">{{ lesson.substitution.start_time.slice(0,5) }}–{{ lesson.substitution.end_time.slice(0,5) }} · Details</a>
               <div class="room">Raum {{ lesson.room }}</div>
               <div class="time">{{ lesson.start }}–{{ lesson.end }}</div>
               <div class="live-tag" *ngIf="lesson.isLive">LIVE</div>
-              <span class="replacement-tag" *ngIf="lesson.substitution?.kind === 'replacement' && !canUseWeeklyView">VERTRETUNG</span>
-              <a class="replacement-tag" *ngIf="lesson.substitution?.kind === 'replacement' && canUseWeeklyView" routerLink="/vertretungsplan" (click)="$event.stopPropagation()" aria-label="Vertretungsdetails anzeigen">VERTRETUNG ↗</a>
+              <span class="replacement-tag" *ngIf="lesson.substitution?.kind === 'replacement' && !canManageTimetable">VERTRETUNG</span>
+              <a class="replacement-tag" *ngIf="lesson.substitution?.kind === 'replacement' && canManageTimetable" routerLink="/vertretungsplan" (click)="$event.stopPropagation()" aria-label="Vertretungsdetails anzeigen">VERTRETUNG ↗</a>
               <div class="cancelled-tag" *ngIf="lesson.cancelled">AUSGEFALLEN</div>
             </div>
 
@@ -108,14 +113,6 @@
       </div>
 
       <div class="panel controls-panel">
-        <div class="profile-group" *ngIf="isMobile && canUseWeeklyView">
-          <span class="profile-label">Ansicht</span>
-          <div class="chip-group">
-            <button class="chip chip-cyan" [class.active]="mobileViewMode === 'day'" (click)="setMobileViewMode('day')">Tag</button>
-            <button class="chip chip-cyan" [class.active]="mobileViewMode === 'week'" (click)="setMobileViewMode('week')">Woche</button>
-          </div>
-        </div>
-
         <div class="profile-group">
           <span class="profile-label">{{ singleDayView ? 'Tag' : 'Woche' }}</span>
           <div class="nav-group stacked">
@@ -127,7 +124,7 @@
 
         <div class="profile-group">
           <div class="nav-group stacked">
-            <button *ngIf="canUseWeeklyView" class="nav-btn add" (click)="openNewLesson()">+ Stunde hinzufügen</button>
+            <button *ngIf="canManageTimetable" class="nav-btn add" (click)="openNewLesson()">+ Stunde hinzufügen</button>
             <button class="nav-btn" [class.active]="showWeekend" (click)="toggleWeekend()">Wochenende anzeigen</button>
             <button class="nav-btn" (click)="openSettings()">⚙ Einstellungen</button>
             <a routerLink="/" class="nav-btn" style="text-decoration: none; display: block; text-align: center;">← Zurück zum Hauptmenü</a>
@@ -320,7 +317,7 @@
 
                   <div class="subject-lesson-row" *ngFor="let lesson of lessonsForSubjectDisplay(s)">
                     <div class="lesson-row-meta">{{ dayLabel(lesson.day) }} · {{ lesson.start }}–{{ lesson.end }}</div>
-                    <input type="text" class="lesson-row-teacher" [readOnly]="!canUseWeeklyView" [(ngModel)]="lesson.teacher" placeholder="Lehrer" />
+                    <input type="text" class="lesson-row-teacher" [readOnly]="!canManageTimetable" [(ngModel)]="lesson.teacher" placeholder="Lehrer" />
                   </div>
 
                 </div>
@@ -361,17 +358,17 @@
             </div>
 
             <div class="settings-section">
-              <span class="profile-label" *ngIf="canUseWeeklyView">Importieren</span>
+              <span class="profile-label" *ngIf="canManageTimetable">Importieren</span>
               <div class="chip-group">
-                <button *ngIf="canUseWeeklyView" class="chip chip-cyan" (click)="importFileInput.click()">⭱ Datei auswählen</button>
+                <button *ngIf="canManageTimetable" class="chip chip-cyan" (click)="importFileInput.click()">⭱ Datei auswählen</button>
               </div>
               <input #importFileInput type="file" accept="application/json" style="display:none" (change)="onImportFile($event)" />
 
-              <label *ngIf="canUseWeeklyView" class="field" style="margin-top:12px">
+              <label *ngIf="canManageTimetable" class="field" style="margin-top:12px">
                 <span>Oder JSON-Text einfügen (z.B. von einem anderen Gerät kopiert)</span>
                 <textarea class="import-textarea" rows="4" [(ngModel)]="importPasteText" placeholder="{ &quot;lessons&quot;: [...] }"></textarea>
               </label>
-              <button *ngIf="canUseWeeklyView" class="nav-btn add" (click)="importFromPastedText()">Eingefügten Text importieren</button>
+              <button *ngIf="canManageTimetable" class="nav-btn add" (click)="importFromPastedText()">Eingefügten Text importieren</button>
             </div>
           </div>
 
