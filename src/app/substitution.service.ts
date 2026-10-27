@@ -15,7 +15,7 @@ export function dateKey(date: Date): string {
 export function applySubstitution(lesson: Lesson, date: string, entries: Substitution[]): EffectiveLesson {
   const entry = entries.find(e => e.date === date && e.teacher.trim().toLowerCase() === lesson.teacher.trim().toLowerCase()
     && e.start_time.slice(0, 5) < lesson.end && e.end_time.slice(0, 5) > lesson.start);
-  if (!entry) return lesson;
+  if (!entry) return { ...lesson, cancelled: false };
   return { ...lesson, substitution: entry, originalTeacher: lesson.teacher, originalRoom: lesson.room,
     cancelled: entry.kind === 'cancelled',
     teacher: entry.kind === 'replacement' ? entry.replacement_teacher : lesson.teacher,
@@ -25,7 +25,7 @@ export function applySubstitution(lesson: Lesson, date: string, entries: Substit
 export function splitSubstitutions(lesson: Lesson, date: string, entries: Substitution[]): EffectiveLesson[] {
   const matching = entries.filter(e => e.date === date && e.teacher.trim().toLowerCase() === lesson.teacher.trim().toLowerCase()
     && e.start_time.slice(0, 5) < lesson.end && e.end_time.slice(0, 5) > lesson.start);
-  if (!matching.length) return [lesson];
+  if (!matching.length) return [{ ...lesson, cancelled: false }];
   const boundaries = new Set([lesson.start, lesson.end]);
   matching.forEach(e => {
     boundaries.add(e.start_time.slice(0,5) < lesson.start ? lesson.start : e.start_time.slice(0,5));

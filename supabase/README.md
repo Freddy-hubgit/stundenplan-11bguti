@@ -210,3 +210,44 @@ Es ist keine zusätzliche SQL-Migration erforderlich.
 ```sh
 python tests/timetable-view-permissions-browser.py
 ```
+
+## Private Direktnachrichten
+
+`migrations/202610270008_direct_messages.sql` einmalig im Supabase-SQL-Editor ausführen.
+Die Migration benötigt die vorhandene `profiles`-Tabelle mit UUID-Primärschlüssel, `full_name`
+und `role`. Keine zusätzliche Edge Function, kein API-Schlüssel und keine Realtime-Publication
+werden benötigt.
+
+Alle angemeldeten Personen (`user`, `teacher`, `support`, `admin`) erhalten eine Kachel
+„Nachrichten“. Die Personensuche zeigt Anzeigenamen und Rollen, keine E-Mail-Adressen.
+Pro Personenpaar gibt es genau einen privaten Chat, auch wenn beide ihn nacheinander
+öffnen. Nachrichten werden serverseitig dem angemeldeten Absender zugeordnet; Lesen und
+Schreiben sind ausschließlich den beiden Beteiligten gestattet. Support/Admin haben
+in diesen RPCs keinen Sonderzugriff auf fremde Chats. Dies ist Zugriffsschutz, keine
+Ende-zu-Ende-Verschlüsselung gegenüber den Datenbankbetreibern.
+
+Die Oberfläche aktualisiert alle vier Sekunden und behält nicht gesendete Entwürfe beim
+Wechsel zwischen Chats oder bei fehlgeschlagenen Sendeversuchen. Nachrichten dürfen
+höchstens 5000 Zeichen lang sein. Chatverläufe bleiben nach einem Rollenwechsel erhalten;
+beim Löschen eines beteiligten Profilkontos werden dessen Chats samt Verlauf gelöscht.
+Die Datenbanktabellen sind durch RLS und entzogene Direktzugriffsrechte geschützt;
+alle Zugriffe laufen über die geprüften `dm_*`-Funktionen.
+
+### Keine lokalen Unterrichtsausfälle
+
+Die beiden lokalen Ausfall-Checkboxen wurden entfernt. Nutzer/Lehrer können Unterricht
+nicht mehr über den Stundeneditor bearbeiten, löschen oder per JSON-Import ersetzen.
+Fachwahl, Farben und Darstellung bleiben verfügbar. Support/Admin können den lokalen
+Stundenplan weiterhin bearbeiten; Ausfälle werden ausschließlich über den zentralen
+Vertretungsplan angezeigt. Auch alte oder importierte `cancelled`-Flags werden ignoriert.
+Die Sperre betrifft die unterstützten Bedienwege; der zentrale Ausfall-Datensatz bleibt
+serverseitig nur für Support/Admin schreibbar.
+
+```sh
+PGLITE_MODULE_PATH=/tmp/support-db-tests/node_modules/@electric-sql/pglite/dist/index.js node tests/direct-messages-database.mjs
+python tests/direct-messages-browser.py
+python tests/timetable-cancellation-browser.py
+```
+
+Die Prüfungen verwenden eine lokale PostgreSQL-Instanz beziehungsweise eine simulierte
+Supabase-API. Die Live-Migration wurde nicht von dieser Entwicklungsumgebung ausgeführt.

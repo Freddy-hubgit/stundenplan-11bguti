@@ -189,3 +189,6 @@
 .tile[data-route="/videokonferenz"] { --tile-accent: #f29cbe; --tile-tint: rgba(242,156,190,.09); }
 .portal-shell.theme-light .tile[data-route="/kalender"] { --tile-accent: #315f9f; }
 .portal-shell.theme-light .tile[data-route="/videokonferenz"] { --tile-accent: #a14770; }
+
+.tile[data-route="/nachrichten"] { --tile-accent: #7fdbb1; --tile-tint: rgba(127,219,177,.09); }
+.portal-shell.theme-light .tile[data-route="/nachrichten"] { --tile-accent: #227553; }

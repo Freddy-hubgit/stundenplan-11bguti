@@ -1,0 +1,32 @@
+<main class="portal-shell" [class.theme-light]="settings.theme==='light'" [class.bg-aurora]="settings.backgroundKey==='aurora'" [class.bg-sunset]="settings.backgroundKey==='sunset'" [class.bg-forest]="settings.backgroundKey==='forest'">
+ <div class="messages-content">
+  <header class="portal-header"><div><a routerLink="/" class="back">← Hauptmenü</a><h1>Nachrichten</h1></div><button type="button" class="settings-btn" (click)="settingsOpen=true" aria-label="Einstellungen öffnen">⚙</button></header>
+  <p class="intro">Private Chats mit anderen Nutzern – unabhängig von ihrer Rolle.</p>
+  <p *ngIf="loading" role="status">Nachrichten werden geladen …</p>
+  <p *ngIf="error" class="error" role="alert">{{ error }} <button type="button" (click)="refresh()">Erneut laden</button></p>
+  <p *ngIf="refreshError" class="error" role="alert">{{ refreshError }} <button type="button" (click)="refresh()">Erneut laden</button></p>
+  <div class="chat-layout" *ngIf="profile && !loading">
+   <aside class="panel sidebar">
+    <h2>Neuer Chat</h2><label for="people-search">Person suchen</label><input id="people-search" type="search" [(ngModel)]="search" placeholder="Name oder Rolle" autocomplete="off">
+    <div class="people"><button type="button" class="person" *ngFor="let person of filteredPeople; trackBy:trackId" [disabled]="busy||messagesLoading" (click)="open(person)"><strong>{{ person.full_name }}</strong><span>{{ roleLabel(person.role) }} · {{ person.id.slice(-6) }}</span><span class="sr-only">Chat starten</span></button></div>
+    <p class="muted" *ngIf="!filteredPeople.length">Keine Personen gefunden.</p>
+    <h2 class="threads-heading">Meine Chats</h2><p class="muted" *ngIf="!threads.length">Du hast noch keine Chats. Wähle eine Person aus.</p>
+    <button type="button" class="thread" *ngFor="let thread of threads; trackBy:trackId" [class.selected]="selected?.id===thread.id" [attr.aria-pressed]="selected?.id===thread.id" [disabled]="busy" (click)="select(thread)"><strong>{{ thread.peer_name }}</strong><span>{{ roleLabel(thread.peer_role) }}</span><span class="preview">{{ thread.last_message || 'Noch keine Nachrichten' }}</span></button>
+   </aside>
+   <section class="panel conversation" aria-label="Privater Chat">
+    <ng-container *ngIf="selected;else noChat">
+     <div class="conversation-header"><h2>{{ selected.peer_name }}</h2><span class="muted">{{ roleLabel(selected.peer_role) }}</span></div>
+     <p *ngIf="messagesLoading" role="status">Chat wird geladen …</p>
+     <div #messageLog class="message-log" role="log" aria-live="polite" aria-relevant="additions" aria-label="Chatverlauf">
+      <p *ngIf="!messagesLoading&&!messages.length" class="muted">Schreibe die erste Nachricht.</p>
+      <article class="message" *ngFor="let message of messages;trackBy:trackId" [class.own]="message.sender_id===profile.id"><header><strong>{{ message.sender_name }}</strong><time>{{ message.created_at | date:'dd.MM.yyyy HH:mm' }}</time></header><p>{{ message.body }}</p></article>
+     </div>
+     <form (ngSubmit)="send()"><label for="direct-message">Nachricht</label><textarea id="direct-message" name="message" [(ngModel)]="draft" rows="3" maxlength="5000" required [disabled]="busy||messagesLoading" placeholder="Schreibe eine Nachricht …"></textarea><button type="submit" class="primary" [disabled]="busy||messagesLoading||!draft.trim()">{{ busy?'Sende …':'Nachricht senden' }}</button></form>
+    </ng-container>
+    <ng-template #noChat><h2>Deine Nachrichten</h2><p class="muted">Wähle eine Person oder einen bestehenden Chat aus.</p></ng-template>
+   </section>
+  </div>
+  <p class="muted hint">Nur die beiden Beteiligten können diesen Chat über das Portal lesen und beantworten. Aktualisierung alle 4 Sekunden.</p>
+ </div>
+ <app-settings-modal [open]="settingsOpen" (openChange)="settingsOpen=$event"></app-settings-modal>
+</main>

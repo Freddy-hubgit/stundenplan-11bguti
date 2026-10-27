@@ -38,10 +38,9 @@ with sync_playwright() as p:
         page.goto(BASE+path,wait_until='domcontentloaded')
         page.wait_for_timeout(250)
         audit()
-    # Timetable checkboxes retain their existing custom checkbox appearance.
+    # Local cancellation controls have been removed; central substitutions are authoritative.
     page.get_by_role('button',name='+ Stunde hinzufügen',exact=True).click()
-    check=page.get_by_label('Diese Stunde ist ausgefallen',exact=True)
-    check.check();assert check.is_checked()
+    assert page.get_by_label('Diese Stunde ist ausgefallen',exact=True).count()==0
     assert not errors,errors
     print('PASS control defaults across administration, meetings, support, substitution plan, timetable; role select, custom checkbox, light/dark and existing checkbox behavior')
     browser.close()

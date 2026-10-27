@@ -338,7 +338,7 @@ type EditorMode = "new" | "edit";
     const lines: string[] = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Stundenplan//DE"];
 
     this.lessons
-      .filter(l => this.isLessonVisible(l) && !l.cancelled)
+      .filter(l => this.isLessonVisible(l))
       .forEach((l, i) => {
         const def = this.dayDefs.find(d => d.key === l.day);
         if (!def) return;
@@ -408,6 +408,7 @@ type EditorMode = "new" | "edit";
   }
 
   onImportFile(event: Event): void {
+    if (!this.canUseWeeklyView) return;
     const input = event.target as HTMLInputElement;
     const file = input.files && input.files[0];
     if (!file) return;
@@ -425,12 +426,14 @@ type EditorMode = "new" | "edit";
   importPasteText: string = "";
 
   importFromPastedText(): void {
+    if (!this.canUseWeeklyView) return;
     if (!this.importPasteText.trim()) return;
     this.applyImportedJson(this.importPasteText);
     this.importPasteText = "";
   }
 
   private applyImportedJson(raw: string): void {
+    if (!this.canUseWeeklyView) return;
     try {
       const data = JSON.parse(raw);
       if (!data || !Array.isArray(data.lessons)) {
@@ -442,7 +445,7 @@ type EditorMode = "new" | "edit";
       );
       if (!confirmed) return;
 
-      this.lessons = data.lessons;
+      this.lessons = data.lessons.map((lesson: Lesson) => { const { cancelled, ...regular } = lesson; return regular; });
 
       if (data.subjectColorOverrides && typeof data.subjectColorOverrides === "object") {
         this.settings.setSubjectColorOverrides(data.subjectColorOverrides);
@@ -551,7 +554,6 @@ type EditorMode = "new" | "edit";
   editorLanguage: "Spanisch" | "" = "";  // "" = unabhängig von der Sprachwahl sichtbar
   editorScienceGroup: "Chemie" | "Physik" | "Biologie" | "" = ""; // nur bei abweichendem Fachnamen nötig
   editorColorIndex: number | null = null; // null = automatische Farbe anhand des Fachnamens
-  editorCancelled: boolean = false;
 
   setEditorColor(idx: number | null): void {
     this.editorColorIndex = idx;
@@ -987,6 +989,7 @@ type EditorMode = "new" | "edit";
   /* ---------------- Editor: Fach hinzufügen / bearbeiten / löschen ---------------- */
 
   openNewLesson(): void {
+    if (!this.canUseWeeklyView) return;
     this.editorMode = "new";
     this.editorIndex = null;
     this.editorDay = this.mobileDayDef ? this.mobileDayDef.key : "Mon";
@@ -999,12 +1002,12 @@ type EditorMode = "new" | "edit";
     this.editorLanguage = "";
     this.editorScienceGroup = "";
     this.editorColorIndex = null;
-    this.editorCancelled = false;
     this.editorOpen = true;
   }
 
   openEditLesson(lesson: PositionedLesson, event?: Event): void {
     if (event) event.stopPropagation();
+    if (!this.canUseWeeklyView) return;
     const idx = lesson.sourceIndex;
     const target = this.lessons[idx];
     if (!target) return;
@@ -1021,7 +1024,6 @@ type EditorMode = "new" | "edit";
     this.editorLanguage = target.language || "";
     this.editorScienceGroup = target.scienceGroup || "";
     this.editorColorIndex = this.settings.subjectColorIndex(target.subject) ?? null;
-    this.editorCancelled = !!target.cancelled;
     this.editorOpen = true;
   }
 
@@ -1031,6 +1033,7 @@ type EditorMode = "new" | "edit";
   }
 
   saveLesson(): void {
+    if (!this.canUseWeeklyView) return;
     if (!this.editorSubject.trim()) return; // Fach ist Pflichtfeld
 
     const newLesson: Lesson = {
@@ -1043,7 +1046,6 @@ type EditorMode = "new" | "edit";
       ...(this.editorTrack ? { track: this.editorTrack } : {}),
       ...(this.editorLanguage ? { language: this.editorLanguage } : {}),
       ...(this.editorScienceGroup ? { scienceGroup: this.editorScienceGroup } : {}),
-      ...(this.editorCancelled ? { cancelled: true } : {}),
     };
 
     if (this.editorMode === "edit" && this.editorIndex !== null) {
@@ -1062,6 +1064,7 @@ type EditorMode = "new" | "edit";
   }
 
   deleteLesson(): void {
+    if (!this.canUseWeeklyView) return;
     if (this.editorIndex !== null) {
       this.lessons.splice(this.editorIndex, 1);
     }

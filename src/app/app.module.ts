@@ -16,9 +16,11 @@ import { AdminGuard } from './admin.guard';
 import { SettingsModalComponent } from './settings-modal/settings-modal.component';
 import { AccountSettingsComponent } from './account-settings/account-settings.component';
 import { SubstitutionComponent } from './substitution/substitution.component';
+import { MessagesComponent } from './messages/messages.component';
 import { SupportComponent } from './support/support.component';
 
 const routes: Routes = [
+  { path: 'nachrichten', component: MessagesComponent, canActivate: [AuthGuard] },
   { path: 'kalender', component: PortalSectionComponent, canActivate: [AuthGuard, FeatureAccessGuard], data: { allowedRoles: ['teacher', 'support', 'admin'], title: 'Kalender', description: 'Hier ist Platz für Termine und Veranstaltungen.' } },
   { path: 'videokonferenz', component: PortalSectionComponent, canActivate: [AuthGuard], data: { title: 'Videokonferenz', description: 'Hier ist Platz für Videokonferenzen und Besprechungslinks.' } },
   { path: 'login', component: LoginComponent },
@@ -40,6 +42,7 @@ const routes: Routes = [
     ProfileMenuComponent,
     SettingsModalComponent,
     SupportComponent,
+    MessagesComponent,
     SubstitutionComponent,
     AccountSettingsComponent,
   ],
