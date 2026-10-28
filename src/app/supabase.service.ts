@@ -92,6 +92,27 @@ export class SupabaseService {
     return data as T;
   }
 
+  async downloadAccountBackground(account: string): Promise<Blob | null> {
+    const { data, error } = await this.client.storage.from('account-backgrounds').download(account + '/background');
+    if (error) {
+      const status = String((error as any).statusCode || (error as any).status || '');
+      if ((status === '404' || status === '400') && !/bucket/i.test(error.message) && /not found|does not exist/i.test(error.message)) return null;
+      throw error;
+    }
+    return data;
+  }
+
+  async uploadAccountBackground(account: string, image: Blob): Promise<void> {
+    const { error } = await this.client.storage.from('account-backgrounds').upload(account + '/background', image,
+      { upsert: true, contentType: image.type, cacheControl: '0' });
+    if (error) throw error;
+  }
+
+  async deleteAccountBackground(account: string): Promise<void> {
+    const { error } = await this.client.storage.from('account-backgrounds').remove([account + '/background']);
+    if (error) throw error;
+  }
+
   async changeUserRole(id: string, role: Profile['role']): Promise<{ ok: boolean; error?: string }> {
     try {
       await this.supportRpc('set_profile_role', { target_id: id, new_role: role });

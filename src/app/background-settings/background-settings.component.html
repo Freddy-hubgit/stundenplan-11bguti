@@ -1,9 +1,13 @@
 <section class="background-upload" aria-label="Eigenes Hintergrundbild">
  <h3>Eigenes Hintergrundbild</h3>
- <p>Wird auf allen angemeldeten Seiten angezeigt. Das Bild bleibt für dein Konto in diesem Browser gespeichert und wird nicht hochgeladen oder mit anderen Geräten synchronisiert.</p>
+ <p>Wird auf allen angemeldeten Seiten angezeigt. Neue Bilder werden zunächst nur in diesem Browser gespeichert. Mit „Im Konto speichern“ kannst du das Bild optional auf deine anderen Geräte übernehmen.</p>
  <label>Bild auswählen<input type="file" accept="image/jpeg,image/png,image/webp" (change)="select($event)" [disabled]="background.busy"></label>
  <p class="formats">JPG, PNG oder WebP · maximal 10 MB. Große Bilder werden automatisch verkleinert.</p>
  <p *ngIf="background.busy" role="status">Hintergrundbild wird verarbeitet …</p>
+ <p *ngIf="background.notice" role="status">{{ background.notice }}</p>
  <p *ngIf="background.error" class="error" role="alert">{{ background.error }}</p>
+ <p class="sync-state">{{ background.cloudSaved ? 'Kontobild aktiv' : 'Lokale Einstellung' }}</p>
  <div *ngIf="background.url" class="preview"><img [src]="background.url" alt="Vorschau deines Hintergrundbilds"><button type="button" (click)="background.remove()" [disabled]="background.busy">Hintergrundbild entfernen</button></div>
+ <div class="sync-actions"><button *ngIf="background.url" type="button" (click)="background.saveToAccount()" [disabled]="background.busy">Im Konto speichern</button><button type="button" (click)="background.loadFromAccount()" [disabled]="background.busy">Kontobild laden</button><button *ngIf="background.cloudSaved" type="button" (click)="background.deleteFromAccount()" [disabled]="background.busy">Kontobild löschen</button></div>
+ <p class="formats">Kontobilder sind privat und werden beim Anmelden oder Neuladen geladen. „Hintergrundbild entfernen“ und Standardhintergründe ändern nur diesen Browser. Eine lokale Bildauswahl hat Vorrang, bis du wieder „Kontobild laden“ wählst.</p>
 </section>

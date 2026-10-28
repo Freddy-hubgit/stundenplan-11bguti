@@ -1,0 +1,33 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+const {PGlite}=await import(process.env.PGLITE_MODULE_PATH||'@electric-sql/pglite');
+const db=new PGlite();
+await db.exec(`create role anon;create role authenticated;create schema auth;create schema storage;
+create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid;$$;
+create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);
+create table storage.objects(id uuid primary key default gen_random_uuid(),bucket_id text,name text,unique(bucket_id,name));
+alter table storage.objects enable row level security;
+grant usage on schema storage,auth to authenticated,anon;
+grant all on storage.objects to authenticated,anon;
+-- Simulate an existing broad policy, ensuring the new boundary still protects pictures.
+create policy legacy_policy on storage.objects for all to public using(true) with check(true);`);
+await db.exec(await readFile(new URL('../supabase/migrations/202610280009_account_backgrounds.sql',import.meta.url),'utf8'));
+const bucket=(await db.query("select * from storage.buckets where id='account-backgrounds'")).rows[0];
+assert.equal(bucket.public,false);assert.equal(Number(bucket.file_size_limit),3145728);
+assert.deepEqual(bucket.allowed_mime_types.sort(),['image/jpeg','image/png','image/webp']);
+const id=n=>`00000000-0000-0000-0000-00000000000${n}`;
+async function login(n){await db.exec('reset role');await db.query("select set_config('request.jwt.claim.sub',$1,false)",[n?id(n):'']);await db.exec(`set role ${n?'authenticated':'anon'}`);}
+await login(1);await db.query("insert into storage.objects(bucket_id,name) values('account-backgrounds',$1)",[id(1)+'/background']);
+assert.equal((await db.query("select * from storage.objects where bucket_id='account-backgrounds'")).rows.length,1);
+await assert.rejects(()=>db.query("insert into storage.objects(bucket_id,name) values('account-backgrounds',$1)",[id(2)+'/background']));
+await assert.rejects(()=>db.query("update storage.objects set name=$1 where bucket_id='account-backgrounds'",[id(2)+'/background']));
+await login(2);assert.equal((await db.query("select * from storage.objects where bucket_id='account-backgrounds'")).rows.length,0);
+assert.equal((await db.query("delete from storage.objects where bucket_id='account-backgrounds' returning id")).rows.length,0);
+await db.query("insert into storage.objects(bucket_id,name) values('account-backgrounds',$1)",[id(2)+'/background']);
+await assert.rejects(()=>db.query("insert into storage.objects(bucket_id,name) values('account-backgrounds',$1)",[id(2)+'/other-file']));
+await db.query("insert into storage.objects(bucket_id,name) values('unrelated-bucket','existing-policy-still-works')");
+await login(null);assert.equal((await db.query("select * from storage.objects where bucket_id='account-backgrounds'")).rows.length,0);
+await assert.rejects(()=>db.query("insert into storage.objects(bucket_id,name) values('account-backgrounds',$1)",[id(1)+'/background']));
+await login(1);assert.equal((await db.query("delete from storage.objects where bucket_id='account-backgrounds' returning id")).rows.length,1);
+console.log('PASS private bucket, MIME/size configuration, own-account CRUD, cross-account/anonymous denial even with broad legacy policy, unrelated bucket policies preserved');
+await db.close();

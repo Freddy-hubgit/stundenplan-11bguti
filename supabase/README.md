@@ -271,7 +271,7 @@ SQL-Migrationen oder zusätzlichen Schlüssel werden benötigt.
 
 Das Bild ist auf allen angemeldeten Seiten sichtbar und wird durch eine zum Theme passende
 Überlagerung abgedunkelt/aufgehellt. Panels behalten ihre lesbaren Flächen. Die Speicherung
-ist an die Auth-Benutzer-ID und diesen Browser gebunden; es gibt keine Synchronisierung
+ist an die Auth-Benutzer-ID und diesen Browser gebunden; ohne den optionalen Kontoupload gibt es keine Synchronisierung
 zwischen Geräten. Abmelden oder Kontowechsel entfernt die Bildreferenz aus der aktuellen
 Ansicht, ohne das gespeicherte Bild für die nächste Anmeldung zu löschen.
 
@@ -281,4 +281,40 @@ ersetzen das bisherige Bild nicht. Upload-/Entfernen-Fehler werden in den Einste
 
 ```sh
 python tests/background-image-browser.py
+```
+
+## Optionales Kontobild auf mehreren Geräten
+
+Einmalig `migrations/202610280009_account_backgrounds.sql` im Supabase-SQL-Editor ausführen.
+Sie erstellt den privaten Bucket `account-backgrounds` (maximal 3 MB je verarbeitetem Bild,
+nur JPEG/PNG/WebP) und Zugriffsregeln für genau `<auth.uid()>/background`.
+Eine zusätzliche restriktive Regel verhindert auch bei vorhandenen breiten Storage-Regeln,
+dass fremde Konten oder anonyme Aufrufe auf Kontobilder zugreifen. Andere Buckets werden
+von dieser Begrenzung nicht verändert. Ein vorhandener gleichnamiger Bucket mit abweichender
+Konfiguration führt zu einem Fehler statt zu einer stillen Änderung.
+
+- „Bild auswählen“ verarbeitet und speichert wie bisher nur lokal.
+- „Im Konto speichern“ lädt das aktuelle Bild ausdrücklich in den privaten Kontospeicher hoch.
+  Es wird nie automatisch ein neu gewähltes lokales Bild hochgeladen.
+- Andere Geräte ohne lokale Bildauswahl laden das Kontobild bei der Anmeldung oder beim Neuladen.
+  Ein bereits bewusst lokal gewähltes/entferntes Bild hat auf diesem Gerät Vorrang.
+  Mit „Kontobild laden“ kann das Kontobild explizit wieder übernommen werden.
+- „Hintergrundbild entfernen“ und die Wahl eines Standardhintergrunds wirken nur in diesem
+  Browser und löschen kein Kontobild.
+- „Kontobild löschen“ löscht die Cloudkopie. Die aktuelle lokale Kopie auf dem löschenden Gerät
+  bleibt erhalten; andere Geräte im Kontomodus entfernen ihre Kopie bei der nächsten Anmeldung/
+  beim Neuladen, sobald das Fehlen des Kontobilds bestätigt ist.
+- Bei fehlgeschlagenen Uploads bleibt das lokale Bild erhalten. Bei Netzwerkproblemen kann
+  eine vorhandene lokale Kopie des Kontobilds weiterhin angezeigt werden. Änderungen auf anderen
+  Geräten werden nicht live übertragen, sondern beim nächsten Laden erkannt.
+
+Keine neue Edge Function oder zusätzliche API-Schlüssel nötig. Der vorhandene Supabase-Client
+verwendet das Benutzer-Token. Bilder sind nicht öffentlich; beim Anzeigen lädt der Client den
+privaten Inhalt und verwendet im Browser eine temporäre Blob-URL statt eines öffentlichen Links.
+Die Migration und Zugriffsregeln wurden lokal geprüft, die Browserprüfung simuliert die Storage-API.
+Die Live-Migration wurde hier nicht ausgeführt.
+
+```sh
+PGLITE_MODULE_PATH=/tmp/support-db-tests/node_modules/@electric-sql/pglite/dist/index.js node tests/account-backgrounds-database.mjs
+python tests/account-backgrounds-browser.py
 ```
