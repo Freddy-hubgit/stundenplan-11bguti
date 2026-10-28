@@ -1,3 +1,4 @@
+import { BackgroundImageService } from './background-image.service';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
@@ -39,7 +40,7 @@ export class SettingsService {
     return this.subjectColorOverridesSubject.value;
   }
 
-  constructor() {
+  constructor(public backgroundImage: BackgroundImageService) {
     this.loadAppearance();
     this.loadSubjectColors();
   }
@@ -78,7 +79,9 @@ export class SettingsService {
     this.persistAppearance();
   }
 
-  setBackground(key: string): void {
+  async setBackground(key: string): Promise<void> {
+    if (this.backgroundImage.busy) return;
+    if (this.backgroundImage.url && !(await this.backgroundImage.remove())) return;
     this.backgroundKeySubject.next(key);
     this.persistAppearance();
   }

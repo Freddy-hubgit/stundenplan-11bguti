@@ -1,0 +1,9 @@
+<section class="background-upload" aria-label="Eigenes Hintergrundbild">
+ <h3>Eigenes Hintergrundbild</h3>
+ <p>Wird auf allen angemeldeten Seiten angezeigt. Das Bild bleibt für dein Konto in diesem Browser gespeichert und wird nicht hochgeladen oder mit anderen Geräten synchronisiert.</p>
+ <label>Bild auswählen<input type="file" accept="image/jpeg,image/png,image/webp" (change)="select($event)" [disabled]="background.busy"></label>
+ <p class="formats">JPG, PNG oder WebP · maximal 10 MB. Große Bilder werden automatisch verkleinert.</p>
+ <p *ngIf="background.busy" role="status">Hintergrundbild wird verarbeitet …</p>
+ <p *ngIf="background.error" class="error" role="alert">{{ background.error }}</p>
+ <div *ngIf="background.url" class="preview"><img [src]="background.url" alt="Vorschau deines Hintergrundbilds"><button type="button" (click)="background.remove()" [disabled]="background.busy">Hintergrundbild entfernen</button></div>
+</section>

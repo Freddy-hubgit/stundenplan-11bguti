@@ -3,6 +3,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Routes } from '@angular/router';
 
+import { BackgroundSettingsComponent } from './background-settings/background-settings.component';
 import { AppComponent } from './app.component';
 import { PortalSectionComponent } from './portal-section/portal-section.component';
 import { PortalHomeComponent } from './portal-home/portal-home.component';
@@ -34,6 +35,7 @@ const routes: Routes = [
 @NgModule({
   declarations: [
     AppComponent,
+    BackgroundSettingsComponent,
     PortalHomeComponent,
     PortalSectionComponent,
     StundenplanPageComponent,

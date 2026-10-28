@@ -260,3 +260,25 @@ per JSON ersetzen. Fachfarben sind weiterhin anpassbar; Fachwahl und reine Ansic
 bleiben verfügbar. Lehrer, Support und Admin dürfen den lokalen Stundenplan bearbeiten.
 Dies gibt Lehrern keinen Zugang zum zentralen Vertretungsplan: Zentrale Ausfälle werden
 weiterhin nur durch Support/Admin verwaltet. Keine neue Datenbankmigration nötig.
+
+## Eigenes Hintergrundbild (lokal)
+
+Unter Einstellungen → Darstellung kann jede angemeldete Person ein JPG-, PNG- oder
+WebP-Bild auswählen (max. 10 MB, max. 40 Megapixel). Die Verarbeitung erfolgt ausschließlich
+im Browser: Das Bild wird auf höchstens 1920 Pixel an der längsten Seite verkleinert und
+als komprimiertes Bild in IndexedDB gespeichert. Keine Supabase-Storage-Buckets,
+SQL-Migrationen oder zusätzlichen Schlüssel werden benötigt.
+
+Das Bild ist auf allen angemeldeten Seiten sichtbar und wird durch eine zum Theme passende
+Überlagerung abgedunkelt/aufgehellt. Panels behalten ihre lesbaren Flächen. Die Speicherung
+ist an die Auth-Benutzer-ID und diesen Browser gebunden; es gibt keine Synchronisierung
+zwischen Geräten. Abmelden oder Kontowechsel entfernt die Bildreferenz aus der aktuellen
+Ansicht, ohne das gespeicherte Bild für die nächste Anmeldung zu löschen.
+
+„Hintergrundbild entfernen“ oder die Wahl eines vorgegebenen Hintergrunds löscht das
+persönliche Bild aus dem Browserspeicher. Ungültige Dateien und fehlgeschlagene Speichervorgänge
+ersetzen das bisherige Bild nicht. Upload-/Entfernen-Fehler werden in den Einstellungen angezeigt.
+
+```sh
+python tests/background-image-browser.py
+```

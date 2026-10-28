@@ -36,12 +36,13 @@
         <div class="settings-section">
           <span class="profile-label">Hintergrund</span>
           <div class="chip-group">
-            <button *ngFor="let bg of backgroundOptions"
+            <button [disabled]="settings.backgroundImage.busy" *ngFor="let bg of backgroundOptions"
                     class="chip"
                     [class.active]="currentBackground === bg.key"
                     (click)="currentBackground = bg.key; settings.setBackground(bg.key)">{{ bg.label }}</button>
           </div>
         </div>
+        <app-background-settings></app-background-settings>
       </div>
     </div>
 
