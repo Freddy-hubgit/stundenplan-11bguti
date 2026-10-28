@@ -61,6 +61,15 @@ with sync_playwright() as p:
     teacher.get_by_role('button',name='+ Aufgabe eintragen',exact=True).click()
     teacher.get_by_label('Titel',exact=True).fill('Mathe bis morgen')
     teacher.get_by_label('Fach',exact=True).fill('Mathe')
+    teacher.get_by_label('Unterrichtsdatum',exact=True).fill('2030-01-07')
+    assert teacher.get_by_label('Fällig am',exact=True).input_value()=='2030-01-10'
+    teacher.get_by_label('Fällig am',exact=True).fill('2030-01-15')
+    teacher.get_by_label('Titel',exact=True).fill('Mathe bis morgen')
+    assert teacher.get_by_label('Fällig am',exact=True).input_value()=='2030-01-15'
+    teacher.get_by_label('Fach',exact=True).fill('Unbekanntes Fach')
+    assert teacher.get_by_label('Fällig am',exact=True).input_value()=='2030-01-15'
+    teacher.get_by_text('Keine passende Stunde gefunden. Bitte Fälligkeitsdatum selbst auswählen.',exact=True).wait_for()
+    teacher.get_by_label('Fach',exact=True).fill('Mathe')
     teacher.get_by_label('Fällig am',exact=True).fill('2026-10-29')
     teacher.get_by_label('Für alle Nutzer veröffentlichen',exact=True).check()
     teacher.get_by_label('Abgabe erforderlich',exact=True).check()

@@ -1,0 +1,17 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),ts=require('../node_modules/typescript');
+const compile=path=>ts.transpileModule(fs.readFileSync(path,'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2020,module:ts.ModuleKind.CommonJS}}).outputText;
+const timetable={exports:{}};vm.runInNewContext(compile('src/app/timetable-data.ts'),timetable);
+const context={exports:{},require:name=>name.includes('timetable-data')?timetable.exports:{dateKey:d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}};
+vm.runInNewContext(compile('src/app/homework-due-date.ts'),context);const next=context.exports.nextHomeworkDate;
+assert.equal(next('  MATHE ',new Date('2026-10-28T14:30:00')),'2026-10-29');
+assert.equal(next('Mathe',new Date('2026-10-29T07:29:00')),'2026-10-29');
+assert.equal(next('Mathe',new Date('2026-10-29T07:30:00')),'2026-11-02');
+assert.equal(next('Deutsch',new Date('2026-10-30T18:00:00')),'2026-11-02');
+assert.equal(next('Unbekannt',new Date('2026-10-28T14:30:00')),null);
+assert.equal(next('Spanisch',new Date('2026-10-28T14:30:00'),{language:'Frei'}),null);
+assert.equal(next('Umwelttechnik',new Date('2026-10-28T14:30:00')),null);
+assert.equal(next('Umwelttechnik',new Date('2026-10-28T14:30:00'),{track:'Umwelttechnik'}),'2026-10-30');
+assert.equal(next('Biologie',new Date('2026-10-28T14:30:00')),null);
+assert.equal(next('Biologie',new Date('2026-10-28T14:30:00'),{sciences:['Physik','Biologie']}),'2026-10-30');
+assert.equal(next('Mathe',new Date('bad')),null);
+console.log('PASS next subject date: same day, exact start, weekend, course/science/language choices, normalized subject and missing match');
