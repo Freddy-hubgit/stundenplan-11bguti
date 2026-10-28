@@ -79,12 +79,12 @@
               <div class="subj">{{ lesson.subject }}</div>
               <div class="original-teacher" *ngIf="lesson.substitution">{{ lesson.originalTeacher }}</div>
               <div class="meta">{{ lesson.teacher }}</div>
-              <a *ngIf="lesson.substitution && canManageTimetable" class="substitution-details" routerLink="/vertretungsplan" (click)="$event.stopPropagation()" [title]="lesson.substitution.note || 'Alle Informationen im Vertretungsplan'">{{ lesson.substitution.start_time.slice(0,5) }}–{{ lesson.substitution.end_time.slice(0,5) }} · Details</a>
+              <a *ngIf="lesson.substitution && canManageSubstitutions" class="substitution-details" routerLink="/vertretungsplan" (click)="$event.stopPropagation()" [title]="lesson.substitution.note || 'Alle Informationen im Vertretungsplan'">{{ lesson.substitution.start_time.slice(0,5) }}–{{ lesson.substitution.end_time.slice(0,5) }} · Details</a>
               <div class="room">Raum {{ lesson.room }}</div>
               <div class="time">{{ lesson.start }}–{{ lesson.end }}</div>
               <div class="live-tag" *ngIf="lesson.isLive">LIVE</div>
-              <span class="replacement-tag" *ngIf="lesson.substitution?.kind === 'replacement' && !canManageTimetable">VERTRETUNG</span>
-              <a class="replacement-tag" *ngIf="lesson.substitution?.kind === 'replacement' && canManageTimetable" routerLink="/vertretungsplan" (click)="$event.stopPropagation()" aria-label="Vertretungsdetails anzeigen">VERTRETUNG ↗</a>
+              <span class="replacement-tag" *ngIf="lesson.substitution?.kind === 'replacement' && !canManageSubstitutions">VERTRETUNG</span>
+              <a class="replacement-tag" *ngIf="lesson.substitution?.kind === 'replacement' && canManageSubstitutions" routerLink="/vertretungsplan" (click)="$event.stopPropagation()" aria-label="Vertretungsdetails anzeigen">VERTRETUNG ↗</a>
               <div class="cancelled-tag" *ngIf="lesson.cancelled">AUSGEFALLEN</div>
             </div>
 
@@ -293,7 +293,7 @@
 
                   <label class="field">
                     <span>Name</span>
-                    <input type="text" [(ngModel)]="subjectRenameDrafts[s]" (blur)="renameSubject(s)" />
+                    <input type="text" [readOnly]="!canManageTimetable" [(ngModel)]="subjectRenameDrafts[s]" (blur)="renameSubject(s)" />
                   </label>
 
                   <label class="field">

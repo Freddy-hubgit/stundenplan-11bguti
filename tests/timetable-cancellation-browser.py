@@ -15,7 +15,7 @@ with sync_playwright() as p:
         page.clock.install(time=datetime(2026,10,26,8,0));page.goto(BASE+'/stundenplan',wait_until='domcontentloaded')
         page.locator('.lesson').first.wait_for()
         return page
-    for role in ['user','teacher']:
+    for role in ['user']:
         page=page_as(role)
         assert page.get_by_role('button',name='+ Stunde hinzufügen',exact=True).count()==0
         assert page.get_by_role('button',name='Stunde bearbeiten',exact=True).count()==0
@@ -26,8 +26,13 @@ with sync_playwright() as p:
         assert page.get_by_role('button',name='Eingefügten Text importieren',exact=True).count()==0
         assert page.get_by_role('button',name='⭱ Datei auswählen',exact=True).count()==0
         assert page.get_by_label('Diese Stunde ist ausgefallen',exact=True).count()==0
+        page.get_by_role('button',name='Fächer verwalten',exact=True).click()
+        page.locator('.subject-header').first.click()
+        assert page.locator('.subject-body input[type=text]').evaluate_all('(inputs)=>inputs.length>0 && inputs.every(e=>e.readOnly)')
+        page.locator('.subject-body .swatch-sm:not(.swatch-auto)').first.click()
+        assert page.evaluate("Object.keys(JSON.parse(localStorage.getItem('stundenplan-subject-colors')||'{}')).length")>0
         page.context.close()
-    staff=page_as('support')
+    staff=page_as('teacher')
     staff.get_by_role('button',name='+ Stunde hinzufügen',exact=True).click()
     assert staff.get_by_label('Diese Stunde ist ausgefallen',exact=True).count()==0
     staff.get_by_role('button',name='Abbrechen',exact=True).click()
@@ -44,5 +49,5 @@ with sync_playwright() as p:
     staff.clock.fast_forward(16000)
     staff.locator('.lesson.cancelled').filter(has_text='Testfach').wait_for()
     assert not errors,errors
-    print('PASS no self-cancellation/editor/import for user/teacher; local cancellation flags ignored, central staff cancellation still visible; simulated API')
+    print('PASS no self-cancellation/editor/import for user; teacher editing enabled; local cancellation flags ignored, central staff cancellation still visible; simulated API')
     browser.close()

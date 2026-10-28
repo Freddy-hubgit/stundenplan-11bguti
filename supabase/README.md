@@ -202,7 +202,7 @@ Die separate Seite `/vertretungsplan` samt Hauptmenü-Kachel ist nur für Suppor
 zugänglich; direkte Seitenaufrufe anderer Rollen führen ins Hauptmenü. Alle Rollen können im Stundenplan zwischen Tages- und Wochenansicht wechseln.
 Die Auswahl wird lokal gespeichert; ohne gespeicherte Auswahl startet die mobile Ansicht
 mit einem Tag und der Desktop mit einer Woche. Auf Mobilgeräten lässt sich die Wochenansicht
-horizontal scrollen. Bearbeiten, Löschen und Importieren bleiben Support/Admin vorbehalten.
+horizontal scrollen. Bearbeiten, Löschen und Importieren sind für Lehrer, Support und Admin freigegeben; normale Nutzer dürfen nur die Unterrichtsfarben anpassen.
 Vertretungen, Ersatzlehrkräfte, Räume und Unterrichtsausfälle bleiben im Stundenplan sichtbar.
 Die bisherige Leseschnittstelle `substitution_list` wird weiterhin für diese Darstellung benötigt;
 die Rollenbeschränkung betrifft die separate Verwaltungs-/Übersichtsseite, nicht diese Datenquelle.
@@ -236,9 +236,9 @@ alle Zugriffe laufen über die geprüften `dm_*`-Funktionen.
 
 ### Keine lokalen Unterrichtsausfälle
 
-Die beiden lokalen Ausfall-Checkboxen wurden entfernt. Nutzer/Lehrer können Unterricht
+Die beiden lokalen Ausfall-Checkboxen wurden entfernt. Normale Nutzer können Unterricht
 nicht mehr über den Stundeneditor bearbeiten, löschen oder per JSON-Import ersetzen.
-Fachwahl, Farben und Darstellung bleiben verfügbar. Support/Admin können den lokalen
+Fachwahl, Farben und Darstellung bleiben verfügbar. Lehrer/Support/Admin können den lokalen
 Stundenplan weiterhin bearbeiten; Ausfälle werden ausschließlich über den zentralen
 Vertretungsplan angezeigt. Auch alte oder importierte `cancelled`-Flags werden ignoriert.
 Die Sperre betrifft die unterstützten Bedienwege; der zentrale Ausfall-Datensatz bleibt
@@ -252,3 +252,11 @@ python tests/timetable-cancellation-browser.py
 
 Die Prüfungen verwenden eine lokale PostgreSQL-Instanz beziehungsweise eine simulierte
 Supabase-API. Die Live-Migration wurde nicht von dieser Entwicklungsumgebung ausgeführt.
+
+### Stundenplanrechte
+
+Normale Nutzer können Unterricht nicht hinzufügen, bearbeiten, löschen, umbenennen oder
+per JSON ersetzen. Fachfarben sind weiterhin anpassbar; Fachwahl und reine Ansichtsoptionen
+bleiben verfügbar. Lehrer, Support und Admin dürfen den lokalen Stundenplan bearbeiten.
+Dies gibt Lehrern keinen Zugang zum zentralen Vertretungsplan: Zentrale Ausfälle werden
+weiterhin nur durch Support/Admin verwaltet. Keine neue Datenbankmigration nötig.

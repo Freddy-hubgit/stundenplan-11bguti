@@ -26,8 +26,11 @@ with sync_playwright() as p:
             assert 'Frau Ersatz' in replacement.inner_text() and 'B999' in replacement.inner_text()
             assert page.get_by_role('button',name='Tag',exact=True).count()==1
             assert page.get_by_role('button',name='Woche',exact=True).count()==1
-            if not staff:
+            if role=='user':
                 assert page.get_by_role('button',name='+ Stunde hinzufügen',exact=True).count()==0
+            else:
+                page.get_by_role('button',name='+ Stunde hinzufügen',exact=True).wait_for()
+            if not staff:
                 assert page.get_by_role('link',name='VERTRETUNG',exact=False).count()==0
             page.get_by_role('button',name='Woche',exact=True).click()
             assert page.locator('.day-col').count()==5

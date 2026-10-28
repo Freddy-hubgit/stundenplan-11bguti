@@ -125,12 +125,14 @@ type EditorMode = "new" | "edit";
   isMobile: boolean = false;
   viewMode: "day" | "week" = "day";
   canManageTimetable = false;
+  canManageSubstitutions = false;
   get singleDayView(): boolean { return this.viewMode === 'day'; }
   private async loadTimetablePermissions(): Promise<void> {
     try {
       const profile = await this.auth.getMyProfile();
-      this.canManageTimetable = profile?.role === 'support' || profile?.role === 'admin';
-    } catch { this.canManageTimetable = false; }
+      this.canManageSubstitutions = profile?.role === 'support' || profile?.role === 'admin';
+      this.canManageTimetable = this.canManageSubstitutions || profile?.role === 'teacher';
+    } catch { this.canManageTimetable = false; this.canManageSubstitutions = false; }
   }
 
   setViewMode(mode: "day" | "week"): void {
@@ -248,6 +250,7 @@ type EditorMode = "new" | "edit";
   }
 
   renameSubject(oldName: string): void {
+    if (!this.canManageTimetable) return;
     const newName = (this.subjectRenameDrafts[oldName] || "").trim();
     if (!newName || newName === oldName) return;
 
