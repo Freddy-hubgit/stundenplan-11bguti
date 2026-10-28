@@ -318,3 +318,7 @@ Die Live-Migration wurde hier nicht ausgeführt.
 PGLITE_MODULE_PATH=/tmp/support-db-tests/node_modules/@electric-sql/pglite/dist/index.js node tests/account-backgrounds-database.mjs
 python tests/account-backgrounds-browser.py
 ```
+
+## Hausaufgaben und mehrere Rollen (Migrationen 010–012)
+
+Die aktuelle Rollenverwaltung unterstützt mehrere Rollen pro Konto; deren Berechtigungen werden kombiniert. Hausaufgaben bieten persönliche Erledigung, optionale Text-/Link-/Dateiabgaben und Web-Push am Vorabend. Datenbank, Edge Function, Secrets und Cron müssen einmal eingerichtet werden: [vollständige Aktivierungsanleitung](HOMEWORK_SETUP.md).

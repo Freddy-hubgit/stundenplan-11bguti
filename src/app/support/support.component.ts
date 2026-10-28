@@ -1,3 +1,4 @@
+import { hasRole } from '../supabase.service';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Profile, SupabaseService } from '../supabase.service';
 import { SettingsService } from '../settings.service';
@@ -29,7 +30,7 @@ export class SupportComponent implements OnInit, OnDestroy {
   private selectionVersion = 0;
 
   constructor(private auth: SupabaseService, private support: SupportService, public settings: SettingsService) {}
-  get isStaff(): boolean { return this.profile?.role === 'support' || this.profile?.role === 'admin'; }
+  get isStaff(): boolean { return hasRole(this.profile, 'support', 'admin'); }
   get visibleTickets(): SupportTicket[] {
     return this.tickets.filter(t => this.filter === 'all' || t.status === this.filter);
   }

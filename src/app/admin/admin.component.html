@@ -60,7 +60,7 @@
         <tr>
           <th>Name</th>
           <th>E-Mail</th>
-          <th>Rolle</th>
+          <th>Rollen</th>
           <th>Erstellt am</th>
           <th></th>
         </tr>
@@ -70,7 +70,7 @@
           <tr>
             <td>{{ displayName(p) }}</td>
             <td>{{ p.email }}</td>
-            <td><span class="role-badge" [class]="p.role">{{ p.role === 'teacher' ? 'Lehrer' : p.role }}</span></td>
+            <td><span class="role-badge" [class]="p.role">{{ roleNames(p) }}</span></td>
             <td>{{ p.created_at | date:'dd.MM.yyyy HH:mm' }}</td>
             <td>
               <button
@@ -109,12 +109,8 @@
                 </label>
 
                 <div class="role-editor" *ngIf="canEditRoles">
-                  <label class="field"><span>Rolle</span>
-                    <select [(ngModel)]="editRole" name="editRole-{{ p.id }}" aria-label="Kontorolle" [disabled]="roleSaving || editSaving">
-                      <option value="user">Nutzer</option><option value="teacher">Lehrer</option><option value="support">Support</option><option value="admin">Admin</option>
-                    </select>
-                  </label>
-                  <button type="button" class="primary" [disabled]="roleSaving || editSaving || editRole === p.role" (click)="saveRole(p)">{{ roleSaving ? 'Speichere Rolle …' : 'Rolle speichern' }}</button>
+                  <fieldset class="multi-roles" [disabled]="roleSaving || editSaving"><legend>Rollen</legend><label *ngFor="let role of roleOptions"><input type="checkbox" [ngModel]="editRoles.includes(role)" (ngModelChange)="toggleEditRole(role)" [name]="'role-' + role">{{ roleLabel(role) }}</label></fieldset>
+                  <button type="button" class="primary" [disabled]="roleSaving || editSaving || !rolesChanged(p)" (click)="saveRole(p)">{{ roleSaving ? 'Speichere Rolle …' : 'Rolle speichern' }}</button>
                 </div>
                 <p class="role-hint" *ngIf="!canEditRoles">Rollen können nur von Support und Admins geändert werden.</p>
 

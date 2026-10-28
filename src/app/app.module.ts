@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule, Routes } from '@angular/router';
 
 import { BackgroundSettingsComponent } from './background-settings/background-settings.component';
+import { HomeworkComponent } from './homework/homework.component';
 import { AppComponent } from './app.component';
 import { PortalSectionComponent } from './portal-section/portal-section.component';
 import { PortalHomeComponent } from './portal-home/portal-home.component';
@@ -21,6 +22,7 @@ import { MessagesComponent } from './messages/messages.component';
 import { SupportComponent } from './support/support.component';
 
 const routes: Routes = [
+  { path: 'hausaufgaben', component: HomeworkComponent, canActivate: [AuthGuard] },
   { path: 'nachrichten', component: MessagesComponent, canActivate: [AuthGuard] },
   { path: 'kalender', component: PortalSectionComponent, canActivate: [AuthGuard, FeatureAccessGuard], data: { allowedRoles: ['teacher', 'support', 'admin'], title: 'Kalender', description: 'Hier ist Platz für Termine und Veranstaltungen.' } },
   { path: 'videokonferenz', component: PortalSectionComponent, canActivate: [AuthGuard], data: { title: 'Videokonferenz', description: 'Hier ist Platz für Videokonferenzen und Besprechungslinks.' } },
@@ -35,6 +37,7 @@ const routes: Routes = [
 @NgModule({
   declarations: [
     AppComponent,
+    HomeworkComponent,
     BackgroundSettingsComponent,
     PortalHomeComponent,
     PortalSectionComponent,

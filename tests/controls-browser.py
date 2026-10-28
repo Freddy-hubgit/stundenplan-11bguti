@@ -17,7 +17,7 @@ with sync_playwright() as p:
         assert not result,result
     page.goto(BASE+'/admin',wait_until='domcontentloaded')
     page.locator('tr').filter(has_text='user@example.test').get_by_role('button',name='Bearbeiten',exact=True).click()
-    role=page.get_by_label('Kontorolle',exact=True)
+    role=page.locator('select[name=newRole]')
     assert role.evaluate('(e)=>parseFloat(getComputedStyle(e).borderRadius)')>=8
     audit();page.screenshot(path='/tmp/styled-role-control.png')
     page.goto(BASE+'/videokonferenz',wait_until='domcontentloaded')

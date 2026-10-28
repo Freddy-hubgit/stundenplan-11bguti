@@ -1,3 +1,4 @@
+import { roleNames } from '../supabase.service';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Profile, SupabaseService } from '../supabase.service';
@@ -8,6 +9,7 @@ import { Profile, SupabaseService } from '../supabase.service';
   styleUrls: ['./account-settings.component.css'],
 })
 export class AccountSettingsComponent implements OnInit {
+  roleNames = roleNames;
   profile: Profile | null = null;
   loading = true;
   loadError = '';

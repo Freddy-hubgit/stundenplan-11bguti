@@ -1,0 +1,52 @@
+import { Injectable } from '@angular/core';
+import { SupabaseService } from './supabase.service';
+@Injectable({providedIn:'root'})
+export class PushNotificationsService {
+ supported=typeof window!=='undefined'&&'Notification'in window&&'serviceWorker'in navigator&&'PushManager'in window;
+ enabled=false;busy=false;error='';time='19:00';
+ private user:string|null=null;private revision=0;private initialized=false;private contextQueue:Promise<void>=Promise.resolve();
+ constructor(private api:SupabaseService){}
+ activate(user:string|null):void{
+  if(this.initialized&&user===this.user)return;this.initialized=true;this.user=user;this.enabled=false;const revision=++this.revision;
+  this.contextQueue=this.contextQueue.catch(()=>{}).then(()=>revision===this.revision?this.writeContext(user):Promise.resolve());
+ }
+ private async writeContext(user:string|null):Promise<void>{
+  const db=await new Promise<IDBDatabase>((resolve,reject)=>{const r=indexedDB.open('schulportal-push',1);r.onupgradeneeded=()=>r.result.createObjectStore('context');r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});
+  try{await new Promise<void>((resolve,reject)=>{const tx=db.transaction('context','readwrite');tx.objectStore('context').put(user,'active-user');tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);});}finally{db.close();}
+ }
+ private async registration():Promise<ServiceWorkerRegistration>{return navigator.serviceWorker.register(new URL('push-sw.js',document.baseURI).href,{scope:new URL('.',document.baseURI).pathname});}
+ async refresh():Promise<void>{
+  if(!this.supported||!this.user)return;const revision=this.revision;
+  try{const registration=await navigator.serviceWorker.getRegistration(new URL('.',document.baseURI).href);const subscription=await registration?.pushManager.getSubscription();
+   const rows=await this.api.supportRpc<{reminder_time:string;active:boolean}[]>('hw_push_settings',{device_endpoint:subscription?.endpoint||''});
+   if(revision===this.revision){this.time=rows[0]?.reminder_time||'19:00';this.enabled=!!subscription&&!!rows[0]?.active;}
+  }catch{/* Other homework features remain available before push setup. */}
+ }
+ async enable():Promise<void>{
+  if(this.busy||!this.user||!this.supported)return;
+  this.busy=true;this.error='';const revision=this.revision;
+  try{
+   const permission=await Notification.requestPermission();if(permission!=='granted')throw new Error('Bitte Benachrichtigungen in den Browser-Einstellungen erlauben.');
+   const key=await this.api.pushConfig();if(revision!==this.revision)return;
+   await this.registration();const registration=await navigator.serviceWorker.ready;
+   const bytes=Uint8Array.from(atob(key.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0));
+   let subscription=await registration.pushManager.getSubscription();
+   const previous=subscription?.options?.applicationServerKey;
+   if(previous&&(new Uint8Array(previous).length!==bytes.length||new Uint8Array(previous).some((value,index)=>value!==bytes[index]))){await subscription!.unsubscribe();subscription=null;}
+   if(!subscription)subscription=await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:bytes});
+   if(revision!==this.revision)return;
+   await this.writeContext(this.user);
+   await this.api.supportRpc('hw_push_save',{device:subscription.toJSON(),remind_at:this.time});
+   if(revision===this.revision)this.enabled=true;
+  }catch(e:any){if(revision===this.revision)this.error=e?.message||'Benachrichtigungen konnten nicht aktiviert werden.';}
+  finally{this.busy=false;}
+ }
+ async disable():Promise<void>{
+  if(this.busy||!this.supported)return;this.busy=true;this.error='';
+  try{const registration=await navigator.serviceWorker.getRegistration(new URL('.',document.baseURI).href);const subscription=await registration?.pushManager.getSubscription();
+   if(subscription)await this.api.supportRpc('hw_push_remove',{device_endpoint:subscription.endpoint});
+   // Keep the browser subscription for other accounts; the database opt-in is per account.
+   this.enabled=false;
+  }catch{this.error='Erinnerungen konnten nicht deaktiviert werden.';}finally{this.busy=false;}
+ }
+}

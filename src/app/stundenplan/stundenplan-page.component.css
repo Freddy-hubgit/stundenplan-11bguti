@@ -1107,3 +1107,5 @@
   .board.week-view .day-headers { display: grid; min-width: 760px; }
   .board.week-view .grid-scroll { min-width: 760px; }
 }
+
+.lesson .homework-link { position:absolute;right:6px;bottom:5px;z-index:3;padding:3px 6px;border:1px solid var(--control-border);border-radius:5px;background:var(--bg-elevated);color:var(--text);font-size:9px;text-decoration:none; }

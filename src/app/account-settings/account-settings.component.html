@@ -4,7 +4,7 @@
   <h3>Dein Konto</h3>
   <dl><dt>Name</dt><dd>{{ profile.full_name || 'Nicht angegeben' }}</dd>
     <dt>E-Mail</dt><dd>{{ profile.email }}</dd>
-    <dt>Rolle</dt><dd>{{ profile.role === 'admin' ? 'Admin' : profile.role === 'support' ? 'Support' : profile.role === 'teacher' ? 'Lehrer' : 'Nutzer' }}</dd></dl>
+    <dt>Rollen</dt><dd>{{ roleNames(profile) }}</dd></dl>
 </div>
 <form (ngSubmit)="submitPasswordChange()">
   <h3>Passwort ändern</h3>

@@ -1,3 +1,4 @@
+import { hasRole } from '../supabase.service';
 import { SupabaseService } from '../supabase.service';
 import { DEFAULT_LESSONS, DayKey, DayTrack, LanguageChoice, Lesson, Period, SCIENCE_SUBJECTS } from '../timetable-data';
 import { SubstitutionService, Substitution, EffectiveLesson, splitSubstitutions, dateKey } from '../substitution.service';
@@ -125,13 +126,16 @@ type EditorMode = "new" | "edit";
   isMobile: boolean = false;
   viewMode: "day" | "week" = "day";
   canManageTimetable = false;
+  canAssignHomework = false;
+  lessonDate(date:Date):string { return dateKey(date); }
   canManageSubstitutions = false;
   get singleDayView(): boolean { return this.viewMode === 'day'; }
   private async loadTimetablePermissions(): Promise<void> {
     try {
       const profile = await this.auth.getMyProfile();
-      this.canManageSubstitutions = profile?.role === 'support' || profile?.role === 'admin';
-      this.canManageTimetable = this.canManageSubstitutions || profile?.role === 'teacher';
+      this.canManageSubstitutions = hasRole(profile, 'support', 'admin');
+      this.canAssignHomework = hasRole(profile, 'teacher', 'admin');
+      this.canManageTimetable = this.canManageSubstitutions || hasRole(profile, 'teacher');
     } catch { this.canManageTimetable = false; this.canManageSubstitutions = false; }
   }
 

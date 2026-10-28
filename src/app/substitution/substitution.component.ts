@@ -1,3 +1,4 @@
+import { hasRole } from '../supabase.service';
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { Profile, SupabaseService } from '../supabase.service';
 import { SettingsService } from '../settings.service';
@@ -26,7 +27,7 @@ export class SubstitutionComponent implements OnInit, OnDestroy {
   private revision = 0;
   private destroyed = false;
   constructor(private api: SubstitutionService, private auth: SupabaseService, public settings: SettingsService) {}
-  get isStaff(): boolean { return this.profile?.role === 'support' || this.profile?.role === 'admin'; }
+  get isStaff(): boolean { return hasRole(this.profile, 'support', 'admin'); }
   calendarOpen = false;
   calendarMonth = new Date();
   readonly weekdays = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];

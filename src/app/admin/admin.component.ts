@@ -1,3 +1,4 @@
+import { AccountRole, rolesOf, hasRole, roleNames } from '../supabase.service';
 import { Router } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
 import { Profile, SupabaseService } from '../supabase.service';
@@ -14,7 +15,13 @@ export class AdminComponent implements OnInit {
   loadError = '';
   myId: string | null = null;
   myRole: Profile['role'] | null = null;
-  editRole: Profile['role'] = 'user';
+  editRoles: AccountRole[] = ['user'];
+  myProfile: Profile | null = null;
+  readonly roleOptions: AccountRole[] = ['user','teacher','support','admin'];
+  roleNames = roleNames;
+  roleLabel(role: AccountRole): string { return ({user:'Nutzer',teacher:'Lehrer',support:'Support',admin:'Admin'})[role]; }
+  toggleEditRole(role: AccountRole): void { this.editRoles = this.editRoles.includes(role) ? this.editRoles.filter(r=>r!==role) : [...this.editRoles,role]; }
+  rolesChanged(p: Profile): boolean { return [...this.editRoles].sort().join() !== [...rolesOf(p)].sort().join(); }
   roleSaving = false;
 
   // Neues Konto
@@ -53,6 +60,7 @@ export class AdminComponent implements OnInit {
     const me = await this.supabase.getMyProfile();
     this.myId = me?.id ?? null;
     this.myRole = me?.role ?? null;
+    this.myProfile = me;
     await this.reload();
   }
 
@@ -104,7 +112,7 @@ export class AdminComponent implements OnInit {
 
   startEdit(p: Profile): void {
     if (this.editSaving || this.roleSaving) return;
-    this.editRole = p.role;
+    this.editRoles = [...rolesOf(p)];
     this.editTargetId = p.id;
     this.editName = p.full_name ?? '';
     this.editEmail = p.email;
@@ -123,12 +131,13 @@ export class AdminComponent implements OnInit {
     this.confirmingDelete = false;
   }
 
-  get canEditRoles(): boolean { return this.myRole === 'admin' || this.myRole === 'support'; }
+  get canEditRoles(): boolean { return hasRole(this.myProfile, 'admin', 'support'); }
 
   async saveRole(p: Profile): Promise<void> {
-    if (!this.canEditRoles || this.roleSaving || this.editSaving || this.editRole === p.role) return;
+    if (!this.canEditRoles || this.roleSaving || this.editSaving || !this.rolesChanged(p)) return;
+    if (!this.editRoles.length) { this.editError = 'Mindestens eine Rolle auswählen.'; return; }
     this.roleSaving = true; this.editError = ''; this.editSuccess = '';
-    const result = await this.supabase.changeUserRole(p.id, this.editRole);
+    const result = await this.supabase.changeUserRoles(p.id, this.editRoles);
     if (!result.ok) {
       this.editError = result.error ?? 'Rolle konnte nicht geändert werden.';
       this.roleSaving = false; return;
@@ -138,7 +147,8 @@ export class AdminComponent implements OnInit {
       if (p.id === this.myId) {
         const me = await this.supabase.getMyProfile();
         this.myRole = me?.role ?? null;
-        if (this.myRole !== 'admin' && this.myRole !== 'support') {
+        this.myProfile = me;
+        if (!hasRole(me, 'admin', 'support')) {
           await this.router.navigateByUrl('/'); return;
         }
       }

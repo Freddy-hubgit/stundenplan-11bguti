@@ -1,3 +1,4 @@
+import { hasRole } from '../supabase.service';
 import { HomeLayoutService } from '../home-layout.service';
 import { Component, OnInit } from '@angular/core';
 import { SupabaseService } from '../supabase.service';
@@ -17,6 +18,7 @@ interface PortalTile {
 })
 export class PortalHomeComponent implements OnInit {
   tiles: PortalTile[] = [
+    { title: 'Hausaufgaben', description: 'Aufgaben, Abgaben und Erinnerungen', route: '/hausaufgaben', icon: '📚' },
     { title: 'Nachrichten', description: 'Private Chats mit allen Nutzern', route: '/nachrichten', icon: '💬' },
     { title: 'Videokonferenz', description: 'Jitsi-Besprechungen ansehen und teilnehmen', route: '/videokonferenz', icon: '📹' },
     {
@@ -48,11 +50,11 @@ export class PortalHomeComponent implements OnInit {
     this.homeLayout.activate(profile?.id ?? null);
     const name = profile?.full_name?.trim();
     this.greeting = name ? `Hi, ${name}` : 'Hi!';
-    const isStaff = profile?.role === 'admin' || profile?.role === 'support';
+    const isStaff = hasRole(profile, 'admin', 'support');
 
-    if (profile && profile.role !== 'user') this.tiles = [...this.tiles, { title: 'Kalender', description: 'Termine, Veranstaltungen und Besprechungen', route: '/kalender', icon: '📅' }];
+    if (hasRole(profile, 'teacher', 'support', 'admin')) this.tiles = [...this.tiles, { title: 'Kalender', description: 'Termine, Veranstaltungen und Besprechungen', route: '/kalender', icon: '📅' }];
 
-    if (profile && profile.role !== 'teacher') this.tiles = [...this.tiles, {
+    if (hasRole(profile, 'user', 'support', 'admin')) this.tiles = [...this.tiles, {
       title: isStaff ? 'Support-Tickets' : 'Support & Tickets',
       description: isStaff ? 'Offene Tickets ansehen und im Chat beantworten' : 'Support-Team kennenlernen und Hilfe im Chat erhalten',
       route: '/support',

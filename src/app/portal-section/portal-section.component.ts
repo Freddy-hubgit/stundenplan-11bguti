@@ -1,3 +1,4 @@
+import { hasRole } from '../supabase.service';
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { SettingsService } from '../settings.service';
@@ -108,7 +109,7 @@ export class PortalSectionComponent implements OnInit, OnDestroy {
   constructor(public route: ActivatedRoute, public settings: SettingsService, private auth: SupabaseService,
     private api: PortalEventsService) {}
   get isMeetings(): boolean { return this.route.snapshot.data.title === 'Videokonferenz'; }
-  get isStaff(): boolean { return this.profile?.role === 'admin' || this.profile?.role === 'support'; }
+  get isStaff(): boolean { return hasRole(this.profile, 'admin', 'support'); }
   get monthLabel(): string { return this.month.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' }); }
   get selectedDateLabel(): string { return new Date(this.selectedDate + 'T12:00:00').toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }); }
   eventsOn(date: string): PortalEvent[] {

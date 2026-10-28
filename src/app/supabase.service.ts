@@ -4,11 +4,17 @@ import { createClient, SupabaseClient, Session } from '@supabase/supabase-js';
 const SUPABASE_URL = 'https://amwowtaxrgfcojlsxhzk.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_RAlat6kd4uEdZvjrFODVcQ_JQQnkJB7';
 
+export type AccountRole = 'user' | 'teacher' | 'support' | 'admin';
+export function rolesOf(profile: Profile | null): AccountRole[] { return profile ? (profile.roles?.length ? profile.roles : [profile.role]) : []; }
+export function hasRole(profile: Profile | null, ...roles: string[]): boolean { return rolesOf(profile).some(role => roles.includes(role)); }
+export function roleNames(profile: Profile | null): string { return rolesOf(profile).map(role => ({user:'Nutzer',teacher:'Lehrer',support:'Support',admin:'Admin'})[role]).join(', '); }
+
 export interface Profile {
   id: string;
   email: string;
   full_name: string | null;
-  role: 'user' | 'teacher' | 'support' | 'admin';
+  role: AccountRole;
+  roles?: AccountRole[];
   created_at: string;
 }
 
@@ -92,6 +98,27 @@ export class SupabaseService {
     return data as T;
   }
 
+  async uploadHomeworkFile(task: string, file: File): Promise<string> {
+    const session = await this.getSession(); if (!session) throw new Error('Anmeldung erforderlich.');
+    if (file.size > 10 * 1024 * 1024) throw new Error('Dateien dürfen höchstens 10 MB groß sein.');
+    const mime: Record<string,string> = {pdf:'application/pdf',png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',webp:'image/webp',txt:'text/plain',docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',xlsx:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',odt:'application/vnd.oasis.opendocument.text'};
+    const extension = file.name.split('.').pop()?.toLowerCase() || '';
+    if (!mime[extension]) throw new Error('Bitte PDF, Office-Datei, Bild oder TXT auswählen.');
+    const random = Array.from(crypto.getRandomValues(new Uint8Array(16))).map(n=>n.toString(16).padStart(2,'0')).join('');
+    const path = session.user.id + '/' + task + '/' + random + '.' + extension;
+    const { error } = await this.client.storage.from('homework-submissions').upload(path,file,{contentType:mime[extension],upsert:false});
+    if(error)throw error;return path;
+  }
+  async removeHomeworkFile(path: string): Promise<void> { if(!path)return; const {error}=await this.client.storage.from('homework-submissions').remove([path]);if(error)throw error; }
+  async homeworkFileUrl(path: string, name: string): Promise<string> {
+    const {data,error}=await this.client.storage.from('homework-submissions').createSignedUrl(path,60,{download:name||true});
+    if(error)throw error;return data.signedUrl;
+  }
+  async pushConfig(): Promise<string> {
+    const {data,error}=await this.client.functions.invoke('homework-reminders',{body:{action:'config'}});
+    if(error||!data?.publicKey)throw new Error('Web-Push muss noch in Supabase eingerichtet werden.');return data.publicKey;
+  }
+
   async downloadAccountBackground(account: string): Promise<Blob | null> {
     const { data, error } = await this.client.storage.from('account-backgrounds').download(account + '/background');
     if (error) {
@@ -113,15 +140,9 @@ export class SupabaseService {
     if (error) throw error;
   }
 
-  async changeUserRole(id: string, role: Profile['role']): Promise<{ ok: boolean; error?: string }> {
-    try {
-      await this.supportRpc('set_profile_role', { target_id: id, new_role: role });
-      return { ok: true };
-    } catch (e: any) {
-      return { ok: false, error: e?.code === 'PGRST202'
-        ? 'Die Rollenverwaltung muss noch in Supabase eingerichtet werden.'
-        : e?.message || 'Rolle konnte nicht geändert werden.' };
-    }
+  async changeUserRoles(id: string, roles: AccountRole[]): Promise<{ ok: boolean; error?: string }> {
+    try { await this.supportRpc('set_profile_roles', { target_id: id, new_roles: roles }); return { ok: true }; }
+    catch(e:any) { return { ok:false, error:e?.code==='PGRST202'?'Die Mehrfachrollen-Migration muss noch in Supabase eingerichtet werden.':e?.message||'Rollen konnten nicht geändert werden.' }; }
   }
 
   async createUserAccount(

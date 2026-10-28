@@ -198,3 +198,5 @@
 .tile-grid.compact .tile-icon { width: 36px; height: 36px; border-radius: 10px; }
 .tile-grid.compact .tile-title { font-size: 16px; }
 .home-empty { padding: 24px; border: 1px dashed var(--control-border); border-radius: 16px; color: inherit; max-width: 650px; line-height: 1.6; }
+
+.tile[data-route="/hausaufgaben"] { --tile-accent:#f3bf75;--tile-tint:rgba(243,191,117,.1); }.portal-shell.theme-light .tile[data-route="/hausaufgaben"] { --tile-accent:#94601b; }

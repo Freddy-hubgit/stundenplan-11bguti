@@ -76,6 +76,7 @@
                  (mouseleave)="onLessonLeave(lesson)"
                  (click)="openEditLesson(lesson, $event)">
               <button *ngIf="canManageTimetable" class="edit-btn" (click)="openEditLesson(lesson, $event)" aria-label="Stunde bearbeiten">✎</button>
+              <a *ngIf="canAssignHomework" class="homework-link" routerLink="/hausaufgaben" [queryParams]="{subject:lesson.subject,lessonDate:lessonDate(col.date)}" (click)="$event.stopPropagation()" [attr.aria-label]="'Hausaufgabe für ' + lesson.subject">HA +</a>
               <div class="subj">{{ lesson.subject }}</div>
               <div class="original-teacher" *ngIf="lesson.substitution">{{ lesson.originalTeacher }}</div>
               <div class="meta">{{ lesson.teacher }}</div>
