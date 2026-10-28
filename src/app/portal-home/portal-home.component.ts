@@ -1,3 +1,4 @@
+import { HomeLayoutService } from '../home-layout.service';
 import { Component, OnInit } from '@angular/core';
 import { SupabaseService } from '../supabase.service';
 import { SettingsService } from '../settings.service';
@@ -29,7 +30,10 @@ export class PortalHomeComponent implements OnInit {
   settingsOpen = false;
   greeting = 'Hi!';
 
-  constructor(private supabase: SupabaseService, public settings: SettingsService) {}
+  constructor(private supabase: SupabaseService, public settings: SettingsService, public homeLayout: HomeLayoutService) { this.homeLayout.activate(null); }
+
+  get visibleTiles(): PortalTile[] { return this.homeLayout.visible(this.tiles); }
+  trackTile(_: number, tile: PortalTile): string { return tile.route; }
 
   openSettings(): void {
     this.settingsOpen = true;
@@ -41,6 +45,7 @@ export class PortalHomeComponent implements OnInit {
 
   async ngOnInit(): Promise<void> {
     const profile = await this.supabase.getMyProfile();
+    this.homeLayout.activate(profile?.id ?? null);
     const name = profile?.full_name?.trim();
     this.greeting = name ? `Hi, ${name}` : 'Hi!';
     const isStaff = profile?.role === 'admin' || profile?.role === 'support';

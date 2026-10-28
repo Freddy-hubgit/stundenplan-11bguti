@@ -192,3 +192,21 @@
 .nav-btn.primary:hover {
   opacity: 0.9;
 }
+
+.home-customization { color: var(--text); }
+.home-customization h3 { font-size: 16px; margin-bottom: 10px; }
+.customization-hint { color: var(--text-dim); font-size: 12px; line-height: 1.6; margin-bottom: 16px; }
+.tile-setting { padding: 14px; border: 1px solid var(--border); background: var(--surface); border-radius: 12px; margin-bottom: 10px; }
+.tile-setting[draggable=true] { cursor: grab; }
+.tile-setting-header { display: flex; align-items: center; gap: 9px; font-size: 13px; }
+.tile-setting-header strong { flex: 1; overflow-wrap: anywhere; }
+.drag-handle { color: var(--text-dim); }
+.move-buttons { display: flex; gap: 5px; }
+.move-buttons button { padding: 5px 10px; }
+.tile-options { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 12px; }
+.tile-options label, .compact-choice { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.tile-options select { max-width: 140px; padding: 7px; background: var(--surface-2); color: var(--text); border: 1px solid var(--border); border-radius: 8px; }
+.tile-hidden { border-style: dashed; }
+.compact-choice { margin: 20px 0; }
+.storage-error { color: #f38e8e; font-size: 12px; margin-bottom: 12px; }
+@media(max-width:600px) { .tile-options { justify-content: space-between; }.tile-setting { padding: 12px; } }

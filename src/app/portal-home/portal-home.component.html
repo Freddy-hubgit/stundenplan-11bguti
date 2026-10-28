@@ -10,8 +10,8 @@
     </div>
   </header>
 
-  <div class="tile-grid">
-    <a *ngFor="let tile of tiles" class="tile" [attr.data-route]="tile.route" [routerLink]="tile.route">
+  <div class="tile-grid" [class.compact]="homeLayout.preferences.compact">
+    <a *ngFor="let tile of visibleTiles; trackBy: trackTile" class="tile" [attr.data-route]="tile.route" [style.--tile-accent]="homeLayout.accent(tile.route, settings.theme === 'light')" [style.--tile-tint]="homeLayout.tint(tile.route)" [routerLink]="tile.route">
       <div class="tile-top">
         <span class="tile-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" [ngSwitch]="tile.route">
@@ -31,5 +31,7 @@
     </a>
   </div>
 
-  <app-settings-modal [open]="settingsOpen" (openChange)="settingsOpen = $event"></app-settings-modal>
+  <p *ngIf="!visibleTiles.length" class="home-empty">Alle Kacheln sind ausgeblendet. Über das Zahnrad kannst du sie unter „Startbildschirm“ wieder einblenden.</p>
+
+  <app-settings-modal [homeTiles]="tiles" [open]="settingsOpen" (openChange)="settingsOpen = $event"></app-settings-modal>
 </div>

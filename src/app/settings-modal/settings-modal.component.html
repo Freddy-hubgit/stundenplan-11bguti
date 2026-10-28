@@ -4,11 +4,23 @@
 
     <div class="settings-layout">
       <div class="settings-nav">
+        <button *ngIf="homeTiles.length && homeLayout.ready" type="button" class="settings-nav-btn" [class.active]="settingsCategory === 'start'" [attr.aria-pressed]="settingsCategory === 'start'" (click)="settingsCategory = 'start'">Startbildschirm</button>
         <button type="button" class="settings-nav-btn" [class.active]="settingsCategory === 'darstellung'" [attr.aria-pressed]="settingsCategory === 'darstellung'" (click)="settingsCategory = 'darstellung'">Darstellung</button>
         <button type="button" class="settings-nav-btn" [class.active]="settingsCategory === 'konto'" [attr.aria-pressed]="settingsCategory === 'konto'" (click)="settingsCategory = 'konto'">Account</button>
       </div>
 
       <div class="settings-content">
+        <section *ngIf="settingsCategory === 'start' && homeTiles.length" class="home-customization" aria-label="Startbildschirm anpassen">
+          <h3>Deine Kacheln</h3>
+          <p class="customization-hint">Ziehe die Kacheln in die gewünschte Reihenfolge oder nutze die Pfeile. Änderungen gelten sofort und werden für dein Konto in diesem Browser gespeichert.</p>
+          <p *ngIf="homeLayout.storageError" role="alert" class="storage-error">{{ homeLayout.storageError }}</p>
+          <div class="tile-setting" *ngFor="let tile of editableTiles; let index = index; trackBy: trackTile" [class.tile-hidden]="homeLayout.hidden(tile.route)" draggable="true" (dragstart)="startDrag($event, tile.route)" (dragover)="$event.preventDefault()" (drop)="dropTile($event, tile.route)" (dragend)="draggedRoute = null">
+            <div class="tile-setting-header"><span class="drag-handle" aria-hidden="true">⋮⋮</span><strong>{{ tile.title }}</strong><div class="move-buttons"><button type="button" [attr.aria-label]="tile.title + ' nach oben'" [disabled]="index === 0" (click)="homeLayout.move(homeTiles, tile.route, -1)">↑</button><button type="button" [attr.aria-label]="tile.title + ' nach unten'" [disabled]="index === editableTiles.length - 1" (click)="homeLayout.move(homeTiles, tile.route, 1)">↓</button></div></div>
+            <div class="tile-options"><label><input type="checkbox" [ngModel]="!homeLayout.hidden(tile.route)" (ngModelChange)="homeLayout.toggle(tile.route)">Anzeigen</label><label>Farbe<select [attr.aria-label]="'Farbe für ' + tile.title" [ngModel]="homeLayout.color(tile.route)" (ngModelChange)="homeLayout.setColor(tile.route, $event)"><option value="">Standard</option><option *ngFor="let color of homeLayout.colors" [value]="color.key">{{ color.label }}</option></select></label></div>
+          </div>
+          <label class="compact-choice"><input type="checkbox" [ngModel]="homeLayout.preferences.compact" (ngModelChange)="homeLayout.setCompact($event)">Kompakte Kacheln</label>
+          <button type="button" class="nav-btn" (click)="homeLayout.reset()">Startbildschirm zurücksetzen</button>
+        </section>
         <app-account-settings *ngIf="settingsCategory === 'konto'"></app-account-settings>
         <div *ngIf="settingsCategory === 'darstellung'">
         <div class="settings-section">

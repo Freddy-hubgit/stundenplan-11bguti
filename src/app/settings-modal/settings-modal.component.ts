@@ -1,3 +1,4 @@
+import { HomeLayoutService, HomeTile } from '../home-layout.service';
 import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, HostListener } from '@angular/core';
 import { SettingsService } from '../settings.service';
 
@@ -11,7 +12,14 @@ export class SettingsModalComponent implements OnInit, OnChanges {
   @Output() openChange = new EventEmitter<boolean>();
 
   @Input() initialCategory: 'darstellung' | 'konto' = 'darstellung';
-  settingsCategory: 'darstellung' | 'konto' = 'darstellung';
+  settingsCategory: 'darstellung' | 'konto' | 'start' = 'darstellung';
+  @Input() homeTiles: HomeTile[] = [];
+  draggedRoute: string | null = null;
+  get editableTiles(): HomeTile[] { return this.homeLayout.ordered(this.homeTiles); }
+  trackTile(_: number, tile: HomeTile): string { return tile.route; }
+  startDrag(event: DragEvent, route: string): void { this.draggedRoute = route; event.dataTransfer?.setData('text/plain', route); }
+  dropTile(event: DragEvent, target: string): void { event.preventDefault(); if (this.draggedRoute) this.homeLayout.moveTo(this.homeTiles, this.draggedRoute, target); this.draggedRoute = null; }
+
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['open'] && this.open) {
@@ -39,7 +47,7 @@ export class SettingsModalComponent implements OnInit, OnChanges {
     { key: 'forest', label: 'Wald' },
   ];
 
-  constructor(public settings: SettingsService) {}
+  constructor(public settings: SettingsService, public homeLayout: HomeLayoutService) {}
 
   ngOnInit(): void {
     this.currentTheme = this.settings.theme;
