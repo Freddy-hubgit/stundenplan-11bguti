@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { SupabaseService } from './supabase.service';
-import { Lesson } from './timetable-data';
+import { Lesson, teacherKey } from './timetable-data';
 
 export interface Substitution {
   id: string; date: string; teacher: string; start_time: string; end_time: string;
@@ -13,7 +13,7 @@ export function dateKey(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 export function applySubstitution(lesson: Lesson, date: string, entries: Substitution[]): EffectiveLesson {
-  const entry = entries.find(e => e.date === date && e.teacher.trim().toLowerCase() === lesson.teacher.trim().toLowerCase()
+  const entry = entries.find(e => e.date === date && teacherKey(e.teacher) === teacherKey(lesson.teacher)
     && e.start_time.slice(0, 5) < lesson.end && e.end_time.slice(0, 5) > lesson.start);
   if (!entry) return { ...lesson, cancelled: false };
   return { ...lesson, substitution: entry, originalTeacher: lesson.teacher, originalRoom: lesson.room,
@@ -23,7 +23,7 @@ export function applySubstitution(lesson: Lesson, date: string, entries: Substit
 }
 // Split partial-day changes at their actual boundaries; other portions remain regular lessons.
 export function splitSubstitutions(lesson: Lesson, date: string, entries: Substitution[]): EffectiveLesson[] {
-  const matching = entries.filter(e => e.date === date && e.teacher.trim().toLowerCase() === lesson.teacher.trim().toLowerCase()
+  const matching = entries.filter(e => e.date === date && teacherKey(e.teacher) === teacherKey(lesson.teacher)
     && e.start_time.slice(0, 5) < lesson.end && e.end_time.slice(0, 5) > lesson.start);
   if (!matching.length) return [{ ...lesson, cancelled: false }];
   const boundaries = new Set([lesson.start, lesson.end]);

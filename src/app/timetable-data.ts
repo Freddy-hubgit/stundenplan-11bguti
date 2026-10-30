@@ -25,11 +25,18 @@ export interface Lesson {
 }
 
 
+// Keep existing absence records with the former spelling associated with these lessons.
+export function teacherKey(name: string): string {
+  return name.trim().toLocaleLowerCase('de')
+    .replace(/^her bendig$/, 'herr bendig')
+    .replace(/^faru roos(?=,|$)/, 'frau roos');
+}
+
 export const DEFAULT_LESSONS: Lesson[] = [
     // Montag
     { subject: "Informatik", teacher: "Herr Hansen", room: "B115", day: "Mon", start: "07:30", end: "09:00", track: "Informatik" },
     { subject: "Umweltökonomie", teacher: "Herr Ott", room: "B118", day: "Mon", start: "08:15", end: "09:00", track: "Umwelttechnik" },
-    { subject: "Technische Wissenschaft", teacher: "Frau Von Willich", room: "B115", day: "Mon", start: "09:15", end: "10:45", track: "Informatik" },
+    { subject: "Technische Wissenschaft", teacher: "Frau von Willich", room: "B115", day: "Mon", start: "09:15", end: "10:45", track: "Informatik" },
     { subject: "Umweltökonomie", teacher: "Herr Ott", room: "B118", day: "Mon", start: "09:15", end: "10:45", track: "Umwelttechnik" },
     { subject: "Mathe", teacher: "Herr von Lindenfels", room: "B211", day: "Mon", start: "11:00", end: "12:30" },
     { subject: "Deutsch", teacher: "Herr Bendig", room: "B211", day: "Mon", start: "13:00", end: "13:45" },
@@ -42,20 +49,20 @@ export const DEFAULT_LESSONS: Lesson[] = [
     { subject: "Informatik", teacher: "Herr Hansen", room: "B115", day: "Tue", start: "09:15", end: "10:45", track: "Informatik" },
     { subject: "Umwelttechnik", teacher: "Herr Meinecke", room: "B211", day: "Tue", start: "09:15", end: "10:45", track: "Umwelttechnik" },
     { subject: "Umwelttechnik", teacher: "Herr Meinecke", room: "B211", day: "Tue", start: "11:00", end: "11:45", track: "Umwelttechnik" },
-    { subject: "Technische Wissenschaft", teacher: "Frau Von Willich", room: "B115", day: "Tue", start: "11:00", end: "12:30", track: "Informatik" },
+    { subject: "Technische Wissenschaft", teacher: "Frau von Willich", room: "B115", day: "Tue", start: "11:00", end: "12:30", track: "Informatik" },
     { subject: "Religion", teacher: "Herr Lenz", room: "B208", day: "Tue", start: "13:00", end: "14:30" },
     { subject: "Spanisch", teacher: "WEIT?, CHAP?", room: "A411, A113", day: "Tue", start: "14:45", end: "16:15", language: "Spanisch" },
 
     // Mittwoch
     { subject: "Physik", teacher: "BORM?", room: "B211", day: "Wed", start: "07:30", end: "09:00", track: "Umwelttechnik" },
-    { subject: "Deutsch", teacher: "Her Bendig", room: "B211", day: "Wed", start: "09:15", end: "10:45" },
+    { subject: "Deutsch", teacher: "Herr Bendig", room: "B211", day: "Wed", start: "09:15", end: "10:45" },
     { subject: "PoWi", teacher: "Herr van Dyck", room: "B211", day: "Wed", start: "11:00", end: "12:30" },
     { subject: "Englisch", teacher: "Frau Klebsch", room: "B211", day: "Wed", start: "13:00", end: "14:30" },
 
     // Donnerstag
     { subject: "Mathe", teacher: "Herr von Lindenfels", room: "B211", day: "Thu", start: "07:30", end: "09:00" },
     { subject: "Englisch", teacher: "Frau Klebsch", room: "B211", day: "Thu", start: "09:15", end: "10:45" },
-    { subject: "Sport", teacher: "Faru Roos, Herr Sommer", room: "S3", day: "Thu", start: "11:00", end: "12:30" },
+    { subject: "Sport", teacher: "Frau Roos, Herr Sommer", room: "S3", day: "Thu", start: "11:00", end: "12:30" },
     { subject: "Physik", teacher: "Herr Bahmer", room: "B207", day: "Thu", start: "13:00", end: "14:30", track: "Informatik" },
     { subject: "Biologie", teacher: "BECK?", room: "A401", day: "Thu", start: "13:00", end: "14:30", track: "Umwelttechnik" },
     { subject: "Spanisch", teacher: "CHAP?", room: "A113", day: "Thu", start: "14:45", end: "16:15", language: "Spanisch" },
