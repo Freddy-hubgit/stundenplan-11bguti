@@ -49,7 +49,7 @@ export class PortalHomeComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     const profile = await this.supabase.getMyProfile();
     this.homeLayout.activate(profile?.id ?? null);
-    const name = profile?.full_name?.trim();
+    const name = profile?.full_name?.trim().split(/\s+/)[0];
     const greetings = ['Hi', 'Hallo', 'Hey', 'Willkommen', 'Schön, dich zu sehen', 'Schön, dass du da bist'];
     const greeting = greetings[Math.floor(Math.random() * greetings.length)];
     this.greeting = name ? `${greeting}, ${name}` : `${greeting}!`;
