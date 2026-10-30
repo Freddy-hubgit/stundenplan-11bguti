@@ -26,8 +26,14 @@ export class PushNotificationsService {
   if(!this.supported||!this.user)return;const revision=this.revision;
   try{const registration=await navigator.serviceWorker.getRegistration(new URL('.',document.baseURI).href);const subscription=await registration?.pushManager.getSubscription();
    const active=await this.api.supportRpc<boolean>('portal_push_settings',{device_endpoint:subscription?.endpoint||''});
-   if(revision===this.revision)this.alertsEnabled=!!subscription&&active;
-  }catch{if(revision===this.revision)this.error='Push für Unterrichtsmeldungen muss noch in Supabase eingerichtet werden.';}
+   if(revision===this.revision){this.alertsEnabled=!!subscription&&active;this.error='';}
+  }catch(e:any){if(revision===this.revision){
+   const code=String(e?.code||'');
+   if(['PGRST202','42883','42P01'].includes(code))this.error='Die Push-Datenbankfunktion fehlt oder ist noch nicht verfügbar. Bitte Migration 014 und den Supabase-Schema-Cache prüfen. ('+code+')';
+   else if(code==='42501')this.error='Keine Berechtigung für die Push-Einstellung. Bitte erneut anmelden; falls der Fehler bleibt, die Datenbankrechte prüfen. (42501)';
+   else if(['PGRST301','PGRST303'].includes(code))this.error='Deine Sitzung ist abgelaufen. Bitte erneut anmelden.';
+   else this.error='Die Push-Einstellung konnte nicht geladen werden. Bitte Verbindung prüfen und erneut versuchen.'+(code?' ('+code+')':'');
+  }}
  }
  async enable(category:'homework'|'alerts'='homework'):Promise<void>{
   if(this.busy||!this.user||!this.supported)return;
