@@ -13,7 +13,7 @@ create table public.school_reset_audit(id uuid primary key default gen_random_uu
 alter table public.school_revision enable row level security;alter table public.school_reset_preview enable row level security;alter table public.school_cleanup_file enable row level security;alter table public.school_cleanup_user enable row level security;alter table public.school_reset_audit enable row level security;
 revoke all on public.school_revision,public.school_reset_preview,public.school_cleanup_file,public.school_cleanup_user,public.school_reset_audit from public,anon,authenticated;
 -- All relevant writes share the reset lock; a changed preview must be refreshed.
-create function public.school_track_change() returns trigger language plpgsql security definer set search_path='' as $$begin perform pg_catalog.pg_advisory_xact_lock(837266);update public.school_revision set revision=revision+1;return null;end;$$;
+create function public.school_track_change() returns trigger language plpgsql security definer set search_path='' as $$begin perform pg_catalog.pg_advisory_xact_lock(837266);update public.school_revision set revision=revision+1 where singleton=true;return null;end;$$;
 do $$declare tbl text;begin
  foreach tbl in array array['profiles','school_group','school_member','school_schedule','school_config','school_material','school_exam','homework_task','homework_progress','homework_submission','teacher_absence','substitution_entry','portal_event','dm_thread','dm_message','support_ticket','support_ticket_message','portal_notification'] loop
   execute format('create trigger school_reset_revision before insert or update or delete on public.%I for each statement execute function public.school_track_change()',tbl);

@@ -89,3 +89,7 @@ python tests/school-browser.py
 ```
 
 Die SQL-Prüfung spielt alle Migrationen in eine isolierte Datenbank ein. Edge- und Browsertests simulieren externe APIs; es werden dabei keine Live-Konten oder Live-Dateien gelöscht. Echte Storage-/Auth-Bereinigung und Push-Zustellung müssen nach Einrichtung am eigenen Projekt geprüft werden, zunächst mit Testdaten.
+
+### Fehler „UPDATE requires a WHERE clause“
+
+Bei bereits eingerichteten Migrationen 017–019 zusätzlich `migrations/202610300020_school_revision_safe_update.sql` im SQL Editor ausführen. Der Fix ergänzt die Bedingung für den internen Änderungszähler und löscht keine Inhalte. Danach die Klassen-Seite neu laden. Beim Anlegen können bestehende Accounts direkt als Schüler oder Lehrkräfte ausgewählt werden; die jeweilige Kontorolle muss vorhanden sein.
