@@ -322,3 +322,7 @@ python tests/account-backgrounds-browser.py
 ## Hausaufgaben und mehrere Rollen (Migrationen 010–012)
 
 Die aktuelle Rollenverwaltung unterstützt mehrere Rollen pro Konto; deren Berechtigungen werden kombiniert. Hausaufgaben bieten persönliche Erledigung, optionale Text-/Link-/Dateiabgaben und Web-Push am Vorabend. Datenbank, Edge Function, Secrets und Cron müssen einmal eingerichtet werden: [vollständige Aktivierungsanleitung](HOMEWORK_SETUP.md).
+
+## Krankmeldungen und Wunschvertretung (Migrationen 013–014)
+
+Lehrkräfte melden ihre eigene Abwesenheit; Admins erhalten Meldungen und bestätigen eine Wunschvertretung oder Entfall. Schüler erhalten Unterrichtsänderungen in einer privaten Benachrichtigungsliste, auf Wunsch auch per Web-Push bei geschlossener Webseite. [Einrichtung und Ablauf](ABSENCE_SETUP.md).

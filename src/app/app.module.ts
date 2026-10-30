@@ -1,3 +1,5 @@
+import { AbsenceComponent } from './absence/absence.component';
+import { NotificationsComponent } from './notifications/notifications.component';
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
@@ -22,6 +24,8 @@ import { MessagesComponent } from './messages/messages.component';
 import { SupportComponent } from './support/support.component';
 
 const routes: Routes = [
+  { path: 'krankmeldung', component: AbsenceComponent, canActivate: [AuthGuard, FeatureAccessGuard], data: {allowedRoles:['teacher','admin']} },
+  { path: 'meldungen', component: NotificationsComponent, canActivate: [AuthGuard] },
   { path: 'hausaufgaben', component: HomeworkComponent, canActivate: [AuthGuard] },
   { path: 'nachrichten', component: MessagesComponent, canActivate: [AuthGuard] },
   { path: 'kalender', component: PortalSectionComponent, canActivate: [AuthGuard, FeatureAccessGuard], data: { allowedRoles: ['teacher', 'support', 'admin'], title: 'Kalender', description: 'Hier ist Platz für Termine und Veranstaltungen.' } },
@@ -37,6 +41,8 @@ const routes: Routes = [
 @NgModule({
   declarations: [
     AppComponent,
+    AbsenceComponent,
+    NotificationsComponent,
     HomeworkComponent,
     BackgroundSettingsComponent,
     PortalHomeComponent,

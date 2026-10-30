@@ -14,7 +14,7 @@ export class HomeLayoutService {
   {key:'amber',label:'Gold',dark:'#f3bf75',light:'#94601b',tint:'rgba(243,191,117,.10)'},
   {key:'green',label:'Grün',dark:'#7bdbb2',light:'#227553',tint:'rgba(123,219,178,.10)'},
  ];
- private readonly routes=['/hausaufgaben','/nachrichten','/videokonferenz','/stundenplan','/kalender','/support','/vertretungsplan','/admin'];
+ private readonly routes=['/krankmeldung','/meldungen','/hausaufgaben','/nachrichten','/videokonferenz','/stundenplan','/kalender','/support','/vertretungsplan','/admin'];
  private defaults(): HomePreferences{return {order:[],hidden:[],colors:{},compact:false};}
  get ready():boolean{return !!this.account;}
  activate(account:string|null):void{

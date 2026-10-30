@@ -1,3 +1,4 @@
 <div class="app-background" [class.custom-background]="!!background.url" [class.light-background]="settings.theme === 'light'" [style.--custom-background]="background.cssImage">
+  <a *ngIf="notifications.account && notifications.unread" routerLink="/meldungen" aria-live="polite" style="position:fixed;bottom:18px;right:18px;z-index:1000;background:#176b60;color:white;border:1px solid #70d9c5;border-radius:24px;padding:12px 18px;text-decoration:none;box-shadow:0 4px 20px #0005">🔔 {{notifications.unread}} neue {{notifications.unread===1?'Meldung':'Meldungen'}}</a>
   <router-outlet></router-outlet>
 </div>

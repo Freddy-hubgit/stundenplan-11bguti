@@ -200,3 +200,6 @@
 .home-empty { padding: 24px; border: 1px dashed var(--control-border); border-radius: 16px; color: inherit; max-width: 650px; line-height: 1.6; }
 
 .tile[data-route="/hausaufgaben"] { --tile-accent:#f3bf75;--tile-tint:rgba(243,191,117,.1); }.portal-shell.theme-light .tile[data-route="/hausaufgaben"] { --tile-accent:#94601b; }
+
+.tile[data-route="/meldungen"] { --tile-accent:#8cbbff;--tile-tint:rgba(140,187,255,.1); }.portal-shell.theme-light .tile[data-route="/meldungen"] { --tile-accent:#315f9f; }
+.tile[data-route="/krankmeldung"] { --tile-accent:#f29cbe;--tile-tint:rgba(242,156,190,.1); }.portal-shell.theme-light .tile[data-route="/krankmeldung"] { --tile-accent:#a14770; }

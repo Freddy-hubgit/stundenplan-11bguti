@@ -18,6 +18,7 @@ interface PortalTile {
 })
 export class PortalHomeComponent implements OnInit {
   tiles: PortalTile[] = [
+    { title: 'Benachrichtigungen', description: 'Neue Meldungen und Unterrichtsänderungen', route: '/meldungen', icon: '🔔' },
     { title: 'Hausaufgaben', description: 'Aufgaben, Abgaben und Erinnerungen', route: '/hausaufgaben', icon: '📚' },
     { title: 'Nachrichten', description: 'Private Chats mit allen Nutzern', route: '/nachrichten', icon: '💬' },
     { title: 'Videokonferenz', description: 'Jitsi-Besprechungen ansehen und teilnehmen', route: '/videokonferenz', icon: '📹' },
@@ -50,6 +51,7 @@ export class PortalHomeComponent implements OnInit {
     this.homeLayout.activate(profile?.id ?? null);
     const name = profile?.full_name?.trim();
     this.greeting = name ? `Hi, ${name}` : 'Hi!';
+    if(hasRole(profile,'teacher','admin'))this.tiles=[...this.tiles,{title:'Krankmeldungen',description:hasRole(profile,'admin')?'Abwesenheiten prüfen und Vertretungen bestätigen':'Abwesenheit melden und Wunschvertretung vorschlagen',route:'/krankmeldung',icon:'🩺'}];
     const isStaff = hasRole(profile, 'admin', 'support');
 
     if (hasRole(profile, 'teacher', 'support', 'admin')) this.tiles = [...this.tiles, { title: 'Kalender', description: 'Termine, Veranstaltungen und Besprechungen', route: '/kalender', icon: '📅' }];

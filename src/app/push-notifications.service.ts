@@ -3,11 +3,11 @@ import { SupabaseService } from './supabase.service';
 @Injectable({providedIn:'root'})
 export class PushNotificationsService {
  supported=typeof window!=='undefined'&&'Notification'in window&&'serviceWorker'in navigator&&'PushManager'in window;
- enabled=false;busy=false;error='';time='19:00';
+ enabled=false;alertsEnabled=false;busy=false;error='';time='19:00';
  private user:string|null=null;private revision=0;private initialized=false;private contextQueue:Promise<void>=Promise.resolve();
  constructor(private api:SupabaseService){}
  activate(user:string|null):void{
-  if(this.initialized&&user===this.user)return;this.initialized=true;this.user=user;this.enabled=false;const revision=++this.revision;
+  if(this.initialized&&user===this.user)return;this.initialized=true;this.user=user;this.enabled=false;this.alertsEnabled=false;const revision=++this.revision;
   this.contextQueue=this.contextQueue.catch(()=>{}).then(()=>revision===this.revision?this.writeContext(user):Promise.resolve());
  }
  private async writeContext(user:string|null):Promise<void>{
@@ -22,7 +22,14 @@ export class PushNotificationsService {
    if(revision===this.revision){this.time=rows[0]?.reminder_time||'19:00';this.enabled=!!subscription&&!!rows[0]?.active;}
   }catch{/* Other homework features remain available before push setup. */}
  }
- async enable():Promise<void>{
+ async refreshAlerts():Promise<void>{
+  if(!this.supported||!this.user)return;const revision=this.revision;
+  try{const registration=await navigator.serviceWorker.getRegistration(new URL('.',document.baseURI).href);const subscription=await registration?.pushManager.getSubscription();
+   const active=await this.api.supportRpc<boolean>('portal_push_settings',{device_endpoint:subscription?.endpoint||''});
+   if(revision===this.revision)this.alertsEnabled=!!subscription&&active;
+  }catch{if(revision===this.revision)this.error='Push für Unterrichtsmeldungen muss noch in Supabase eingerichtet werden.';}
+ }
+ async enable(category:'homework'|'alerts'='homework'):Promise<void>{
   if(this.busy||!this.user||!this.supported)return;
   this.busy=true;this.error='';const revision=this.revision;
   try{
@@ -36,17 +43,20 @@ export class PushNotificationsService {
    if(!subscription)subscription=await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:bytes});
    if(revision!==this.revision)return;
    await this.writeContext(this.user);
-   await this.api.supportRpc('hw_push_save',{device:subscription.toJSON(),remind_at:this.time});
-   if(revision===this.revision)this.enabled=true;
+   if(revision!==this.revision)return;
+   if(category==='alerts')await this.api.supportRpc('portal_push_save',{device:subscription.toJSON()});
+   else await this.api.supportRpc('hw_push_save',{device:subscription.toJSON(),remind_at:this.time});
+   if(revision===this.revision){if(category==='alerts')this.alertsEnabled=true;else this.enabled=true;}
   }catch(e:any){if(revision===this.revision)this.error=e?.message||'Benachrichtigungen konnten nicht aktiviert werden.';}
   finally{this.busy=false;}
  }
- async disable():Promise<void>{
-  if(this.busy||!this.supported)return;this.busy=true;this.error='';
+ async disable(category:'homework'|'alerts'='homework'):Promise<void>{
+  if(this.busy||!this.supported)return;this.busy=true;this.error='';const revision=this.revision;
   try{const registration=await navigator.serviceWorker.getRegistration(new URL('.',document.baseURI).href);const subscription=await registration?.pushManager.getSubscription();
-   if(subscription)await this.api.supportRpc('hw_push_remove',{device_endpoint:subscription.endpoint});
+   if(revision!==this.revision)return;
+   if(subscription)await this.api.supportRpc(category==='alerts'?'portal_push_remove':'hw_push_remove',{device_endpoint:subscription.endpoint});
    // Keep the browser subscription for other accounts; the database opt-in is per account.
-   this.enabled=false;
+   if(revision===this.revision){if(category==='alerts')this.alertsEnabled=false;else this.enabled=false;}
   }catch{this.error='Erinnerungen konnten nicht deaktiviert werden.';}finally{this.busy=false;}
  }
 }
