@@ -1,3 +1,4 @@
+import {nextTeachingLesson} from '../teacher-next';
 import {Component,OnInit,OnDestroy} from '@angular/core';import {SchoolService} from '../school.service';import {Homework,HomeworkService} from '../homework.service';import {SubstitutionService,splitSubstitutions,dateKey} from '../substitution.service';import {Lesson,SCIENCE_SUBJECTS,teacherKey} from '../timetable-data';import {hasRole} from '../supabase.service';
 @Component({selector:'app-dashboard',templateUrl:'./dashboard.component.html',styleUrls:['./dashboard.component.css']})
 export class DashboardComponent implements OnInit,OnDestroy{
@@ -11,7 +12,8 @@ export class DashboardComponent implements OnInit,OnDestroy{
   if(this.destroyed)return;if(target!==this.school.classId){this.reloadNeeded=true;return;}this.tasks=tasks.filter(t=>!t.done||(hasRole(this.school.profile,'user')&&t.requires_submission&&!t.submitted));this.unread=Number(unread);this.next=null;
   let profile:any={};try{profile=JSON.parse(localStorage.getItem('stundenplan-profile')||'{}')||{};}catch{}
   const track=profile.track||'Informatik',language=profile.language||'Spanisch',sciences=profile.sciences||['Chemie','Physik'];const now=new Date(),days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  for(let offset=0;offset<=7&&!this.next;offset++){
+  if(this.teacherMode)this.next=nextTeachingLesson(lessons,this.teacherName,changes,now);
+  for(let offset=0;!this.teacherMode&&offset<=7&&!this.next;offset++){
    const day=new Date(now);day.setDate(day.getDate()+offset);
    const candidates=lessons.filter(l=>l.day===days[day.getDay()]&&(this.teacherMode||this.school.groups.some(g=>g.id===l.group_id&&g.kind==='course')||(!l.track||l.track===track)&&(!l.language||l.language===language)&&(!SCIENCE_SUBJECTS.includes(l.scienceGroup||l.subject)||sciences.includes(l.scienceGroup||l.subject)))).reduce<Lesson[]>((all,l)=>all.concat(splitSubstitutions(l,dateKey(day),changes)),[]).filter(l=>!l.cancelled&&(!this.teacherMode||l.teacher.split(',').some(name=>teacherKey(name)===teacherKey(this.teacherName)))).sort((a,b)=>a.start.localeCompare(b.start));
    for(const lesson of candidates){const date=new Date(day);const [h,m]=lesson.start.split(':').map(Number);date.setHours(h,m,0,0);if(date>now){this.next={lesson,date};break;}}

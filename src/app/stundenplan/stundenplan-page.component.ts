@@ -1,3 +1,4 @@
+import {nextTeachingLesson} from '../teacher-next';
 import {SchoolService,SchoolExam} from '../school.service';
 import {ActivatedRoute} from '@angular/router';
 import { hasRole } from '../supabase.service';
@@ -132,9 +133,10 @@ type EditorMode = "new" | "edit";
   lessonDate(date:Date):string { return dateKey(date); }
   canManageSubstitutions = false;
   get singleDayView(): boolean { return this.viewMode === 'day'; }
+  teacherLessons:Lesson[]=[];teacherName='';teacherNextError='';
   schoolError='';schoolSaving=false;private schoolRevision=0;
   private async loadTimetablePermissions():Promise<void>{
-    try{await this.school.load();const requested=this.route.snapshot.queryParamMap.get('class');if(requested)this.school.choose(requested);await this.changeSchoolClass();}
+    try{await this.school.load();const requested=this.route.snapshot.queryParamMap.get('class');if(requested)this.school.choose(requested);await this.changeSchoolClass();await this.loadTeacherLessons();}
     catch{this.schoolError='Klassenstundenplan konnte nicht geladen werden. Bitte Klassenzuordnung und Supabase-Einrichtung prüfen.';this.lessons=[];this.canManageTimetable=false;this.canAssignHomework=false;}
   }
   async changeSchoolClass():Promise<void>{
@@ -149,7 +151,7 @@ type EditorMode = "new" | "edit";
   async saveClassSchedule():Promise<void>{
     if(this.schoolSaving||!this.canManageTimetable||!this.school.classId)return;
     const target=this.school.classId,revision=this.schoolRevision;this.schoolSaving=true;this.schoolError='';
-    try{await this.school.saveLessons(target,this.lessons.filter(l=>!l.group_id||l.group_id===target).map(l=>{const {group_id,...entry}=l;return entry;}));if(revision===this.schoolRevision&&target===this.school.classId){const lessons=await this.school.timetable();if(revision===this.schoolRevision)this.lessons=lessons;}}
+    try{await this.school.saveLessons(target,this.lessons.filter(l=>!l.group_id||l.group_id===target).map(l=>{const {group_id,...entry}=l;return entry;}));if(revision===this.schoolRevision&&target===this.school.classId){const lessons=await this.school.timetable();if(revision===this.schoolRevision)this.lessons=lessons;await this.loadTeacherLessons();}}
     catch(e:any){if(revision===this.schoolRevision)this.schoolError=e?.message||'Stundenplan konnte nicht gespeichert werden.';}finally{this.schoolSaving=false;}
   }
 
@@ -496,7 +498,7 @@ type EditorMode = "new" | "edit";
         }
       }
 
-      window.alert("Import erfolgreich.");
+      window.alert("Import geladen. Bitte auf Stundenplan speichern klicken, damit die Klasse und die Startseitenübersicht ihn sehen.");
     } catch {
       window.alert("Die Daten konnten nicht gelesen werden. Bitte eine gültige Export-Datei bzw. einen gültigen Export-Text verwenden.");
     }
@@ -590,11 +592,17 @@ type EditorMode = "new" | "edit";
   private loadingSubstitutions = false;
   private substitutionsDestroyed = false;
 
+  async loadTeacherLessons():Promise<void>{
+    if(!hasRole(this.school.profile,'teacher'))return;
+    try{const data=await this.school.api.supportRpc<{teacher:string;lessons:Lesson[]}>('school_my_teaching');this.teacherName=data.teacher;this.teacherLessons=data.lessons;this.teacherNextError=data.teacher?'':'Bitte den Namen im Stundenplan durch einen Admin zuordnen lassen.';}
+    catch{this.teacherLessons=[];this.teacherNextError='Eigener Unterricht konnte nicht geladen werden. Bitte Supabase-Einrichtung prüfen.';}
+  }
   async loadSubstitutions(): Promise<void> {
     if (this.loadingSubstitutions || this.substitutionsDestroyed) return;
     this.loadingSubstitutions = true;
     try {
       this.substitutions = await this.substitutionsService.list();
+      await this.loadTeacherLessons();
       this.substitutionsError = '';
     } catch { this.substitutionsError = 'Vertretungen konnten nicht aktualisiert werden. Die angezeigten Daten sind möglicherweise nicht aktuell.'; }
     finally { this.loadingSubstitutions = false; }
@@ -877,6 +885,10 @@ type EditorMode = "new" | "edit";
 
   get nextLessonInfo(): NextLessonInfo | null {
     const now = this.now;
+    if(hasRole(this.school.profile,'teacher')){
+      const next=nextTeachingLesson(this.teacherLessons,this.teacherName,this.substitutions,now);
+      return next?{...next,sameDay:this.isSameDate(now,next.date),minutesUntil:this.minutesUntil(now,next.date,next.lesson.start)}:null;
+    }
     const nowMin = now.getHours() * 60 + now.getMinutes();
     const todayKey = this.todayKey;
 

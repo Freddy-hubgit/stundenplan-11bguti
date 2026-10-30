@@ -105,7 +105,7 @@
       <div class="panel">
         <div class="eyebrow">Nächste Stunde</div>
 
-        <div *ngIf="!nextLessonInfo" class="next-empty">Aktuell sind keine weiteren Stunden eingetragen.</div>
+        <div *ngIf="!nextLessonInfo" class="next-empty">{{teacherNextError||'Keine nächste Stunde im gespeicherten Plan. Nach einem Import bitte Stundenplan speichern.'}}</div>
 
         <div *ngIf="nextLessonInfo as next">
           <div class="next-subject">{{ next.lesson.subject }}</div>

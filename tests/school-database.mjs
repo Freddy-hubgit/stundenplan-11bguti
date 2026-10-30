@@ -26,6 +26,7 @@ await login(5);await db.query("select absence_set_identity($1,'Herr Hansen')",[u
 await db.query('select school_schedule_save($1,$2)',[other,lesson]);
 await login(3);const ownTeaching=(await db.query('select school_my_teaching() data')).rows[0].data;
 assert.equal(ownTeaching.teacher,'Herr Hansen');assert.equal(ownTeaching.lessons.length,2);assert(ownTeaching.lessons.some(l=>l.group_id===other));assert(ownTeaching.lessons.every(l=>l.teacher==='Herr Hansen'));
+await login(5);await db.query("select absence_set_identity($1,'Herr Bendig')",[uid(3)]);await db.query('select school_schedule_save($1,$2)',[other,[{...lesson[0],subject:'Deutsch',teacher:'Her Bendig'}]]);await login(3);assert.equal((await db.query('select school_my_teaching() data')).rows[0].data.lessons.length,1);await login(5);await db.query("select absence_set_identity($1,'Herr Hansen')",[uid(3)]);await login(3);
 await login(1);await assert.rejects(()=>db.query('select school_my_teaching()'),{code:'42501'});await login(5);await db.query('select school_schedule_save($1,$2)',[other,[]]);await login(3);
 await db.exec('reset role');assert.equal((await db.query("select school_teacher_key('Her Bendig') name")).rows[0].name,'herr bendig');assert.equal((await db.query("select school_teacher_key('Faru Roos, Herr Sommer') name")).rows[0].name,'frau roos, herr sommer');await login(3);
 
