@@ -1,2 +1,5 @@
 select { display:block;width:100%;box-sizing:border-box;margin:8px 0 16px; }
 p { overflow-wrap:anywhere; }
+
+.report-group { margin-top:28px;padding-top:12px;border-top:1px solid var(--line); }
+.group-heading h3 { margin:8px 0;font-size:19px; }.group-heading .badge { margin-left:8px; }.report-group .panel { margin-top:14px; }

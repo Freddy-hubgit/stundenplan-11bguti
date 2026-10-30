@@ -13,6 +13,18 @@ export class AbsenceComponent implements OnInit,OnDestroy {
  constructor(private auth:SupabaseService,private api:AbsenceService,public settings:SettingsService,private notifications:NotificationsService){}
  get isAdmin():boolean{return hasRole(this.profile,'admin');}get isTeacher():boolean{return hasRole(this.profile,'teacher');}
  get ownIdentity():TeacherIdentity|undefined{return this.identities.find(i=>i.user_id===this.profile?.id);}
+ get reportGroups():{key:string;title:string;hint:string;empty:string;reports:TeacherAbsence[]}[]{
+  const today=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Berlin',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+  const past=(r:TeacherAbsence)=>r.end_date<today;
+  const current=(r:TeacherAbsence)=>!past(r)&&(r.status==='resolved'||r.start_date<=today);
+  return [
+   {key:'new',title:'Neue',hint:'Offene Anträge, deren Zeitraum noch nicht begonnen hat.',empty:'Keine neuen Krankmeldungen.',reports:this.reports.filter(r=>!past(r)&&!current(r))},
+   {key:'current',title:'Aktuelle',hint:'Bestätigte Meldungen und Meldungen, deren Zeitraum bereits begonnen hat.',empty:'Keine aktuellen Krankmeldungen.',reports:this.reports.filter(current)},
+   {key:'past',title:'Vergangene',hint:'Meldungen, deren letzter Tag vorbei ist.',empty:'Keine vergangenen Krankmeldungen.',reports:this.reports.filter(past)}
+  ];
+ }
+ trackGroup(_:number,group:{key:string}):string{return group.key;}
+ trackReport(_:number,report:TeacherAbsence):string{return report.id;}
  async ngOnInit():Promise<void>{try{this.profile=await this.auth.getMyProfile();await this.refresh();this.timer=setInterval(()=>{if(!this.busy)void this.refresh();},15000);}catch{this.error='Krankmeldungen konnten nicht geladen werden.';}finally{this.loading=false;}}
  ngOnDestroy():void{clearInterval(this.timer);}
  async refresh():Promise<void>{try{
