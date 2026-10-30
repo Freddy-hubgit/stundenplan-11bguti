@@ -46,7 +46,7 @@ export class MessagesComponent implements OnInit,OnDestroy {
    if(!id&&peer){const existing=threads.find(t=>t.peer_id===peer);if(existing)await this.select(existing);}
    if(id){this.followNewMessages();this.selected=threads.find(t=>t.id===id)??null;this.messages=this.selected?messages:[];}
    this.refreshError='';
-  }catch{this.refreshError='Chats konnten nicht aktualisiert werden. Bitte erneut laden.';}finally{this.refreshing=false;}
+  }catch(e){this.refreshError=this.errorText(e,'Chats konnten nicht aktualisiert werden.');}finally{this.refreshing=false;}
  }
  async select(thread:DirectThread):Promise<void>{
   if(this.busy)return;
@@ -68,5 +68,13 @@ export class MessagesComponent implements OnInit,OnDestroy {
   catch(e){this.showError(e);}finally{this.busy=false;}
  }
  trackId(_:number,item:{id:string}):string{return item.id;}
- private showError(e:any):void{this.error=e?.code==='PGRST202'?'Bitte die aktuelle Chat-Migration 016 in Supabase ausführen und die Seite erneut laden.':'Die Aktion ist fehlgeschlagen. Bitte erneut versuchen. Nicht gesendete Eingaben bleiben erhalten.';}
+ private errorText(e:any,fallback:string):string{
+  const code=typeof e?.code==='string'?e.code.slice(0,40):'';
+  if(code==='PGRST202')return 'Bitte die aktuelle Chat-Migration 016 in Supabase ausführen und die Seite erneut laden. (PGRST202)';
+  if(['PGRST301','PGRST303'].includes(code))return 'Deine Sitzung ist abgelaufen. Bitte erneut anmelden. ('+code+')';
+  const detail=typeof e?.message==='string'?e.message.trim().slice(0,300):'';
+  return fallback+(detail?' '+detail:'')+(code?' ('+code+')':'');
+ }
+ private showError(e:any):void{this.error=this.errorText(e,'Die Chat-Aktion ist fehlgeschlagen.')+' Nicht gesendete Eingaben bleiben erhalten.';}
+
 }

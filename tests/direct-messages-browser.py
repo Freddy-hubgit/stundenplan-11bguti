@@ -62,9 +62,11 @@ with sync_playwright() as p:
     user.locator('.thread').filter(has_text='Teacher').click()
     user.locator('.message').filter(has_text='Antwort von Lehrer').wait_for()
     assert user.get_by_label('Nachricht',exact=True).input_value()=='Entwurf behalten'
-    user.route('**/rest/v1/rpc/dm_send',lambda r:r.fulfill(status=500,content_type='application/json',body='{}'))
+    user.route('**/rest/v1/rpc/dm_send',lambda r:r.fulfill(status=403,content_type='application/json',body=json.dumps({'code':'42501','message':'Test: Kein Zugriff auf diesen Chat.'})))
     user.get_by_role('button',name='Nachricht senden',exact=True).click()
     user.get_by_role('alert').wait_for()
+    assert '42501' in user.get_by_role('alert').inner_text()
+    assert 'Test: Kein Zugriff auf diesen Chat.' in user.get_by_role('alert').inner_text()
     assert user.get_by_label('Nachricht',exact=True).input_value()=='Entwurf behalten'
     admin=page_as('admin');assert admin.locator('.thread').count()==0 # Selecting admin without sending did not create a chat.
     assert len(threads)==1 and len(open_calls)==1
