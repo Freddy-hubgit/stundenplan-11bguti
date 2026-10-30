@@ -594,7 +594,7 @@ type EditorMode = "new" | "edit";
 
   async loadTeacherLessons():Promise<void>{
     if(!hasRole(this.school.profile,'teacher'))return;
-    try{const data=await this.school.api.supportRpc<{teacher:string;lessons:Lesson[]}>('school_my_teaching');this.teacherName=data.teacher;this.teacherLessons=data.lessons;this.teacherNextError=data.teacher?'':'Bitte den Namen im Stundenplan durch einen Admin zuordnen lassen.';}
+    try{const data=await this.school.api.supportRpc<{teacher:string;lessons:Lesson[]}>('school_my_teaching');this.teacherName=data.teacher;this.teacherLessons=data.lessons;this.teacherNextError=data.teacher?'':'Bitte unter Verwaltung → Lehrerkonto zuordnen den Namen im Stundenplan durch einen Admin hinterlegen lassen.';}
     catch(e:any){this.teacherLessons=[];this.teacherNextError='Eigener Unterricht konnte nicht geladen werden: '+(e?.message||'Verbindungsfehler')+(e?.code?' ('+e.code+')':'');}
   }
   async loadSubstitutions(): Promise<void> {

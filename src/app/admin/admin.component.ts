@@ -1,3 +1,5 @@
+import {AbsenceService,TeacherIdentity} from '../absence.service';
+import {DEFAULT_LESSONS} from '../timetable-data';
 import { AccountRole, rolesOf, hasRole, roleNames } from '../supabase.service';
 import { Router } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
@@ -11,6 +13,14 @@ import { SettingsService } from '../settings.service';
 })
 export class AdminComponent implements OnInit {
   profiles: Profile[] = [];
+  teacherIdentities:TeacherIdentity[]=[];
+  teacherPerson='';timetableName='';identityError='';identitySuccess='';identitySaving=false;identityLoading=false;
+  teacherNames=Array.from(new Set(DEFAULT_LESSONS.reduce<string[]>((names,l)=>names.concat(l.teacher.split(',').map(n=>n.trim())),[]))).sort();
+  get isAdmin():boolean{return hasRole(this.myProfile,'admin');}
+  async loadTeacherIdentities():Promise<void>{if(!this.isAdmin)return;this.identityLoading=true;this.identityError='';try{this.teacherIdentities=await this.absences.identities();}catch(e:any){this.identityError=e?.message||'Lehrerzuordnungen konnten nicht geladen werden.';}finally{this.identityLoading=false;}}
+  selectTeacher():void{this.timetableName=this.teacherIdentities.find(i=>i.user_id===this.teacherPerson)?.timetable_name||'';this.identityError='';this.identitySuccess='';}
+  async saveTeacherIdentity():Promise<void>{if(!this.isAdmin||this.identitySaving||!this.teacherPerson||!this.timetableName.trim())return;this.identitySaving=true;this.identityError='';this.identitySuccess='';try{await this.absences.assign(this.teacherPerson,this.timetableName.trim());await this.loadTeacherIdentities();if(!this.identityError)this.identitySuccess='Lehrerkonto dem Stundenplannamen zugeordnet.';}catch(e:any){this.identityError=e?.message||'Zuordnung konnte nicht gespeichert werden.';}finally{this.identitySaving=false;}}
+
   loading = true;
   loadError = '';
   myId: string | null = null;
@@ -46,7 +56,7 @@ export class AdminComponent implements OnInit {
 
   settingsOpen = false;
 
-  constructor(private supabase: SupabaseService, public settings: SettingsService, private router: Router) {}
+  constructor(private supabase: SupabaseService, public settings: SettingsService, private router: Router,private absences:AbsenceService) {}
 
   openSettings(): void {
     this.settingsOpen = true;
@@ -69,6 +79,7 @@ export class AdminComponent implements OnInit {
     this.loadError = '';
     try {
       this.profiles = await this.supabase.listProfiles();
+      await this.loadTeacherIdentities();
     } catch (e: any) {
       this.loadError = e?.message ?? 'Konnte Konten nicht laden.';
     }

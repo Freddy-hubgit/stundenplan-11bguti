@@ -49,6 +49,19 @@
     </form>
   </section>
 
+  <section class="panel" *ngIf="isAdmin">
+    <h2>Lehrerkonto zuordnen</h2>
+    <p>Verknüpfe das Lehrerkonto mit dem exakten Namen im Stundenplan. Diese Zuordnung gilt für den eigenen Unterricht und Krankmeldungen.</p>
+    <p *ngIf="identityLoading" role="status">Lehrerzuordnungen werden geladen …</p>
+    <form (ngSubmit)="saveTeacherIdentity()" class="create-form">
+      <label class="field"><span>Lehrerkonto</span><select name="teacherPerson" [(ngModel)]="teacherPerson" (ngModelChange)="selectTeacher()" [disabled]="identitySaving||identityLoading" required><option value="">Bitte auswählen</option><option *ngFor="let identity of teacherIdentities" [value]="identity.user_id">{{identity.full_name||identity.user_id}} · {{identity.timetable_name||'Noch nicht zugeordnet'}}</option></select></label>
+      <label class="field"><span>Name im Stundenplan</span><input name="timetableName" [(ngModel)]="timetableName" list="admin-teacher-names" maxlength="160" [disabled]="identitySaving" required></label>
+      <datalist id="admin-teacher-names"><option *ngFor="let name of teacherNames" [value]="name"></option></datalist>
+      <p class="message error" role="alert" *ngIf="identityError">{{identityError}}</p><p class="message success" role="status" *ngIf="identitySuccess">{{identitySuccess}}</p>
+      <button type="submit" class="primary" [disabled]="identitySaving||identityLoading||!teacherPerson||!timetableName.trim()">{{identitySaving?'Speichere …':'Zuordnung speichern'}}</button>
+    </form>
+  </section>
+
   <section class="panel">
     <h2>Bestehende Konten</h2>
 

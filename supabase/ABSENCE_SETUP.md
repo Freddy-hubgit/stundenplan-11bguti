@@ -20,7 +20,7 @@ Danach Push wie unten beschrieben aktivieren.
 
 ## Ablauf in der Webseite
 
-1. Als Admin unter **Krankmeldungen → Lehrerkonto zuordnen** das Konto mit Lehrerrolle dem exakten Namen im Stundenplan zuordnen. Nur dieses Konto kann für diese Lehrkraft melden.
+1. Als Admin unter **Verwaltung → Lehrerkonto zuordnen** das Konto mit Lehrerrolle dem exakten Namen im Stundenplan zuordnen. Nur dieses Konto kann für diese Lehrkraft melden.
 2. Die Lehrkraft wählt den Zeitraum (maximal 31 Tage ab heute, deutsche Zeit), tägliche Uhrzeiten und **Entfall beantragen** oder **Wunschvertretung beantragen**. Bei Wunschvertretung ist eine andere Lehrkraft erforderlich. Medizinische Details werden nicht abgefragt.
 3. Mit **Antrag senden** werden nur Admins benachrichtigt. Der Schüler-Stundenplan, Schüler-Meldungen und Schüler-Push bleiben bis zur Bestätigung unverändert.
 4. Unter **Meine Meldungen → Antrag ändern** kann die Lehrkraft bei einem offenen Antrag zwischen Entfall und Wunschvertretung wechseln. Admins werden erneut benachrichtigt. Nach Bestätigung kann die Lehrkraft den Antrag nicht mehr ändern und muss einen Admin kontaktieren.
@@ -66,3 +66,5 @@ Der Push-Test simuliert das Netzwerk. Echte Endgeräte-Zustellung wurde nicht au
 
 ## Krankmeldung zurücknehmen (nur Support)
 Migration `202610300023_support_withdraw_absence.sql` ergänzt die vollständige Rücknahme über Krankmeldungen. Support sieht alle Meldungen, kann sie nach Bestätigung zurücknehmen, aber keine Admin-Entscheidungen treffen. Ein Admin ohne zusätzliche Supportrolle kann die Rücknahme auch per RPC nicht ausführen. Verknüpfte Entfall-/Vertretungseinträge werden entfernt; andere Einträge bleiben erhalten. Betroffene Schüler erhalten die bestehenden scoped Korrekturmeldungen, die Lehrkraft eine Bestätigung. Bereits zugestellte Browser-Push-Nachrichten können nicht zurückgerufen werden.
+
+Die Zuordnung zwischen Lehrerkonto und Stundenplanname befindet sich unter **Verwaltung → Lehrerkonto zuordnen** und ist nur für Admins sichtbar. Bestehende Zuordnungen bleiben erhalten; für die Verschiebung ist keine Migration nötig.
