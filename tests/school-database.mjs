@@ -13,6 +13,8 @@ const uid=n=>`00000000-0000-0000-0000-00000000000${n}`;
 async function login(n,role='authenticated'){await db.exec('reset role');await db.query("select set_config('request.jwt.claim.sub',$1,false)",[n?uid(n):'']);await db.exec('set role '+role);}
 await login(1);await assert.rejects(()=>db.query("select school_group_save(null,'Hack','class',null)"),{code:'42501'});
 await login(5);const group=(await db.query("select school_group_save(null,'11A','class',null) id")).rows[0].id;const other=(await db.query("select school_group_save(null,'13B','class',null) id")).rows[0].id;
+await db.query("select school_focus($1,'Informatik')",[group]);assert.equal((await db.query('select * from school_groups()')).rows.find(g=>g.id===group).focus,'Informatik');
+await login(4);await assert.rejects(()=>db.query('select school_schedule_save($1,$2)',[group,[]]),{code:'42501'});await assert.rejects(()=>db.query("select school_focus($1,'Umwelttechnik')",[group]),{code:'42501'});await login(5);
 await db.query('select school_grade($1,11)',[group]);await db.query('select school_grade($1,13)',[other]);
 for(const [target,n,kind] of [[group,1,'student'],[group,3,'teacher'],[other,2,'student'],[other,6,'student']])await db.query('select school_enrol($1,$2,$3,false)',[target,uid(n),kind]);
 const course=(await db.query("select school_group_save(null,'Biologie Wahlkurs','course',$1) id",[group])).rows[0].id;

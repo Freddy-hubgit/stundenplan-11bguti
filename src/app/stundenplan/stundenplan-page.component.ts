@@ -141,8 +141,9 @@ type EditorMode = "new" | "edit";
     this.schoolError='';this.school.choose(this.school.classId);this.closeEditor();this.lessons=[];const revision=++this.schoolRevision,target=this.school.classId;
     const group=this.school.groups.find(g=>g.id===this.school.classId);
     this.canManageSubstitutions=hasRole(this.school.profile,'support','admin');
-    this.canManageTimetable=!!group&&(group.can_teach||this.canManageSubstitutions);
+    this.canManageTimetable=!!group&&group.can_teach;
     this.canAssignHomework=!!group?.can_teach;
+    if(group?.focus){this.selectedTrack=group.focus;this.enforceCompulsoryScience();}
     try{const lessons=(await this.school.timetable())||[];if(revision!==this.schoolRevision||target!==this.school.classId||this.substitutionsDestroyed)return;this.lessons=lessons;await this.school.loadExams();}catch{if(revision===this.schoolRevision)this.schoolError='Klassenstundenplan konnte nicht geladen werden.';}
   }
   async saveClassSchedule():Promise<void>{
@@ -555,7 +556,7 @@ type EditorMode = "new" | "edit";
 
   private isLessonVisible(l: Lesson): boolean {
     if(l.group_id&&this.school.groups.some(g=>g.id===l.group_id&&g.kind==='course'))return true;
-    if (l.track && l.track !== this.selectedTrack) return false;
+    if (l.track && l.track !== (this.school.groups.find(g=>g.id===this.school.classId)?.focus||this.selectedTrack)) return false;
     const scienceKey = l.scienceGroup || l.subject;
     if (SCIENCE_SUBJECTS.includes(scienceKey) && !this.selectedSciences.includes(scienceKey)) return false;
     if (l.language && l.language !== this.selectedLanguage) return false;

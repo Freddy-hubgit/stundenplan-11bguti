@@ -93,3 +93,6 @@ Die SQL-Prüfung spielt alle Migrationen in eine isolierte Datenbank ein. Edge- 
 ### Fehler „UPDATE requires a WHERE clause“
 
 Bei bereits eingerichteten Migrationen 017–019 zusätzlich `migrations/202610300020_school_revision_safe_update.sql` im SQL Editor ausführen. Der Fix ergänzt die Bedingung für den internen Änderungszähler und löscht keine Inhalte. Danach die Klassen-Seite neu laden. Beim Anlegen können bestehende Accounts direkt als Schüler oder Lehrkräfte ausgewählt werden; die jeweilige Kontorolle muss vorhanden sein.
+
+### Schwerpunkt und Stundenplanrechte
+Migration 021 ergänzt die optionale Klassenauswahl Informatik / Umwelttechnik / gemischt (auch später änderbar). Der feste Schwerpunkt wird im Stundenplan berücksichtigt. Stundenplanänderungen und JSON-Import sind nur Admins und zugeordneten Lehrkräften erlaubt; Support allein genügt nicht. Exporte bleiben für Schüler verfügbar. `stundenplan-vorlage.json` enthält die bisherige vollständige Vorlage im Importformat.

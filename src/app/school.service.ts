@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {SupabaseService,Profile,hasRole} from './supabase.service';
 import {Lesson} from './timetable-data';
-export interface SchoolGroup{id:string;name:string;kind:'class'|'course';parent_id:string|null;can_teach:boolean;grade:number|null;}
+export interface SchoolGroup{id:string;name:string;kind:'class'|'course';parent_id:string|null;can_teach:boolean;grade:number|null;focus?:'Informatik'|'Umwelttechnik'|null;}
 export interface SchoolExam{id:string;group_id:string;group_name:string;author_id:string;title:string;subject:string;date:string;starts:string;ends:string;room:string;details:string;}
 export interface SchoolMaterial{id:string;group_id:string;group_name:string;author_id:string;title:string;subject:string;description:string;link:string;file_path:string;file_name:string;created_at:string;}
 @Injectable({providedIn:'root'})
