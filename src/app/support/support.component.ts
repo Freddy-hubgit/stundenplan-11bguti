@@ -59,6 +59,11 @@ export class SupportComponent implements OnInit, OnDestroy {
       const messages = id ? await this.support.messages(id) : null;
       if (this.destroyed || version !== this.selectionVersion) return;
       this.tickets = tickets;
+      if(hasRole(this.profile,'support')&&tickets.length)try{
+        const key='support-seen:'+this.profile?.id;
+        const latest=Math.max(Number(localStorage.getItem(key))||0,...tickets.map(t=>Date.parse(t.created_at)).filter(Number.isFinite));
+        localStorage.setItem(key,String(latest));
+      }catch{ /* Browser storage is optional. */ }
       if (version === this.selectionVersion && id) {
         this.selected = tickets.find(t => t.id === id) ?? null;
         this.messages = this.selected ? messages ?? [] : [];
