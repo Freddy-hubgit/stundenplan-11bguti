@@ -11,15 +11,15 @@ export class MessagesComponent implements OnInit,OnDestroy {
  people: ChatPerson[]=[];
  threads: DirectThread[]=[];
  messages: DirectMessage[]=[];
- selected: DirectThread | null=null;
+ selected: DirectThread | null=null;pending=false;
  search=''; loading=true; busy=false; messagesLoading=false; settingsOpen=false;
  error=''; refreshError='';
  private drafts: Record<string,string>={};
  private timer?:ReturnType<typeof setInterval>;
  private refreshing=false; private destroyed=false; private revision=0;
  constructor(private auth:SupabaseService,private api:MessagesService,public settings:SettingsService){}
- get draft():string{return this.selected?this.drafts[this.selected.id]||'':'';}
- set draft(value:string){if(this.selected)this.drafts[this.selected.id]=value;}
+ get draft():string{return this.selected?this.drafts[this.selected.peer_id]||'':'';}
+ set draft(value:string){if(this.selected)this.drafts[this.selected.peer_id]=value;}
  get filteredPeople():ChatPerson[]{const q=this.search.trim().toLocaleLowerCase('de');return this.people.filter(p=>(p.full_name+' '+this.roleLabel(p.role)).toLocaleLowerCase('de').includes(q));}
  roleLabel(role:string):string{return ({user:'Nutzer',teacher:'Lehrer',support:'Support',admin:'Admin'} as Record<string,string>)[role]||'Nutzer';}
  async ngOnInit():Promise<void>{
@@ -38,34 +38,35 @@ export class MessagesComponent implements OnInit,OnDestroy {
  }
  async refresh():Promise<void>{
   if(this.refreshing||this.destroyed)return;
-  this.refreshing=true;const revision=this.revision,id=this.selected?.id;
+  this.refreshing=true;const revision=this.revision,id=this.pending?undefined:this.selected?.id,peer=this.selected?.peer_id;
   try{
    const [people,threads,messages]=await Promise.all([this.api.people(),this.api.threads(),id?this.api.messages(id):Promise.resolve([])]);
    if(this.destroyed||revision!==this.revision)return;
    this.people=people;this.threads=threads;
+   if(!id&&peer){const existing=threads.find(t=>t.peer_id===peer);if(existing)await this.select(existing);}
    if(id){this.followNewMessages();this.selected=threads.find(t=>t.id===id)??null;this.messages=this.selected?messages:[];}
    this.refreshError='';
   }catch{this.refreshError='Chats konnten nicht aktualisiert werden. Bitte erneut laden.';}finally{this.refreshing=false;}
  }
  async select(thread:DirectThread):Promise<void>{
   if(this.busy)return;
-  const revision=++this.revision;this.selected=thread;this.messages=[];this.messagesLoading=true;this.error='';
+  const revision=++this.revision;this.selected=thread;this.pending=false;this.messages=[];this.messagesLoading=true;this.error='';
   try{const messages=await this.api.messages(thread.id);if(!this.destroyed&&revision===this.revision){this.messages=messages;this.followNewMessages(true);}}
   catch(e){if(revision===this.revision)this.showError(e);}finally{if(revision===this.revision)this.messagesLoading=false;}
  }
  async open(person:ChatPerson):Promise<void>{
   if(this.busy||this.messagesLoading)return;
-  this.busy=true;this.revision++;this.error='';
-  try{const id=await this.api.open(person.id);this.threads=await this.api.threads();const thread=this.threads.find(t=>t.id===id);
-   if(!thread)throw new Error('Chat fehlt');this.busy=false;await this.select(thread);
-  }catch(e){this.showError(e);}finally{this.busy=false;}
+  const existing=this.threads.find(t=>t.peer_id===person.id);
+  if(existing){await this.select(existing);return;}
+  this.revision++;this.error='';this.messages=[];this.pending=true;
+  this.selected={id:'draft:'+person.id,peer_id:person.id,peer_name:person.full_name,peer_role:person.role,updated_at:'',last_message:null};
  }
  async send():Promise<void>{
   if(this.busy||this.messagesLoading||!this.selected||!this.draft.trim())return;
-  const id=this.selected.id,body=this.draft.trim();this.busy=true;this.revision++;this.error='';
-  try{await this.api.send(id,body);this.drafts[id]='';this.messages=await this.api.messages(id);this.followNewMessages(true);this.threads=await this.api.threads();}
+  const thread=this.selected,peer=thread.peer_id,body=this.draft.trim();this.busy=true;this.revision++;this.error='';
+  try{let id=thread.id;if(this.pending){id=await this.api.start(peer,body);this.selected={...thread,id};this.pending=false;}else await this.api.send(id,body);this.drafts[peer]='';this.messages=await this.api.messages(id);this.followNewMessages(true);this.threads=await this.api.threads();}
   catch(e){this.showError(e);}finally{this.busy=false;}
  }
  trackId(_:number,item:{id:string}):string{return item.id;}
- private showError(e:any):void{this.error=e?.code==='PGRST202'?'Die Nachrichtenfunktion muss noch in Supabase eingerichtet werden.':'Die Aktion ist fehlgeschlagen. Bitte erneut versuchen. Nicht gesendete Eingaben bleiben erhalten.';}
+ private showError(e:any):void{this.error=e?.code==='PGRST202'?'Bitte die aktuelle Chat-Migration 016 in Supabase ausführen und die Seite erneut laden.':'Die Aktion ist fehlgeschlagen. Bitte erneut versuchen. Nicht gesendete Eingaben bleiben erhalten.';}
 }

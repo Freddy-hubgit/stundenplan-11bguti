@@ -31,7 +31,7 @@ Konten mit Nutzerrolle erhalten Unterrichtsänderungen, ohne Krankheitsgrund ode
 
 Krankmeldungen sind in drei Bereiche gegliedert: **Neue** enthält offene Anträge vor dem ersten Tag; **Aktuelle** enthält bestätigte zukünftige und bereits begonnene Meldungen; **Vergangene** enthält alle Meldungen nach ihrem letzten Tag. Der letzte Tag zählt vollständig zum Zeitraum, maßgeblich ist Europe/Berlin. Die Einteilung ändert keine Freigabe: Ein offener Antrag unter Aktuelle bleibt für Schüler unsichtbar.
 
-Die Benachrichtigungsliste aktualisiert sich alle 15 Sekunden. Die letzten 100 Meldungen sind sichtbar; ein Zähler führt zu ungelesenen Meldungen.
+Die Benachrichtigungsliste aktualisiert sich alle 15 Sekunden. Die letzten 100 Meldungen sind in der Kachel Benachrichtigungen sichtbar.
 
 ## Lokale Prüfung
 

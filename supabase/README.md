@@ -326,3 +326,7 @@ Die aktuelle Rollenverwaltung unterstützt mehrere Rollen pro Konto; deren Berec
 ## Krankmeldungen und Wunschvertretung (Migrationen 013–015)
 
 Lehrkräfte beantragen Entfall oder eine Wunschvertretung; Admins erhalten Meldungen und bestätigen die Entscheidung. Erst danach erscheinen Änderungen im Schüler-Stundenplan und werden Schüler benachrichtigt. Schüler erhalten Unterrichtsänderungen in einer privaten Benachrichtigungsliste, auf Wunsch auch per Web-Push bei geschlossener Webseite. [Einrichtung und Ablauf](ABSENCE_SETUP.md).
+
+## Chat erst beim ersten Senden anlegen (Migration 016)
+
+Nach Migration 008 den gesamten Inhalt von [`migrations/202610300016_lazy_direct_chats.sql`](migrations/202610300016_lazy_direct_chats.sql) im SQL Editor ausführen und die aktualisierte Webseite laden. Die Personenauswahl speichert keinen Chat. Erst `dm_start` erstellt Chat und erste Nachricht atomar; Fehler hinterlassen keinen neuen leeren Chat. Bereits vorhandene leere Chats werden aus der Liste ausgeblendet und bei einer späteren ersten Nachricht wiederverwendet. Nachrichten und bestehende Gespräche bleiben erhalten. Edge Functions und Push-Konfiguration müssen dafür nicht geändert werden.

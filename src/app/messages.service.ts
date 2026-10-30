@@ -8,7 +8,7 @@ export class MessagesService {
  constructor(private api: SupabaseService) {}
  people(): Promise<ChatPerson[]> { return this.api.supportRpc('dm_people'); }
  threads(): Promise<DirectThread[]> { return this.api.supportRpc('dm_threads'); }
- open(id: string): Promise<string> { return this.api.supportRpc('dm_open',{peer_id:id}); }
+ start(id: string,body: string): Promise<string> { return this.api.supportRpc('dm_start',{peer_id:id,message_body:body}); }
  messages(id: string): Promise<DirectMessage[]> { return this.api.supportRpc('dm_messages',{chat_id:id}); }
  send(id: string,body: string): Promise<void> { return this.api.supportRpc('dm_send',{chat_id:id,message_body:body}); }
 }
