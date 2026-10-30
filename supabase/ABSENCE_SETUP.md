@@ -1,24 +1,44 @@
-# Krankmeldungen und Wunschvertretung aktivieren
+# Krankmeldungen: Antrag und Admin-Bestätigung
 
-Voraussetzung: Die bisherigen Migrationen 001–012 sind eingerichtet, insbesondere der Vertretungsplan und die Mehrfachrollen.
+Die aktuelle Version veröffentlicht eine Krankmeldung erst nach Bestätigung durch einen Admin. Lehrkräfte beantragen **Entfall** oder eine **Wunschvertretung** und können den Wunsch bei einem offenen Antrag ändern.
 
-1. Im Supabase SQL Editor den vollständigen Inhalt von `migrations/202610300013_teacher_absences.sql` ausführen. Die Datei ist eine Transaktion; bei einem Fehler wird nichts teilweise übernommen. Sie erstellt private Meldungen, eine Zuordnung von Konten zu Stundenplannamen und eine persönliche Benachrichtigungsliste.
-2. Die aktualisierte Webseite veröffentlichen. Als Admin die neue Kachel **Krankmeldungen** öffnen. Unter **Lehrerkonto zuordnen** jedes Konto mit Lehrerrolle einmal dem exakten Namen aus dem Stundenplan zuordnen. Ein Stundenplanname kann nur einem Konto zugeordnet sein. Bestehende offene Meldungen müssen vor einer Änderung der Zuordnung bearbeitet werden.
-3. Die Lehrkraft öffnet **Krankmeldungen**, trägt Anfang, Ende und tägliche Uhrzeiten ein und kann eine **Wunschvertretung** nennen. Maximal 31 Tage, ab dem heutigen Tag (Europe/Berlin). Das Konto kann ausschließlich für seine zugeordnete Lehrkraft melden. Medizinische Einzelheiten werden nicht abgefragt.
-4. Beim Absenden entstehen sofort verknüpfte Entfall-Einträge im Vertretungsplan. Im Stundenplan greifen die vorhandenen Regeln für betroffene Lehrkraft und Uhrzeiten. Bestehende überlappende Einträge werden nicht überschrieben; in diesem Fall erhält die Lehrkraft einen Hinweis und ein Admin muss den Konflikt prüfen.
-5. Admins erhalten eine private Benachrichtigung und sehen den gewünschten Ersatz in der Meldung. Sie können den Entfall bestätigen oder eine Ersatzlehrkraft bestimmen. Der Wunsch ist keine Zusage. Die Entscheidung gilt für alle noch verknüpften Tage der Meldung; einzelne Stunden, Räume und Korrekturen bleiben im Vertretungsplan bearbeitbar. Eine entfernte Verknüpfung wird durch Bestätigen nicht neu angelegt.
-6. Konten mit Nutzerrolle erhalten Unterrichtsänderungen in der neuen Kachel **Benachrichtigungen**. Die Meldung enthält nur Lehrkraft, Datum, Uhrzeit und Entfall/Vertretung, keinen Krankheitsgrund und keine Wunschvertretung. Das Portal hat einen gemeinsamen Klassenstundenplan; Nachrichten werden an alle Konten mit Nutzerrolle verteilt, die individuelle Kursauswahl gilt weiterhin für die Stundenplananzeige.
+## Bestehende Installation aktualisieren
 
-Die Benachrichtigungsliste aktualisiert sich bei geöffneter Webseite alle 15 Sekunden. Ein schwebender Zähler führt zu ungelesenen Meldungen; gelesene Meldungen bleiben in der Liste (letzte 100). Krankmeldungen können nur der meldenden Lehrkraft und Admins angezeigt werden. Support allein erhält keinen Zugriff auf Krankmeldungen, kann aber weiterhin den normalen Vertretungsplan bearbeiten.
+Wenn die Migrationen 013 und 014 bereits erfolgreich ausgeführt wurden, nur den vollständigen Inhalt von [`migrations/202610300015_absence_approval.sql`](migrations/202610300015_absence_approval.sql) im Supabase SQL Editor ausführen und danach die aktualisierte Webseite laden. Bestehende Push-Schlüssel, Edge Functions und Zeitpläne bleiben unverändert.
 
-## Prüfen
+Die Migration verbirgt auch bestehende, noch nicht bestätigte Einträge aus der alten Version. Zugehörige, eindeutig erkennbare systemgenerierte Schüler-Meldungen werden entfernt, einschließlich ausstehender Push-Aufträge. Bereits auf einem Endgerät zugestellte Nachrichten können nicht zurückgerufen werden. Bestätigte Einträge und manuelle Vertretungsplaneinträge bleiben veröffentlicht.
+
+## Neue Installation
+
+Voraussetzung: Migrationen 001–012 sind eingerichtet. Anschließend in dieser Reihenfolge ausführen:
+
+1. `migrations/202610300013_teacher_absences.sql`
+2. `migrations/202610300014_notification_push.sql`
+3. `migrations/202610300015_absence_approval.sql`
+
+Danach Push wie unten beschrieben aktivieren.
+
+## Ablauf in der Webseite
+
+1. Als Admin unter **Krankmeldungen → Lehrerkonto zuordnen** das Konto mit Lehrerrolle dem exakten Namen im Stundenplan zuordnen. Nur dieses Konto kann für diese Lehrkraft melden.
+2. Die Lehrkraft wählt den Zeitraum (maximal 31 Tage ab heute, deutsche Zeit), tägliche Uhrzeiten und **Entfall beantragen** oder **Wunschvertretung beantragen**. Bei Wunschvertretung ist eine andere Lehrkraft erforderlich. Medizinische Details werden nicht abgefragt.
+3. Mit **Antrag senden** werden nur Admins benachrichtigt. Der Schüler-Stundenplan, Schüler-Meldungen und Schüler-Push bleiben bis zur Bestätigung unverändert.
+4. Unter **Meine Meldungen → Antrag ändern** kann die Lehrkraft bei einem offenen Antrag zwischen Entfall und Wunschvertretung wechseln. Admins werden erneut benachrichtigt. Nach Bestätigung kann die Lehrkraft den Antrag nicht mehr ändern und muss einen Admin kontaktieren.
+5. Admins prüfen den Wunsch und bestätigen Entfall oder eine Ersatzlehrkraft. Sie können eine andere Entscheidung als beantragt treffen. Erst jetzt werden die betroffenen Tage veröffentlicht und Schüler benachrichtigt. Ein inzwischen angelegter überlappender Vertretungsplaneintrag blockiert die Bestätigung; er wird nicht überschrieben.
+6. Einzelne Stunden und Räume können nach Bestätigung im **Vertretungsplan** bearbeitet werden. Erneute Bestätigung einer Meldung gilt für alle noch verknüpften Einträge. Entfernte bestätigte Einträge werden nicht automatisch neu angelegt.
+
+Konten mit Nutzerrolle erhalten Unterrichtsänderungen, ohne Krankheitsgrund oder private Wünsche. Das Portal hat einen gemeinsamen Klassenstundenplan; Meldungen gehen an alle Konten mit Nutzerrolle. Die individuelle Kursauswahl gilt weiterhin für die Stundenplananzeige. Support allein sieht keine privaten Krankmeldungen und kann sie nicht bestätigen; die bisherige Verwaltung des normalen Vertretungsplans bleibt verfügbar.
+
+Die Benachrichtigungsliste aktualisiert sich alle 15 Sekunden. Die letzten 100 Meldungen sind sichtbar; ein Zähler führt zu ungelesenen Meldungen.
+
+## Lokale Prüfung
 
 ```sh
-PGLITE_MODULE_PATH=/pfad/zu/@electric-sql/pglite/dist/index.js node tests/absence-database.mjs
+PGLITE_MODULE_PATH=/pfad/zu/@electric-sql/pglite/dist/index.js node tests/absence-approval-database.mjs
 python tests/absence-browser.py
 ```
 
-Die Datenbankprüfung kontrolliert Zuordnung, Rechte, Privatheit, atomare Überlappungsprüfung und Unterrichtsänderungen. Die Browserprüfung simuliert die APIs; die Einrichtung muss im eigenen Supabase-Projekt ausgeführt werden.
+Die Tests prüfen private offene Anträge, Wunschwechsel, Admin-Freigabe, Konflikte, ältere Clients, vorhandene offene Einträge sowie Schüler-Stundenplan und Push erst nach Freigabe. Browser- und Push-Netzwerkzugriffe werden simuliert; eine echte Gerätezustellung muss im eingerichteten Projekt geprüft werden.
 
 ## Zusätzlich Web-Push bei geschlossener Webseite (Migration 014)
 

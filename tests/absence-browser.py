@@ -10,12 +10,14 @@ def api(route,role):
         result=[dict(user_id=ids['teacher'],full_name='Teacher',timetable_name=next((i['name'] for i in identities if i['id']==ids['teacher']),''))] if role in ['admin','teacher'] else []
     elif '/rpc/absence_set_identity' in url:identities[:]=[dict(id=args['person'],name=args['teacher'])];result=None
     elif '/rpc/absence_list' in url:result=reports if role=='admin' else [r for r in reports if r['teacher_id']==me['id']]
-    elif '/rpc/absence_report' in url:
-        entry=dict(id='report1',teacher_id=me['id'],teacher_name='Herr Hansen',start_date=args['first_day'],end_date=args['last_day'],starts=args['from_time'],ends=args['to_time'],requested_teacher=args['wish'],status='reported',resolution='',replacement_teacher='')
-        reports.append(entry);entries.append(dict(id='entry1',date=args['first_day'],teacher='Herr Hansen',start_time=args['from_time'],end_time=args['to_time'],kind='cancelled',replacement_teacher='',room='',note='',updated_at=now));result='report1'
-        notes.extend([dict(id='admin1',user_id=ids['admin'],title='Neue Krankmeldung',body='Herr Hansen ist abwesend.',route='/krankmeldung',read_at=None,created_at=now),dict(id='user1',user_id=ids['user'],title='Unterrichtsänderung',body='Unterricht bei Herr Hansen fällt aus.',route='/stundenplan',read_at=None,created_at=now)])
+    elif '/rpc/absence_request' in url and '/absence_request_preference' not in url:
+        entry=dict(id='report1',teacher_id=me['id'],teacher_name='Herr Hansen',start_date=args['first_day'],end_date=args['last_day'],starts=args['from_time'],ends=args['to_time'],requested_teacher=args['wish'],requested_kind=args['request_kind'],status='reported',resolution='',replacement_teacher='')
+        reports.append(entry);result='report1'
+        notes.extend([dict(id='admin1',user_id=ids['admin'],title='Neue Krankmeldung',body='Herr Hansen ist abwesend.',route='/krankmeldung',read_at=None,created_at=now)])
+    elif '/rpc/absence_request_preference' in url:
+        reports[0].update(requested_kind=args['request_kind'],requested_teacher=args['wish']);result=None
     elif '/rpc/absence_resolve' in url:
-        report=reports[0];report.update(status='resolved',resolution=args['kind'],replacement_teacher=args['replacement']);entries[0].update(kind=args['kind'],replacement_teacher=args['replacement']);notes.append(dict(id='user2',user_id=ids['user'],title='Unterrichtsänderung',body='Vertretung: '+args['replacement'],route='/stundenplan',read_at=None,created_at=now));result=None
+        report=reports[0];report.update(status='resolved',resolution=args['kind'],replacement_teacher=args['replacement']);entries[:]=[dict(id='entry1',date=report['start_date'],teacher='Herr Hansen',start_time=report['starts'],end_time=report['ends'],kind=args['kind'],replacement_teacher=args['replacement'],room='',note='',updated_at=now)];notes.append(dict(id='user2',user_id=ids['user'],title='Unterrichtsänderung',body='Vertretung: '+args['replacement'],route='/stundenplan',read_at=None,created_at=now));result=None
     elif '/rpc/portal_notifications' in url:result=[n for n in notes if n['user_id']==me['id']]
     elif '/rpc/portal_notification_read' in url:
         next(n for n in notes if n['id']==args['notification'] and n['user_id']==me['id'])['read_at']=now;result=None
@@ -45,15 +47,21 @@ with sync_playwright() as p:
         page=ctx.new_page();page.clock.install(time=datetime(2026,10,26,8,30));page.on('pageerror',lambda e:errors.append(str(e)));return page
     teacher=page_as('teacher');teacher.goto(BASE+'/krankmeldung');teacher.get_by_text('Bitte einen Admin bitten, dein Konto zuerst deinem Namen im Stundenplan zuzuordnen.',exact=True).wait_for()
     admin=page_as('admin');admin.goto(BASE+'/krankmeldung');admin.get_by_label('Lehrerkonto',exact=True).select_option(ids['teacher']);admin.get_by_label('Name im Stundenplan',exact=True).fill('Herr Hansen');admin.get_by_role('button',name='Zuordnung speichern',exact=True).click();admin.get_by_text('Lehrerkonto zugeordnet.',exact=True).wait_for()
-    teacher.reload();teacher.get_by_label('Wunschvertretung (optional)',exact=True).fill('Frau Wunsch');teacher.get_by_role('button',name='Krankmeldung verbindlich senden',exact=True).click();teacher.get_by_text('Krankmeldung gesendet. Admins wurden benachrichtigt; der Unterricht ist als Entfall eingetragen.',exact=True).wait_for()
-    assert reports[0]['requested_teacher']=='Frau Wunsch' and entries[0]['kind']=='cancelled'
-    student=page_as('user',390);student.goto(BASE+'/stundenplan');student.locator('.lesson.cancelled').first.wait_for()
+    teacher.reload();teacher.get_by_label('Mein Antrag',exact=True).select_option('replacement');teacher.get_by_label('Wunschvertretung',exact=True).fill('Frau Wunsch');teacher.get_by_role('button',name='Antrag senden',exact=True).click();teacher.get_by_text('Antrag gesendet. Admins wurden benachrichtigt. Im Stundenplan ändert sich erst nach Bestätigung etwas.',exact=True).wait_for()
+    assert reports[0]['requested_teacher']=='Frau Wunsch' and not entries
+    student=page_as('user',390);student.goto(BASE+'/stundenplan');student.locator('.lesson').first.wait_for();assert student.locator('.lesson.cancelled,.lesson.substituted').count()==0
+    student.goto(BASE+'/meldungen');student.get_by_text('Keine Benachrichtigungen vorhanden.',exact=True).wait_for()
+    # Pending requests can switch to cancellation and back without publishing anything.
+    teacher.get_by_role('button',name='Antrag ändern',exact=True).click();teacher.get_by_label('Antragswunsch',exact=True).select_option('cancelled');teacher.get_by_role('button',name='Antrag aktualisieren',exact=True).click();teacher.get_by_text('Antrag geändert. Admins wurden benachrichtigt.',exact=True).wait_for()
+    assert reports[0]['requested_kind']=='cancelled' and reports[0]['requested_teacher']=='' and not entries
+    teacher.get_by_role('button',name='Antrag ändern',exact=True).click();teacher.get_by_label('Antragswunsch',exact=True).select_option('replacement');teacher.get_by_label('Gewünschte Ersatzlehrkraft',exact=True).fill('Frau Wunsch');teacher.get_by_role('button',name='Antrag aktualisieren',exact=True).click();teacher.get_by_text('Antrag geändert. Admins wurden benachrichtigt.',exact=True).wait_for()
+    assert not entries
 
-    admin.goto(BASE+'/meldungen');admin.get_by_role('heading',name='Neue Krankmeldung',exact=True).wait_for();admin.get_by_role('link',name='Details öffnen →').click();admin.get_by_text('Wunschvertretung: Frau Wunsch',exact=True).wait_for()
+    admin.goto(BASE+'/meldungen');admin.get_by_role('heading',name='Neue Krankmeldung',exact=True).wait_for();admin.get_by_role('link',name='Details öffnen →').click();admin.get_by_text('Beantragt: Wunschvertretung · Frau Wunsch',exact=True).wait_for()
     admin.get_by_label('Entscheidung',exact=True).select_option('replacement');assert admin.get_by_label('Bestätigte Ersatzlehrkraft',exact=True).input_value()=='Frau Wunsch'
-    admin.get_by_label('Bestätigte Ersatzlehrkraft',exact=True).fill('Frau Bestätigt');admin.get_by_role('button',name='Entscheidung speichern',exact=True).click();admin.get_by_text('Entfall oder Vertretung bestätigt. Die Schüler wurden benachrichtigt.',exact=True).wait_for()
+    admin.get_by_label('Bestätigte Ersatzlehrkraft',exact=True).fill('Frau Bestätigt');admin.get_by_role('button',name='Entscheidung bestätigen',exact=True).click();admin.get_by_text('Entfall oder Vertretung bestätigt. Die Schüler wurden benachrichtigt.',exact=True).wait_for()
     student.goto(BASE+'/stundenplan');student.locator('.lesson.substituted').first.wait_for();assert 'Frau Bestätigt' in student.locator('.lesson.substituted').first.inner_text()
-    student.goto(BASE+'/meldungen');student.get_by_text('Vertretung: Frau Bestätigt',exact=True).wait_for();assert student.get_by_text('Wunschvertretung: Frau Wunsch',exact=True).count()==0
+    student.goto(BASE+'/meldungen');student.get_by_text('Vertretung: Frau Bestätigt',exact=True).wait_for();assert student.get_by_text('Beantragt: Wunschvertretung · Frau Wunsch',exact=True).count()==0
     assert student.evaluate('document.documentElement.scrollWidth<=innerWidth+1')
     assert student.evaluate('window.permissionRequests')==0
     student.get_by_role('button',name='Push für Meldungen aktivieren',exact=True).click();student.get_by_role('button',name='Push ist aktiviert',exact=True).wait_for()
@@ -68,4 +76,4 @@ with sync_playwright() as p:
     teacher.goto(BASE+'/');teacher.get_by_role('link',name='Krankmeldungen',exact=False).wait_for()
     assert not errors,errors
     browser.close()
-print('PASS admin identity mapping, teacher absence/wish, initial cancellation, admin inbox and approval, student notifications, unread state, mobile and route guards; simulated API')
+print('PASS admin identity mapping, teacher absence/wish, private pending requests and preference changes, admin inbox and approval-gated timetable, student notifications, unread state, mobile and route guards; simulated API')

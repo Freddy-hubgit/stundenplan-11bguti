@@ -323,6 +323,6 @@ python tests/account-backgrounds-browser.py
 
 Die aktuelle Rollenverwaltung unterstützt mehrere Rollen pro Konto; deren Berechtigungen werden kombiniert. Hausaufgaben bieten persönliche Erledigung, optionale Text-/Link-/Dateiabgaben und Web-Push am Vorabend. Datenbank, Edge Function, Secrets und Cron müssen einmal eingerichtet werden: [vollständige Aktivierungsanleitung](HOMEWORK_SETUP.md).
 
-## Krankmeldungen und Wunschvertretung (Migrationen 013–014)
+## Krankmeldungen und Wunschvertretung (Migrationen 013–015)
 
-Lehrkräfte melden ihre eigene Abwesenheit; Admins erhalten Meldungen und bestätigen eine Wunschvertretung oder Entfall. Schüler erhalten Unterrichtsänderungen in einer privaten Benachrichtigungsliste, auf Wunsch auch per Web-Push bei geschlossener Webseite. [Einrichtung und Ablauf](ABSENCE_SETUP.md).
+Lehrkräfte beantragen Entfall oder eine Wunschvertretung; Admins erhalten Meldungen und bestätigen die Entscheidung. Erst danach erscheinen Änderungen im Schüler-Stundenplan und werden Schüler benachrichtigt. Schüler erhalten Unterrichtsänderungen in einer privaten Benachrichtigungsliste, auf Wunsch auch per Web-Push bei geschlossener Webseite. [Einrichtung und Ablauf](ABSENCE_SETUP.md).
