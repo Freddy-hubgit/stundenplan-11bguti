@@ -29,6 +29,9 @@
     <button type="button" class="chip chip-cyan" [class.active]="singleDayView" [attr.aria-pressed]="singleDayView" (click)="setViewMode('day')">Tag</button>
     <button type="button" class="chip chip-cyan" [class.active]="!singleDayView" [attr.aria-pressed]="!singleDayView" (click)="setViewMode('week')">Woche</button>
   </div>
+  <div class="school-timetable-toolbar"><label>Klasse oder Kurs<select [(ngModel)]="school.classId" (ngModelChange)="changeSchoolClass()"><option *ngFor="let g of school.groups" [value]="g.id">{{g.name}}</option></select></label><button type="button" *ngIf="canManageTimetable" [disabled]="schoolSaving" (click)="saveClassSchedule()">{{schoolSaving?'Speichere …':'Stundenplan speichern'}}</button><a routerLink="/klassen">Klassen & Kurse</a></div>
+  <p *ngIf="schoolError" role="alert">{{schoolError}}</p><p *ngIf="school.ready&&!school.classId">Keine Klasse zugeordnet. Bitte einen Admin kontaktieren.</p>
+  <app-exam-plan [dates]="examDates"></app-exam-plan>
   <div class="layout">
 
     <div class="board" [class.week-view]="!singleDayView" #boardRef (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)">
@@ -76,8 +79,9 @@
                  (mouseleave)="onLessonLeave(lesson)"
                  (click)="openEditLesson(lesson, $event)">
               <button *ngIf="canManageTimetable" class="edit-btn" (click)="openEditLesson(lesson, $event)" aria-label="Stunde bearbeiten">✎</button>
-              <a *ngIf="canAssignHomework" class="homework-link" routerLink="/hausaufgaben" [queryParams]="{subject:lesson.subject,lessonDate:lessonDate(col.date),lessonEnd:lesson.end}" (click)="$event.stopPropagation()" [attr.aria-label]="'Hausaufgabe für ' + lesson.subject">HA +</a>
+              <a *ngIf="canAssignHomework" class="homework-link" routerLink="/hausaufgaben" [queryParams]="{subject:lesson.subject,lessonDate:lessonDate(col.date),lessonEnd:lesson.end,group:lesson.group_id||school.classId}" (click)="$event.stopPropagation()" [attr.aria-label]="'Hausaufgabe für ' + lesson.subject">HA +</a>
               <div class="subj">{{ lesson.subject }}</div>
+              <span class="exam-badge" *ngFor="let exam of lessonExams(lesson,col.date)" [title]="exam.title">Prüfung: {{exam.title}}</span>
               <div class="original-teacher" *ngIf="lesson.substitution">{{ lesson.originalTeacher }}</div>
               <div class="meta">{{ lesson.teacher }}</div>
               <a *ngIf="lesson.substitution && canManageSubstitutions" class="substitution-details" routerLink="/vertretungsplan" (click)="$event.stopPropagation()" [title]="lesson.substitution.note || 'Alle Informationen im Vertretungsplan'">{{ lesson.substitution.start_time.slice(0,5) }}–{{ lesson.substitution.end_time.slice(0,5) }} · Details</a>

@@ -14,7 +14,7 @@ Migration 011 erstellt den privaten Storage-Bucket `homework-submissions` samt Z
 
 In Verwaltung → Bearbeiten können Support und Admin mehrere Rollen auswählen. Die Berechtigungen werden kombiniert; der letzte Admin bleibt geschützt. Neue Konten erhalten zunächst eine Rolle und können danach weitere erhalten.
 
-Jeder kann persönliche Aufgaben erstellen. Lehrer und Admin können Aufgaben für alle Mitglieder des Schulportals veröffentlichen; eine Klassenaufteilung ist nicht hinterlegt. Der Erledigt-Status gilt pro Person. Mit der Rolle Nutzer kann man Text, einen HTTPS-Link und/oder eine Datei abgeben. Die eigene Abgabe und die Abgaben zur selbst veröffentlichten Aufgabe sind zugänglich; für fremde Abgaben muss der Aufgabenautor weiterhin Lehrer oder Admin sein. Archivieren erhält vorhandene Abgaben.
+Jeder kann persönliche Aufgaben erstellen. Mit den Migrationen 017–019 veröffentlichen zugeordnete Lehrkräfte und Admins Aufgaben gezielt für Klassen oder Kurse. Dafür zusätzlich die [Schulportal-Einrichtung](SCHOOL_SETUP.md) durchführen; alte globale Aufgaben bleiben zunächst nur ihren Autoren sichtbar. Der Erledigt-Status gilt pro Person. Mit der Rolle Nutzer kann man Text, einen HTTPS-Link und/oder eine Datei abgeben. Die eigene Abgabe und die Abgaben zur selbst veröffentlichten Aufgabe sind zugänglich; für fremde Abgaben muss der Aufgabenautor weiterhin Lehrer oder Admin sein. Archivieren erhält vorhandene Abgaben.
 
 ## 2. Push-Schlüssel erstellen
 

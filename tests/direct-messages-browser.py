@@ -33,7 +33,7 @@ with sync_playwright() as p:
         ctx.route(f'https://{PROJECT}.supabase.co/**',lambda r:api(r,role))
         page=ctx.new_page();page.on('pageerror',lambda e:errors.append(str(e)))
         page.goto(BASE,wait_until='domcontentloaded')
-        page.get_by_role('link',name='Nachrichten',exact=False).click()
+        page.locator('.tile[data-route="/nachrichten"]').click()
         page.get_by_role('heading',name='Neuer Chat',exact=True).wait_for()
         return page
     user=page_as('user')

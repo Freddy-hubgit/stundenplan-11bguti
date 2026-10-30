@@ -1,6 +1,6 @@
 import { hasRole } from '../supabase.service';
 import { HomeLayoutService } from '../home-layout.service';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { SupabaseService } from '../supabase.service';
 import { SettingsService } from '../settings.service';
 
@@ -18,6 +18,8 @@ interface PortalTile {
 })
 export class PortalHomeComponent implements OnInit {
   tiles: PortalTile[] = [
+    {title:'Klassen & Kurse',description:'Deine Gruppen und Zuordnungen',route:'/klassen',icon:'👥'},
+    {title:'Materialablage',description:'Arbeitsblätter, Dateien und Links deiner Gruppen',route:'/materialien',icon:'📂'},
     { title: 'Benachrichtigungen', description: 'Neue Meldungen und Unterrichtsänderungen', route: '/meldungen', icon: '🔔' },
     { title: 'Hausaufgaben', description: 'Aufgaben, Abgaben und Erinnerungen', route: '/hausaufgaben', icon: '📚' },
     { title: 'Nachrichten', description: 'Private Chats mit allen Nutzern', route: '/nachrichten', icon: '💬' },
@@ -38,6 +40,14 @@ export class PortalHomeComponent implements OnInit {
   get visibleTiles(): PortalTile[] { return this.homeLayout.visible(this.tiles); }
   trackTile(_: number, tile: PortalTile): string { return tile.route; }
 
+  contextTile:PortalTile|null=null;menuX=0;menuY=0;private rightDrag:{route:string;x:number;y:number;moved:boolean}|null=null;private suppressContext=false;
+  tileContext(event:MouseEvent,tile:PortalTile):void{event.preventDefault();event.stopPropagation();if(this.suppressContext){this.suppressContext=false;return;}this.contextTile=tile;this.menuX=Math.max(8,Math.min(event.clientX,window.innerWidth-280));this.menuY=Math.max(8,Math.min(event.clientY,window.innerHeight-420));}
+  tileDown(event:MouseEvent,tile:PortalTile):void{if(event.button!==2)return;event.preventDefault();this.contextTile=null;this.suppressContext=false;this.rightDrag={route:tile.route,x:event.clientX,y:event.clientY,moved:false};}
+  @HostListener('document:mousemove',['$event']) moveTile(event:MouseEvent):void{const drag=this.rightDrag;if(!drag||!(event.buttons&2))return;if(Math.hypot(event.clientX-drag.x,event.clientY-drag.y)>8)drag.moved=true;if(drag.moved){this.contextTile=null;const target=(document.elementFromPoint(event.clientX,event.clientY) as HTMLElement|null)?.closest('[data-route]')?.getAttribute('data-route');if(target&&target!==drag.route)this.homeLayout.moveTo(this.tiles,drag.route,target);}}
+  @HostListener('document:mouseup',['$event']) releaseTile(event:MouseEvent):void{if(event.button===2&&this.rightDrag){this.suppressContext=this.rightDrag.moved;this.rightDrag=null;}}
+  @HostListener('document:click') closeTileMenu():void{this.contextTile=null;}
+  @HostListener('document:keydown.escape') escapeTileMenu():void{this.contextTile=null;this.rightDrag=null;}
+  @HostListener('window:blur') cancelTileDrag():void{this.rightDrag=null;}
   openSettings(): void {
     this.settingsOpen = true;
   }
@@ -54,6 +64,7 @@ export class PortalHomeComponent implements OnInit {
     const greeting = greetings[Math.floor(Math.random() * greetings.length)];
     this.greeting = name ? `${greeting}, ${name}` : `${greeting}!`;
     if(hasRole(profile,'teacher','admin'))this.tiles=[...this.tiles,{title:'Krankmeldungen',description:hasRole(profile,'admin')?'Abwesenheiten prüfen und Vertretungen bestätigen':'Abwesenheit melden und Wunschvertretung vorschlagen',route:'/krankmeldung',icon:'🩺'}];
+    if(hasRole(profile,'admin'))this.tiles=[...this.tiles,{title:'Schuljahres-Reset',description:'Vorschau und kontrollierter Neustart',route:'/schuljahr',icon:'⚠'}];
     const isStaff = hasRole(profile, 'admin', 'support');
 
     if (hasRole(profile, 'teacher', 'support', 'admin')) this.tiles = [...this.tiles, { title: 'Kalender', description: 'Termine, Veranstaltungen und Besprechungen', route: '/kalender', icon: '📅' }];

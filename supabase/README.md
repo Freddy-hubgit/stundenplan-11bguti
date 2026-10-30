@@ -330,3 +330,7 @@ Lehrkräfte beantragen Entfall oder eine Wunschvertretung; Admins erhalten Meldu
 ## Chat erst beim ersten Senden anlegen (Migration 016)
 
 Nach Migration 008 den gesamten Inhalt von [`migrations/202610300016_lazy_direct_chats.sql`](migrations/202610300016_lazy_direct_chats.sql) im SQL Editor ausführen und die aktualisierte Webseite laden. Die Personenauswahl speichert keinen Chat. Erst `dm_start` erstellt Chat und erste Nachricht atomar; Fehler hinterlassen keinen neuen leeren Chat. Bereits vorhandene leere Chats werden aus der Liste ausgeblendet und bei einer späteren ersten Nachricht wiederverwendet. Nachrichten und bestehende Gespräche bleiben erhalten. Edge Functions und Push-Konfiguration müssen dafür nicht geändert werden.
+
+## Klassen, Materialien, Prüfungen und Schuljahres-Reset (017–019)
+
+Klassen/Kurse mit Jahrgangsstufen und Zuordnungen begrenzen Aufgaben, Materialien, Prüfungen und Unterrichtsmeldungen auf berechtigte Gruppen. Der Prüfungsplan ist in den Stundenplan integriert. Ein Admin kann Inhalte nach einer Vorschau zurücksetzen und optional reine Nutzerkonten des festgelegten Abschlussjahrgangs mitlöschen; Personal bleibt geschützt. [Vollständige Einrichtung und Bedienung](SCHOOL_SETUP.md).

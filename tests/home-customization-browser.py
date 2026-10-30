@@ -18,7 +18,8 @@ with sync_playwright() as p:
         panel=page.get_by_role('region',name='Startbildschirm anpassen')
         panel.get_by_role('button',name='Nachrichten nach unten',exact=True).click()
         rows=panel.locator('.tile-setting')
-        assert rows.first.locator('strong').inner_text()=='Videokonferenz'
+        moved=rows.locator('strong').all_inner_texts()
+        assert moved.index('Nachrichten')==original.index('/nachrichten')+1
         panel.get_by_role('combobox',name='Farbe für Nachrichten',exact=True).select_option('rose')
         panel.get_by_label('Kompakte Kacheln',exact=True).check()
         row=rows.filter(has=page.get_by_text('Videokonferenz',exact=True))
@@ -35,8 +36,9 @@ with sync_playwright() as p:
         # Drag support complements keyboard/touch-accessible move buttons.
         source=panel.locator('.tile-setting').filter(has=page.get_by_text('Stundenplan',exact=True))
         target=panel.locator('.tile-setting').filter(has=page.get_by_text('Nachrichten',exact=True))
+        target_index=panel.locator('.tile-setting strong').all_inner_texts().index('Nachrichten')
         source.drag_to(target)
-        assert panel.locator('.tile-setting').nth(1).locator('strong').inner_text()=='Stundenplan'
+        assert panel.locator('.tile-setting').nth(target_index).locator('strong').inner_text()=='Stundenplan'
         # Hide everything; settings must remain reachable for recovery.
         for check in panel.locator('.tile-options input[type=checkbox]').all():check.uncheck()
         page.get_by_role('button',name='Schließen',exact=True).click()
@@ -62,7 +64,7 @@ with sync_playwright() as p:
     page.goto(BASE);page.get_by_role('heading',name='User',exact=False).wait_for()
     assert page.get_by_role('link',name='Verwaltung',exact=False).count()==0
     assert page.get_by_role('link',name='Vertretungsplan',exact=False).count()==0
-    page.get_by_role('link',name='Nachrichten',exact=False).wait_for()
+    page.locator('.tile[data-route="/nachrichten"]').wait_for()
     page.get_by_role('button',name='Einstellungen öffnen').click();page.get_by_role('button',name='Startbildschirm',exact=True).click()
     assert page.get_by_role('combobox',name='Farbe für Verwaltung').count()==0
     assert not errors,errors

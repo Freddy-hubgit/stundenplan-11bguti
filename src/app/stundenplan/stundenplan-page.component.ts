@@ -1,3 +1,5 @@
+import {SchoolService,SchoolExam} from '../school.service';
+import {ActivatedRoute} from '@angular/router';
 import { hasRole } from '../supabase.service';
 import { SupabaseService } from '../supabase.service';
 import { DEFAULT_LESSONS, DayKey, DayTrack, LanguageChoice, Lesson, Period, SCIENCE_SUBJECTS } from '../timetable-data';
@@ -82,7 +84,7 @@ type EditorMode = "new" | "edit";
   // Oberfläche geändert werden (bearbeiten/hinzufügen/löschen).
   // "track" -> nur für einen Schwerpunkt sichtbar (Informatik / Umwelttechnik)
   // "language" -> nur sichtbar, wenn "Spanisch" gewählt ist
-  lessons: Lesson[] = DEFAULT_LESSONS.map(lesson => ({ ...lesson }));
+  lessons: Lesson[] = [];
 
   private readonly dayDefs: DayDef[] = [
     { key: "Mon", label: "Montag", short: "Mo", jsIdx: 1 },
@@ -117,7 +119,7 @@ type EditorMode = "new" | "edit";
   private readonly rangeEnd: number = Math.max(...this.periods.map(p => this.toMinutes(p.end))) + 15;
   private readonly rangeTotal: number = this.rangeEnd - this.rangeStart;
 
-  constructor(private settings: SettingsService, private substitutionsService: SubstitutionService, private auth: SupabaseService) {}
+  constructor(private settings: SettingsService, private substitutionsService: SubstitutionService, private auth: SupabaseService,public school:SchoolService,private route:ActivatedRoute) {}
 
   /* ---------------- Zustand ---------------- */
 
@@ -130,14 +132,28 @@ type EditorMode = "new" | "edit";
   lessonDate(date:Date):string { return dateKey(date); }
   canManageSubstitutions = false;
   get singleDayView(): boolean { return this.viewMode === 'day'; }
-  private async loadTimetablePermissions(): Promise<void> {
-    try {
-      const profile = await this.auth.getMyProfile();
-      this.canManageSubstitutions = hasRole(profile, 'support', 'admin');
-      this.canAssignHomework = hasRole(profile, 'teacher', 'admin');
-      this.canManageTimetable = this.canManageSubstitutions || hasRole(profile, 'teacher');
-    } catch { this.canManageTimetable = false; this.canManageSubstitutions = false; }
+  schoolError='';schoolSaving=false;private schoolRevision=0;
+  private async loadTimetablePermissions():Promise<void>{
+    try{await this.school.load();const requested=this.route.snapshot.queryParamMap.get('class');if(requested)this.school.choose(requested);await this.changeSchoolClass();}
+    catch{this.schoolError='Klassenstundenplan konnte nicht geladen werden. Bitte Klassenzuordnung und Supabase-Einrichtung prüfen.';this.lessons=[];this.canManageTimetable=false;this.canAssignHomework=false;}
   }
+  async changeSchoolClass():Promise<void>{
+    this.schoolError='';this.school.choose(this.school.classId);this.closeEditor();this.lessons=[];const revision=++this.schoolRevision,target=this.school.classId;
+    const group=this.school.groups.find(g=>g.id===this.school.classId);
+    this.canManageSubstitutions=hasRole(this.school.profile,'support','admin');
+    this.canManageTimetable=!!group&&(group.can_teach||this.canManageSubstitutions);
+    this.canAssignHomework=!!group?.can_teach;
+    try{const lessons=(await this.school.timetable())||[];if(revision!==this.schoolRevision||target!==this.school.classId||this.substitutionsDestroyed)return;this.lessons=lessons;await this.school.loadExams();}catch{if(revision===this.schoolRevision)this.schoolError='Klassenstundenplan konnte nicht geladen werden.';}
+  }
+  async saveClassSchedule():Promise<void>{
+    if(this.schoolSaving||!this.canManageTimetable||!this.school.classId)return;
+    const target=this.school.classId,revision=this.schoolRevision;this.schoolSaving=true;this.schoolError='';
+    try{await this.school.saveLessons(target,this.lessons.filter(l=>!l.group_id||l.group_id===target).map(l=>{const {group_id,...entry}=l;return entry;}));if(revision===this.schoolRevision&&target===this.school.classId){const lessons=await this.school.timetable();if(revision===this.schoolRevision)this.lessons=lessons;}}
+    catch(e:any){if(revision===this.schoolRevision)this.schoolError=e?.message||'Stundenplan konnte nicht gespeichert werden.';}finally{this.schoolSaving=false;}
+  }
+
+  get examDates():string[]{return this.displayedDays.map(d=>dateKey(d.date));}
+  lessonExams(lesson:Lesson,date:Date):SchoolExam[]{return this.school.exams.filter(e=>e.date===dateKey(date)&&e.group_id===(lesson.group_id||this.school.classId)&&e.subject.trim().toLocaleLowerCase('de')===lesson.subject.trim().toLocaleLowerCase('de')&&e.starts.slice(0,5)<lesson.end&&e.ends.slice(0,5)>lesson.start&&(e.group_id===this.school.classId||this.school.groups.some(g=>g.id===e.group_id&&(g.parent_id===this.school.classId||g.kind==='course'&&!g.parent_id))));}
 
   setViewMode(mode: "day" | "week"): void {
     this.viewMode = mode;
@@ -452,7 +468,7 @@ type EditorMode = "new" | "edit";
       );
       if (!confirmed) return;
 
-      this.lessons = data.lessons.map((lesson: Lesson) => { const { cancelled, ...regular } = lesson; return regular; });
+      this.lessons = data.lessons.map((lesson: Lesson) => { const { cancelled, group_id, ...regular } = lesson; return { ...regular, group_id: this.school.classId }; });
 
       if (data.subjectColorOverrides && typeof data.subjectColorOverrides === "object") {
         this.settings.setSubjectColorOverrides(data.subjectColorOverrides);
@@ -538,6 +554,7 @@ type EditorMode = "new" | "edit";
   }
 
   private isLessonVisible(l: Lesson): boolean {
+    if(l.group_id&&this.school.groups.some(g=>g.id===l.group_id&&g.kind==='course'))return true;
     if (l.track && l.track !== this.selectedTrack) return false;
     const scienceKey = l.scienceGroup || l.subject;
     if (SCIENCE_SUBJECTS.includes(scienceKey) && !this.selectedSciences.includes(scienceKey)) return false;
@@ -1024,6 +1041,7 @@ type EditorMode = "new" | "edit";
     const idx = lesson.sourceIndex;
     const target = this.lessons[idx];
     if (!target) return;
+    if(target.group_id&&target.group_id!==this.school.classId){this.schoolError='Bitte zum Bearbeiten zuerst den zugehörigen Kurs im Auswahlfeld öffnen.';return;}
 
     this.editorMode = "edit";
     this.editorIndex = idx;
@@ -1045,11 +1063,12 @@ type EditorMode = "new" | "edit";
     this.editorIndex = null;
   }
 
-  saveLesson(): void {
+  async saveLesson(): Promise<void> {
     if (!this.canManageTimetable) return;
     if (!this.editorSubject.trim()) return; // Fach ist Pflichtfeld
 
     const newLesson: Lesson = {
+      group_id: this.school.classId,
       subject: this.editorSubject.trim(),
       teacher: this.editorTeacher.trim(),
       room: this.editorRoom.trim(),
@@ -1073,14 +1092,16 @@ type EditorMode = "new" | "edit";
       this.settings.setSubjectColor(newLesson.subject, null);
     }
 
+    await this.saveClassSchedule();
     this.closeEditor();
   }
 
-  deleteLesson(): void {
+  async deleteLesson(): Promise<void> {
     if (!this.canManageTimetable) return;
     if (this.editorIndex !== null) {
       this.lessons.splice(this.editorIndex, 1);
     }
+    await this.saveClassSchedule();
     this.closeEditor();
   }
 }

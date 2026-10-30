@@ -1109,3 +1109,5 @@
 }
 
 .lesson .homework-link { position:absolute;right:6px;bottom:5px;z-index:3;padding:3px 6px;border:1px solid var(--control-border);border-radius:5px;background:var(--bg-elevated);color:var(--text);font-size:9px;text-decoration:none; }
+
+.school-timetable-toolbar { display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin:12px 0; }.school-timetable-toolbar select { margin-left:8px;max-width:240px; }.exam-badge { display:block;font-size:10px;color:#ffe09b;background:#4d3c25;border-radius:5px;padding:3px 5px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }

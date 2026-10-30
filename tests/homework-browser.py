@@ -11,6 +11,7 @@ def api(route,role):
     me=users[role]
     if '/profiles?' in url:
         result=me if 'id=eq.' in url else list(users.values())
+    elif '/rpc/school_groups' in url:result=[dict(id=CLASS_ID,name='11BGUTI',kind='class',parent_id=None,can_teach=any(r in me.get('roles',[me['role']]) for r in ['teacher','admin']),grade=11)]
     elif '/rpc/hw_tasks' in url:
         result=[dict(t,done=progress.get((t['id'],me['id']),False),submitted=(t['id'],me['id']) in submissions) for t in tasks if t['is_shared'] or t['author_id']==me['id']]
     elif '/rpc/hw_save' in url:
@@ -56,6 +57,7 @@ with sync_playwright() as p:
         page=ctx.new_page();page.on('pageerror',lambda e:errors.append(str(e)))
         page.goto(BASE+'/hausaufgaben',wait_until='domcontentloaded')
         page.get_by_role('heading',name='Hausaufgaben',exact=True).wait_for()
+        page.get_by_text('Aufgaben werden geladen …',exact=True).wait_for(state='hidden')
         return page
     teacher=page_as('teacher')
     teacher.get_by_role('button',name='+ Aufgabe eintragen',exact=True).click()
@@ -71,7 +73,7 @@ with sync_playwright() as p:
     teacher.get_by_text('Keine passende Stunde gefunden. Bitte Fälligkeitsdatum selbst auswählen.',exact=True).wait_for()
     teacher.get_by_label('Fach',exact=True).fill('Mathe')
     teacher.get_by_label('Fällig am',exact=True).fill('2026-10-29')
-    teacher.get_by_label('Für alle Nutzer veröffentlichen',exact=True).check()
+    teacher.get_by_label('Für Klasse oder Kurs veröffentlichen',exact=True).check()
     teacher.get_by_label('Abgabe erforderlich',exact=True).check()
     teacher.get_by_role('button',name='Aufgabe speichern',exact=True).click()
     teacher.get_by_text('Aufgabe gespeichert.',exact=True).wait_for()
@@ -93,7 +95,7 @@ with sync_playwright() as p:
     teacher.get_by_role('button',name='Datei herunterladen: answer.pdf',exact=True).wait_for()
     # Own tasks are private.
     student.get_by_role('button',name='+ Aufgabe eintragen',exact=True).click()
-    assert student.get_by_label('Für alle Nutzer veröffentlichen',exact=True).count()==0
+    assert student.get_by_label('Für Klasse oder Kurs veröffentlichen',exact=True).count()==0
     student.get_by_label('Titel',exact=True).fill('Eigene Aufgabe')
     student.get_by_label('Fach',exact=True).fill('Deutsch')
     student.get_by_role('button',name='Aufgabe speichern',exact=True).click()
@@ -111,7 +113,7 @@ with sync_playwright() as p:
     student.screenshot(path='/tmp/homework-mobile.png',full_page=True)
     # Combined teacher + support permissions are available together.
     combo=page_as('support');combo.get_by_role('button',name='+ Aufgabe eintragen',exact=True).click()
-    combo.get_by_label('Für alle Nutzer veröffentlichen',exact=True).wait_for()
+    combo.get_by_label('Für Klasse oder Kurs veröffentlichen',exact=True).wait_for()
     combo.goto(BASE+'/stundenplan',wait_until='domcontentloaded')
     combo.get_by_role('link',name='Hausaufgabe für',exact=False).first.click()
     combo.get_by_role('heading',name='Neue Aufgabe',exact=True).wait_for()

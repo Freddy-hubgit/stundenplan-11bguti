@@ -12,6 +12,7 @@ export interface Period {
 }
 
 export interface Lesson {
+  group_id?: string;
   subject: string;
   teacher: string;
   room: string;

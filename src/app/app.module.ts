@@ -1,3 +1,8 @@
+import {SchoolComponent} from './school/school.component';
+import {MaterialsComponent} from './materials/materials.component';
+import {ExamPlanComponent} from './exam-plan/exam-plan.component';
+import {DashboardComponent} from './dashboard/dashboard.component';
+import {YearResetComponent} from './year-reset/year-reset.component';
 import { AbsenceComponent } from './absence/absence.component';
 import { NotificationsComponent } from './notifications/notifications.component';
 import { NgModule } from '@angular/core';
@@ -24,6 +29,9 @@ import { MessagesComponent } from './messages/messages.component';
 import { SupportComponent } from './support/support.component';
 
 const routes: Routes = [
+  {path:'klassen',component:SchoolComponent,canActivate:[AuthGuard]},
+  {path:'materialien',component:MaterialsComponent,canActivate:[AuthGuard]},
+  {path:'schuljahr',component:YearResetComponent,canActivate:[AuthGuard,FeatureAccessGuard],data:{allowedRoles:['admin']}},
   { path: 'krankmeldung', component: AbsenceComponent, canActivate: [AuthGuard, FeatureAccessGuard], data: {allowedRoles:['teacher','admin']} },
   { path: 'meldungen', component: NotificationsComponent, canActivate: [AuthGuard] },
   { path: 'hausaufgaben', component: HomeworkComponent, canActivate: [AuthGuard] },
@@ -41,6 +49,7 @@ const routes: Routes = [
 @NgModule({
   declarations: [
     AppComponent,
+    SchoolComponent,MaterialsComponent,ExamPlanComponent,DashboardComponent,YearResetComponent,
     AbsenceComponent,
     NotificationsComponent,
     HomeworkComponent,

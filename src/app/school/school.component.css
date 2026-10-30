@@ -1,0 +1,3 @@
+select { display:block;width:100%;margin:8px 0 16px;box-sizing:border-box; }p { overflow-wrap:anywhere; }a { color:var(--accent); }
+
+.panel { overflow-wrap:anywhere; }

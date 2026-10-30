@@ -1,0 +1,19 @@
+import {Component,OnInit} from '@angular/core';
+import {SchoolService} from '../school.service';
+import {SettingsService} from '../settings.service';
+import {DEFAULT_LESSONS} from '../timetable-data';
+@Component({selector:'app-school',templateUrl:'./school.component.html',styleUrls:['../portal-home/portal-home.component.css','../homework/homework.component.css','./school.component.css']})
+export class SchoolComponent implements OnInit{
+ error='';success='';busy=false;selected='';name='';groupName='';kind='class';parent='';grade=11;finalGrade=13;person='';memberKind='student';people:any[]=[];roster:any[]=[];
+ constructor(public school:SchoolService,public settings:SettingsService){}
+ async ngOnInit():Promise<void>{await this.run(async()=>{await this.school.load();if(this.school.isAdmin){this.people=await this.school.api.supportRpc('school_people');this.finalGrade=await this.school.api.supportRpc('school_year_config');}});}
+ async run(action:()=>Promise<unknown>):Promise<void>{if(this.busy)return;this.busy=true;this.error='';this.success='';try{await action();}catch(e:any){this.error=e?.message||'Klassen konnten nicht geladen werden. Bitte Migrationen 017–019 einrichten.';}finally{this.busy=false;}}
+ async select():Promise<void>{await this.run(async()=>{this.roster=this.selected?await this.school.api.supportRpc('school_roster',{target:this.selected}):[];this.grade=this.school.groups.find(g=>g.id===this.selected)?.grade||11;this.groupName=this.school.groups.find(g=>g.id===this.selected)?.name||'';});}
+ create():Promise<void>{return this.run(async()=>{this.selected=await this.school.api.supportRpc('school_group_save',{target:null,label:this.name,group_kind:this.kind,parent:this.parent||null});if(this.kind==='class')await this.school.api.supportRpc('school_grade',{target:this.selected,new_grade:this.grade});await this.school.load();this.roster=[];this.groupName=this.name;this.name='';this.success='Gruppe angelegt. Jetzt Personen zuordnen und Stundenplan einrichten.';});}
+ enrol(remove=false,user=this.person):Promise<void>{return this.run(async()=>{await this.school.api.supportRpc('school_enrol',{target:this.selected,person:user,member_type:this.memberKind,remove_member:remove});this.roster=await this.school.api.supportRpc('school_roster',{target:this.selected});this.success='Zuordnung gespeichert.';});}
+ get selectedIsClass():boolean{return this.school.groups.some(g=>g.id===this.selected&&g.kind==='class');}
+ rename():Promise<void>{return this.run(async()=>{const g=this.school.groups.find(g=>g.id===this.selected);if(!g)return;await this.school.api.supportRpc('school_group_save',{target:g.id,label:this.groupName,group_kind:g.kind,parent:g.parent_id});await this.school.load();this.success='Gruppenname gespeichert.';});}
+ saveGrade():Promise<void>{return this.run(async()=>{await this.school.api.supportRpc('school_grade',{target:this.selected,new_grade:this.grade});await this.school.load();this.success='Jahrgangsstufe gespeichert.';});}
+ saveFinal():Promise<void>{if(!Number.isInteger(this.finalGrade)||this.finalGrade<1||this.finalGrade>20){this.error='Bitte eine Jahrgangsstufe von 1 bis 20 eingeben.';return Promise.resolve();}return this.run(async()=>{this.finalGrade=await this.school.api.supportRpc('school_year_config',{new_final_grade:this.finalGrade});this.success='Abschlussjahrgang gespeichert.';});}
+ seed():Promise<void>{if(!confirm('Den Stundenplan dieser Gruppe durch die bisherige Vorlage ersetzen?'))return Promise.resolve();return this.run(async()=>{await this.school.saveLessons(this.selected,DEFAULT_LESSONS);this.success='Vorlage übernommen. Der Stundenplan kann anschließend bearbeitet werden.';});}
+}

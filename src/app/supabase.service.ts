@@ -98,6 +98,17 @@ export class SupabaseService {
     return data as T;
   }
 
+  async uploadSchoolMaterial(group:string,file:File):Promise<string>{
+    const session=await this.getSession();if(!session)throw new Error('Bitte erneut anmelden.');
+    const extension=file.name.split('.').pop()?.toLowerCase()||'';
+    const mime:Record<string,string>={pdf:'application/pdf',png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',webp:'image/webp',txt:'text/plain',docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',xlsx:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',odt:'application/vnd.oasis.opendocument.text'};
+    if(!mime[extension]||file.size>10485760)throw new Error('Erlaubte Datei bis 10 MB auswählen.');
+    const path=group+'/'+session.user.id+'/'+Array.from(crypto.getRandomValues(new Uint8Array(16)),x=>x.toString(16).padStart(2,'0')).join('')+'.'+extension;
+    const {error}=await this.client.storage.from('school-materials').upload(path,file,{contentType:mime[extension],upsert:false});if(error)throw error;return path;
+  }
+  async removeSchoolMaterial(path:string):Promise<void>{const {error}=await this.client.storage.from('school-materials').remove([path]);if(error)throw error;await this.supportRpc('school_material_file_removed',{path});}
+  async schoolMaterialUrl(path:string,name:string):Promise<string>{const {data,error}=await this.client.storage.from('school-materials').createSignedUrl(path,60,{download:name||true});if(error)throw error;return data.signedUrl;}
+  async schoolReset(body:Record<string,unknown>):Promise<any>{const {data,error}=await this.client.functions.invoke('school-year-reset',{body});if(error){let detail='';try{const result=await error.context?.clone().json();detail=result?.error||result?.message||'';}catch{}if(error.context?.status===404)detail='Bitte die Edge Function school-year-reset in Supabase bereitstellen.';if(error.context?.status===401&&/jwt/i.test(detail))detail='Bitte erneut anmelden und bei school-year-reset die Option Verify JWT with legacy secret ausschalten. Die Funktion prüft die Anmeldung selbst.';throw new Error(detail||error.message||'Reset-Funktion nicht erreichbar.');}if(data?.error)throw new Error(data.error);return data;}
   async uploadHomeworkFile(task: string, file: File): Promise<string> {
     const session = await this.getSession(); if (!session) throw new Error('Anmeldung erforderlich.');
     if (file.size > 10 * 1024 * 1024) throw new Error('Dateien dürfen höchstens 10 MB groß sein.');
