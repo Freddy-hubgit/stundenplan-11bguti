@@ -151,10 +151,11 @@ export class SupabaseService {
     role: 'user' | 'teacher' | 'support' | 'admin',
     name: string
   ): Promise<{ ok: boolean; error?: string }> {
-    const { data, error } = await this.client.functions.invoke(role === 'teacher' ? 'create-teacher' : 'quick-responder', {
+    const functionName = role === 'teacher' ? 'create-teacher' : 'quick-responder';
+    const { data, error } = await this.client.functions.invoke(functionName, {
       body: { email, password, role, name },
     });
-    return this.unwrapFunctionResult(data, error);
+    return this.unwrapFunctionResult(data, error, functionName);
   }
 
   // Ändert E-Mail, Name und/oder Passwort eines Kontos (nur Felder, die im Objekt stehen).
@@ -165,30 +166,36 @@ export class SupabaseService {
     const { data, error } = await this.client.functions.invoke('manage-user', {
       body: { action: 'update', userId, ...changes },
     });
-    return this.unwrapFunctionResult(data, error);
+    return this.unwrapFunctionResult(data, error, 'manage-user');
   }
 
   async deleteUserAccount(userId: string): Promise<{ ok: boolean; error?: string }> {
     const { data, error } = await this.client.functions.invoke('manage-user', {
       body: { action: 'delete', userId },
     });
-    return this.unwrapFunctionResult(data, error);
+    return this.unwrapFunctionResult(data, error, 'manage-user');
   }
 
-  private unwrapFunctionResult(data: any, error: any): { ok: boolean; error?: string } {
+  private async unwrapFunctionResult(data: any, error: any, functionName: string): Promise<{ ok: boolean; error?: string }> {
     if (error) {
-      let message = error.message;
+      const context = error.context;
+      const status = Number(context?.status) || 0;
+      let details: any;
       try {
-        const context = (error as any).context;
-        if (context?.error) message = context.error;
-      } catch {
-        /* Fallback auf error.message */
-      }
-      return { ok: false, error: message };
+        // FunctionsHttpError.context is a Response, not the parsed JSON body.
+        details = typeof context?.json === 'function'
+          ? await (typeof context.clone === 'function' ? context.clone() : context).json()
+          : context;
+      } catch { /* Gateway responses are not always JSON. */ }
+      const message = typeof details?.error === 'string' ? details.error
+        : typeof details?.message === 'string' ? details.message : '';
+      if (status === 404) return { ok: false, error: 'Die Edge Function „' + functionName + '“ wurde nicht gefunden. Bitte in Supabase bereitstellen.' };
+      if (status === 401 && /jwt/i.test(message) && functionName === 'create-teacher') return { ok: false, error: 'Supabase hat den Anmelde-Token abgelehnt. Bitte erneut anmelden. Bei „' + functionName + '“ muss „Verify JWT with legacy secret“ ausgeschaltet sein; die Funktion prüft die Anmeldung selbst.' };
+      if (message) return { ok: false, error: message };
+      if (status) return { ok: false, error: 'Die Edge Function „' + functionName + '“ ist fehlgeschlagen (HTTP ' + status + '). Bitte die Logs dieser Funktion in Supabase prüfen.' };
+      return { ok: false, error: error.message || 'Die Edge Function konnte nicht erreicht werden. Bitte die Verbindung prüfen.' };
     }
-    if (data?.error) {
-      return { ok: false, error: data.error };
-    }
+    if (typeof data?.error === 'string') return { ok: false, error: data.error };
     return { ok: true };
   }
 }
