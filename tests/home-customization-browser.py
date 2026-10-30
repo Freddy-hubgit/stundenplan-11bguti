@@ -59,7 +59,7 @@ with sync_playwright() as p:
     ctx.add_init_script(f"localStorage.setItem('sb-{PROJECT}-auth-token', {json.dumps(json.dumps(session('user')))});localStorage.setItem('portal-home:{ids['user']}',{json.dumps(preferences)});localStorage.setItem('portal-home:{ids['admin']}', '{{\"version\":1,\"hidden\":[\"/nachrichten\"]}}');")
     ctx.route(f'https://{PROJECT}.supabase.co/**',lambda r:mock(r,'user'))
     page=ctx.new_page();page.on('pageerror',lambda e:errors.append(str(e)))
-    page.goto(BASE);page.get_by_role('heading',name='Hi, User',exact=True).wait_for()
+    page.goto(BASE);page.get_by_role('heading',name='User',exact=False).wait_for()
     assert page.get_by_role('link',name='Verwaltung',exact=False).count()==0
     assert page.get_by_role('link',name='Vertretungsplan',exact=False).count()==0
     page.get_by_role('link',name='Nachrichten',exact=False).wait_for()

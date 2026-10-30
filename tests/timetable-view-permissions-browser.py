@@ -15,7 +15,7 @@ with sync_playwright() as p:
             page=ctx.new_page();page.on('pageerror',lambda e:errors.append(str(e)))
             page.clock.install(time=datetime(2026,10,19,8,30))
             page.goto(BASE,wait_until='domcontentloaded')
-            page.get_by_role('heading',name='Hi, '+role.title(),exact=True).wait_for()
+            page.get_by_role('heading',name=role.title(),exact=False).wait_for()
             staff=role in ['support','admin']
             assert page.get_by_role('link',name='Vertretungsplan',exact=False).count()==int(staff)
             page.goto(BASE+'/vertretungsplan',wait_until='domcontentloaded')

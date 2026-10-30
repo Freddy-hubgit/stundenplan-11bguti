@@ -39,7 +39,7 @@ with sync_playwright() as p:
         page.clock.install(time=datetime(2026,10,19,8,30) if role=='user' else datetime(2026,10,21,10,0))
         page.goto(BASE,wait_until='domcontentloaded')
         if role=='user':
-            page.get_by_role('heading',name='Hi, User',exact=True).wait_for()
+            page.get_by_role('heading',name='User',exact=False).wait_for()
             assert page.get_by_role('link',name='Vertretungsplan',exact=False).count()==0
             page.goto(BASE+'/vertretungsplan',wait_until='domcontentloaded');page.wait_for_url(BASE+'/')
             page.get_by_role('link',name='Stundenplan',exact=False).click()

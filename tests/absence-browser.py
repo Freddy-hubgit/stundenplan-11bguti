@@ -71,8 +71,8 @@ with sync_playwright() as p:
     assert ids['user'] not in push_records
 
     student.get_by_role('button',name='Als gelesen markieren').first.click();assert any(n['read_at'] for n in notes if n['user_id']==ids['user'])
-    student.goto(BASE+'/krankmeldung');student.get_by_role('heading',name='Hi, User',exact=True).wait_for();assert student.get_by_role('heading',name='Krankmeldungen',exact=True).count()==0
-    support=page_as('support');support.goto(BASE+'/krankmeldung');support.get_by_role('heading',name='Hi, Support',exact=True).wait_for()
+    student.goto(BASE+'/krankmeldung');student.get_by_role('heading',name='User',exact=False).wait_for();assert student.get_by_role('heading',name='Krankmeldungen',exact=True).count()==0
+    support=page_as('support');support.goto(BASE+'/krankmeldung');support.get_by_role('heading',name='Support',exact=False).wait_for()
     teacher.goto(BASE+'/');teacher.get_by_role('link',name='Krankmeldungen',exact=False).wait_for()
     assert not errors,errors
     browser.close()

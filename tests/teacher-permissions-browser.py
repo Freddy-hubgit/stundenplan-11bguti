@@ -18,7 +18,7 @@ with sync_playwright() as p:
             else: mock(route,role)
         ctx.route(f'https://{PROJECT}.supabase.co/**',api)
         page=ctx.new_page();page.on('pageerror',lambda e:errors.append(str(e)))
-        page.goto(BASE,wait_until='domcontentloaded');page.get_by_role('heading',name='Hi, '+role.title(),exact=True).wait_for()
+        page.goto(BASE,wait_until='domcontentloaded');page.get_by_role('heading',name=role.title(),exact=False).wait_for()
         return page
     user=page_as('user')
     user.get_by_role('link',name='Support & Tickets').wait_for()

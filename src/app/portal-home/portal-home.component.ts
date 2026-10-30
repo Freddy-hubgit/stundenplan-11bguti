@@ -50,7 +50,9 @@ export class PortalHomeComponent implements OnInit {
     const profile = await this.supabase.getMyProfile();
     this.homeLayout.activate(profile?.id ?? null);
     const name = profile?.full_name?.trim();
-    this.greeting = name ? `Hi, ${name}` : 'Hi!';
+    const greetings = ['Hi', 'Hallo', 'Hey', 'Willkommen', 'Schön, dich zu sehen', 'Schön, dass du da bist'];
+    const greeting = greetings[Math.floor(Math.random() * greetings.length)];
+    this.greeting = name ? `${greeting}, ${name}` : `${greeting}!`;
     if(hasRole(profile,'teacher','admin'))this.tiles=[...this.tiles,{title:'Krankmeldungen',description:hasRole(profile,'admin')?'Abwesenheiten prüfen und Vertretungen bestätigen':'Abwesenheit melden und Wunschvertretung vorschlagen',route:'/krankmeldung',icon:'🩺'}];
     const isStaff = hasRole(profile, 'admin', 'support');
 

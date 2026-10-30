@@ -58,7 +58,7 @@ with sync_playwright() as p:
     choose_roles(admin,['teacher'])
     admin.get_by_role('button',name='Rolle speichern',exact=True).click()
     admin.wait_for_url(BASE+'/')
-    admin.get_by_role('heading',name='Hi, Admin',exact=True).wait_for()
+    admin.get_by_role('heading',name='Admin',exact=False).wait_for()
     assert admin.get_by_role('link',name='Verwaltung',exact=False).count()==0
     assert not errors,errors
     print('PASS role editor, role-only RPC, last-admin error, support role changes, self-demotion navigation; simulated API')
