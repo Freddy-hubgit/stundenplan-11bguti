@@ -10,5 +10,6 @@ export class AbsenceService {
  list():Promise<TeacherAbsence[]>{return this.api.supportRpc('absence_list');}
  report(first_day:string,last_day:string,from_time:string,to_time:string,request_kind:string,wish:string):Promise<string>{return this.api.supportRpc('absence_request',{first_day,last_day,from_time,to_time,request_kind,wish});}
  preference(report:string,request_kind:string,wish:string):Promise<void>{return this.api.supportRpc('absence_request_preference',{report,request_kind,wish});}
+ withdraw(report:string):Promise<void>{return this.api.supportRpc('absence_withdraw',{report});}
  resolve(report:string,kind:string,replacement:string):Promise<void>{return this.api.supportRpc('absence_resolve',{report,kind,replacement});}
 }

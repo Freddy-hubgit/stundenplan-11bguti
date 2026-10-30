@@ -65,6 +65,11 @@ await login(3);const absence=(await db.query("select absence_request(current_dat
 await login(5);await db.query("select absence_resolve($1,'cancelled','')",[absence]);
 await login(1);assert.equal((await db.query('select * from portal_notifications()')).rows.filter(n=>n.route==='/stundenplan').length,1);
 await login(2);assert.equal((await db.query('select * from portal_notifications()')).rows.filter(n=>n.route==='/stundenplan').length,0);
+for(const actor of [1,3,5]){await login(actor);await assert.rejects(()=>db.query('select absence_withdraw($1)',[absence]),{code:'42501'});}
+await login(4);assert((await db.query('select * from absence_list()')).rows.some(a=>a.id===absence));await db.query('select absence_withdraw($1)',[absence]);await assert.rejects(()=>db.query('select absence_withdraw($1)',[absence]),{code:'22023'});
+await db.exec('reset role');assert.equal((await db.query('select count(*)::int n from substitution_entry where absence_id=$1',[absence])).rows[0].n,0);assert.equal((await db.query('select count(*)::int n from teacher_absence where id=$1',[absence])).rows[0].n,0);
+await login(1);assert((await db.query('select * from portal_notifications()')).rows.some(n=>n.body.includes('entfernt')));
+await login(3);const pendingAbsence=(await db.query("select absence_request(current_date+15,current_date+15,'07:00','09:00','cancelled','') id")).rows[0].id;await login(4);await db.query('select absence_withdraw($1)',[pendingAbsence]);
 await login(5);await db.query('select set_profile_roles($1,$2)',[uid(3),['user','teacher']]);await db.query("select school_enrol($1,$2,'student',false)",[other,uid(3)]);
 await db.exec('reset role');await db.query("insert into storage.objects(bucket_id,name) values('account-backgrounds',$1)",[uid(6)+'/background']);await db.query("insert into storage.objects(bucket_id,name) values('account-backgrounds',$1)",[uid(2)+'/background']);
 await login(5);await db.query('select set_profile_roles($1,$2)',[uid(3),['user']]);

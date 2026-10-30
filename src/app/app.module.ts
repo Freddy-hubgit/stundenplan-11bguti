@@ -32,7 +32,7 @@ const routes: Routes = [
   {path:'klassen',component:SchoolComponent,canActivate:[AuthGuard]},
   {path:'materialien',component:MaterialsComponent,canActivate:[AuthGuard]},
   {path:'schuljahr',component:YearResetComponent,canActivate:[AuthGuard,FeatureAccessGuard],data:{allowedRoles:['admin']}},
-  { path: 'krankmeldung', component: AbsenceComponent, canActivate: [AuthGuard, FeatureAccessGuard], data: {allowedRoles:['teacher','admin']} },
+  { path: 'krankmeldung', component: AbsenceComponent, canActivate: [AuthGuard, FeatureAccessGuard], data: {allowedRoles:['teacher','admin','support']} },
   { path: 'meldungen', component: NotificationsComponent, canActivate: [AuthGuard] },
   { path: 'hausaufgaben', component: HomeworkComponent, canActivate: [AuthGuard] },
   { path: 'nachrichten', component: MessagesComponent, canActivate: [AuthGuard] },

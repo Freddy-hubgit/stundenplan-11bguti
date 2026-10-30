@@ -63,7 +63,7 @@ export class PortalHomeComponent implements OnInit {
     const greetings = ['Hi', 'Hallo', 'Hey', 'Willkommen', 'Schön, dich zu sehen', 'Schön, dass du da bist'];
     const greeting = greetings[Math.floor(Math.random() * greetings.length)];
     this.greeting = name ? `${greeting}, ${name}` : `${greeting}!`;
-    if(hasRole(profile,'teacher','admin'))this.tiles=[...this.tiles,{title:'Krankmeldungen',description:hasRole(profile,'admin')?'Abwesenheiten prüfen und Vertretungen bestätigen':'Abwesenheit melden und Wunschvertretung vorschlagen',route:'/krankmeldung',icon:'🩺'}];
+    if(hasRole(profile,'teacher','admin','support'))this.tiles=[...this.tiles,{title:'Krankmeldungen',description:hasRole(profile,'admin')?'Abwesenheiten prüfen und Vertretungen bestätigen':hasRole(profile,'support')?'Krankmeldungen prüfen und zurücknehmen':'Abwesenheit melden und Wunschvertretung vorschlagen',route:'/krankmeldung',icon:'🩺'}];
     if(hasRole(profile,'admin'))this.tiles=[...this.tiles,{title:'Schuljahres-Reset',description:'Vorschau und kontrollierter Neustart',route:'/schuljahr',icon:'⚠'}];
     const isStaff = hasRole(profile, 'admin', 'support');
 

@@ -11,6 +11,7 @@ export class AbsenceComponent implements OnInit,OnDestroy {
  start=dateKey(new Date());end=this.start;from='07:00';to='18:00';requestKind='cancelled';wish='';person='';teacher='';busy=false;loading=true;error='';success='';settingsOpen=false;
  choices:Record<string,{kind:string;replacement:string}>={};requests:Record<string,{kind:string;replacement:string}>={};decisionDirty:Record<string,boolean>={};editingReport:string|null=null;private timer?:ReturnType<typeof setInterval>;
  constructor(private auth:SupabaseService,private api:AbsenceService,public settings:SettingsService,private notifications:NotificationsService){}
+ get isSupport():boolean{return hasRole(this.profile,'support');}
  get isAdmin():boolean{return hasRole(this.profile,'admin');}get isTeacher():boolean{return hasRole(this.profile,'teacher');}
  get ownIdentity():TeacherIdentity|undefined{return this.identities.find(i=>i.user_id===this.profile?.id);}
  get reportGroups():{key:string;title:string;hint:string;empty:string;reports:TeacherAbsence[]}[]{
@@ -39,5 +40,6 @@ export class AbsenceComponent implements OnInit,OnDestroy {
  assign():Promise<void>{return this.act(()=>this.api.assign(this.person,this.teacher),'Lehrerkonto zugeordnet.');}
  report():Promise<void>{return this.act(()=>this.api.report(this.start,this.end,this.from,this.to,this.requestKind,this.requestKind==='replacement'?this.wish:''),'Antrag gesendet. Admins wurden benachrichtigt. Im Stundenplan ändert sich erst nach Bestätigung etwas.');}
  preference(report:TeacherAbsence):Promise<void>{const choice=this.requests[report.id];return this.act(async()=>{await this.api.preference(report.id,choice.kind,choice.kind==='replacement'?choice.replacement:'');this.editingReport=null;},'Antrag geändert. Admins wurden benachrichtigt.');}
+ withdraw(report:TeacherAbsence):Promise<void>{if(!this.isSupport||!confirm('Krankmeldung für '+report.teacher_name+' vom '+report.start_date+' bis '+report.end_date+' vollständig zurücknehmen? Zugehörige Entfall- und Vertretungseinträge werden entfernt.'))return Promise.resolve();return this.act(()=>this.api.withdraw(report.id),'Krankmeldung zurückgenommen. Es gilt wieder der reguläre Unterricht.');}
  resolve(report:TeacherAbsence):Promise<void>{const choice=this.choices[report.id];return this.act(async()=>{await this.api.resolve(report.id,choice.kind,choice.replacement);this.decisionDirty[report.id]=false;},'Entfall oder Vertretung bestätigt. Die Schüler wurden benachrichtigt.');}
 }

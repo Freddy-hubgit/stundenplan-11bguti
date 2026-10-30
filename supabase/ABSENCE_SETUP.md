@@ -63,3 +63,6 @@ node tests/absence-push-functions.cjs
 ```
 
 Der Push-Test simuliert das Netzwerk. Echte Endgeräte-Zustellung wurde nicht aus dieser Entwicklungsumgebung geprüft.
+
+## Krankmeldung zurücknehmen (nur Support)
+Migration `202610300023_support_withdraw_absence.sql` ergänzt die vollständige Rücknahme über Krankmeldungen. Support sieht alle Meldungen, kann sie nach Bestätigung zurücknehmen, aber keine Admin-Entscheidungen treffen. Ein Admin ohne zusätzliche Supportrolle kann die Rücknahme auch per RPC nicht ausführen. Verknüpfte Entfall-/Vertretungseinträge werden entfernt; andere Einträge bleiben erhalten. Betroffene Schüler erhalten die bestehenden scoped Korrekturmeldungen, die Lehrkraft eine Bestätigung. Bereits zugestellte Browser-Push-Nachrichten können nicht zurückgerufen werden.
