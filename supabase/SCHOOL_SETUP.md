@@ -96,3 +96,6 @@ Bei bereits eingerichteten Migrationen 017–019 zusätzlich `migrations/2026103
 
 ### Schwerpunkt und Stundenplanrechte
 Migration 021 ergänzt die optionale Klassenauswahl Informatik / Umwelttechnik / gemischt (auch später änderbar). Der feste Schwerpunkt wird im Stundenplan berücksichtigt. Stundenplanänderungen und JSON-Import sind nur Admins und zugeordneten Lehrkräften erlaubt; Support allein genügt nicht. Exporte bleiben für Schüler verfügbar. `stundenplan-vorlage.json` enthält die bisherige vollständige Vorlage im Importformat.
+
+### Eigene nächste Stunde für Lehrkräfte
+Migration 022 ergänzt `school_my_teaching`. Die Startseitenübersicht durchsucht für Lehrerkonten alle gespeicherten Klassen- und Kurspläne, liefert aber nur eigene Stunden und mögliche bestätigte Vertretungen zurück. Grundlage ist die Admin-Zuordnung unter Krankmeldungen → Name im Stundenplan. Kein unsicherer Abgleich über den Account-Anzeigenamen. Fehlende Zuordnung wird angezeigt. Schüleransicht bleibt unverändert.

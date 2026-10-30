@@ -22,6 +22,11 @@ await db.query("select school_enrol($1,$2,'student',false)",[course,uid(1)]);awa
 await login(3);const lesson=[{subject:'Mathe',teacher:'Herr Hansen',room:'B211',day:'Mon',start:'07:30',end:'09:00'}];await db.query('select school_schedule_save($1,$2)',[group,lesson]);
 await assert.rejects(()=>db.query('select school_schedule_save($1,$2)',[other,lesson]),{code:'42501'});
 await db.query('select school_schedule_save($1,$2)',[course,[{subject:'Biologie',teacher:'Frau Bio',room:'B212',day:'Mon',start:'09:15',end:'10:45'}]]);
+await login(5);await db.query("select absence_set_identity($1,'Herr Hansen')",[uid(3)]);
+await db.query('select school_schedule_save($1,$2)',[other,lesson]);
+await login(3);const ownTeaching=(await db.query('select school_my_teaching() data')).rows[0].data;
+assert.equal(ownTeaching.teacher,'Herr Hansen');assert.equal(ownTeaching.lessons.length,2);assert(ownTeaching.lessons.some(l=>l.group_id===other));assert(ownTeaching.lessons.every(l=>l.teacher==='Herr Hansen'));
+await login(1);await assert.rejects(()=>db.query('select school_my_teaching()'),{code:'42501'});await login(5);await db.query('select school_schedule_save($1,$2)',[other,[]]);await login(3);
 await db.exec('reset role');assert.equal((await db.query("select school_teacher_key('Her Bendig') name")).rows[0].name,'herr bendig');assert.equal((await db.query("select school_teacher_key('Faru Roos, Herr Sommer') name")).rows[0].name,'frau roos, herr sommer');await login(3);
 
 const hw=(await db.query("select hw_save_group(null,'Übung','Mathe','Test',current_date,current_date+1,true,true,$1) id",[group])).rows[0].id;
