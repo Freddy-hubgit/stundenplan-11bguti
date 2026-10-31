@@ -1,3 +1,4 @@
+import {PortalTilesService,PORTAL_TILE_OPTIONS} from '../portal-tiles.service';
 import {AbsenceService,TeacherIdentity} from '../absence.service';
 import {DEFAULT_LESSONS} from '../timetable-data';
 import { AccountRole, rolesOf, hasRole, roleNames } from '../supabase.service';
@@ -12,6 +13,9 @@ import { SettingsService } from '../settings.service';
   styleUrls: ['./admin.component.css'],
 })
 export class AdminComponent implements OnInit {
+  tileOptions=PORTAL_TILE_OPTIONS;tileEnabled:Record<string,boolean>={};tileError='';tileSuccess='';tileBusy=false;
+  async loadTiles():Promise<void>{if(!this.isAdmin)return;this.tileError='';try{await this.tileSettings.load();this.tileOptions.forEach(t=>this.tileEnabled[t.route]=this.tileSettings.allowed(t.route));}catch(e:any){this.tileError='Kachelsteuerung konnte nicht geladen werden. Bitte Migration 029 einrichten. '+(e?.message||'');}}
+  async toggleTile(route:string,enabled:boolean):Promise<void>{if(!this.isAdmin||this.tileBusy)return;const previous=this.tileEnabled[route];this.tileEnabled[route]=enabled;this.tileBusy=true;this.tileError='';this.tileSuccess='';try{await this.tileSettings.save(route,enabled);this.tileSuccess='Kachel '+(enabled?'aktiviert.':'für alle Nutzer deaktiviert.');}catch(e:any){this.tileEnabled[route]=previous;this.tileError=e?.message||'Kachelstatus konnte nicht gespeichert werden.';}finally{this.tileBusy=false;}}
   profiles: Profile[] = [];
   teacherIdentities:TeacherIdentity[]=[];
   teacherPerson='';timetableName='';identityError='';identitySuccess='';identitySaving=false;identityLoading=false;
@@ -56,7 +60,7 @@ export class AdminComponent implements OnInit {
 
   settingsOpen = false;
 
-  constructor(private supabase: SupabaseService, public settings: SettingsService, private router: Router,private absences:AbsenceService) {}
+  constructor(private supabase: SupabaseService, public settings: SettingsService, private router: Router,private absences:AbsenceService,public tileSettings:PortalTilesService) {}
 
   openSettings(): void {
     this.settingsOpen = true;
@@ -71,7 +75,7 @@ export class AdminComponent implements OnInit {
     this.myId = me?.id ?? null;
     this.myRole = me?.role ?? null;
     this.myProfile = me;
-    await this.reload();
+    await this.reload();await this.loadTiles();
   }
 
   async reload(): Promise<void> {

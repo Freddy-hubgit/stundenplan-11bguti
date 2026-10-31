@@ -40,6 +40,7 @@ def mock(route, role):
     elif '/rpc/dm_unread' in url: result=0
     elif '/rpc/dm_mark_read' in url: result=None
     elif '/rpc/hw_my_feedback' in url: result=[]
+    elif '/rpc/portal_disabled_tiles' in url: result=[]
     elif '/auth/v1/user' in url: result = profile(role)
     elif '/rpc/support_team' in url:
         result = [{k: profile(r)[k] for k in ['id','full_name','role']} for r in ['support','admin']]

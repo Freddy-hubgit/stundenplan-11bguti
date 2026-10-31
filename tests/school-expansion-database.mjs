@@ -9,7 +9,7 @@ grant usage on schema storage,auth to authenticated,anon;grant all on storage.ob
 insert into auth.users select ('00000000-0000-0000-0000-00000000000'||n)::uuid from generate_series(1,6)n;
 insert into profiles select id,'Person '||right(id::text,1),right(id::text,1)||'@example.test',case right(id::text,1) when '3' then 'teacher' when '4' then 'support' when '5' then 'admin' else 'user' end from auth.users;`);
 for(const f of (await readdir(new URL('../supabase/migrations/',import.meta.url))).filter(f=>f.endsWith('.sql')&&(!process.env.USE_EXPANSION_PACKAGE||f<'202610310024')).sort())await db.exec(await readFile(new URL('../supabase/migrations/'+f,import.meta.url),'utf8'));
-if(process.env.USE_EXPANSION_PACKAGE)await db.exec(await readFile(new URL('../supabase/setup/school-expansion.sql',import.meta.url),'utf8'));
+if(process.env.USE_EXPANSION_PACKAGE){await db.exec(await readFile(new URL('../supabase/setup/school-expansion.sql',import.meta.url),'utf8'));await db.exec(await readFile(new URL('../supabase/migrations/202610310029_portal_tiles.sql',import.meta.url),'utf8'));}
 const uid=n=>`00000000-0000-0000-0000-00000000000${n}`;
 async function login(n,role='authenticated'){await db.exec('reset role');await db.query("select set_config('request.jwt.claim.sub',$1,false)",[n?uid(n):'']);await db.exec('set role '+role);}
 // Group privacy, lazy creation, membership management, removal and unread state.
@@ -70,4 +70,9 @@ await db.query('select school_schedule_save($1,$2)',[group,[{...lesson,room:'B21
 const preview=(await db.query('select school_reset_plan(false,true,false) p')).rows[0].p;assert.equal(Number(preview.counts.Gruppenchats),1);assert.equal(Number(preview.counts.Raumbuchungen),2);
 await login(1);await db.query('select * from chat_group_messages($1)',[chat]);await login(5);await db.query('select school_reset_execute($1,$2)',[preview.token,preview.confirmation]);
 await login(1);assert.equal((await db.query('select * from chat_groups()')).rows.length,0);await login(5);assert.equal((await db.query('select * from school_rooms()')).rows.length,2);assert.equal((await db.query('select * from school_room_slots($1)',[day])).rows.length,0);assert((await db.query("select * from portal_changes(null,'')")).rows.length>0);
+await login(1);assert.equal((await db.query('select portal_disabled_tiles() disabled')).rows[0].disabled.length,0);await assert.rejects(()=>db.query("select portal_tile_save('/materialien',false)"),{code:'42501'});
+await login(4);await assert.rejects(()=>db.query("select portal_tile_save('/materialien',false)"),{code:'42501'});
+await login(5);await db.query("select portal_tile_save('/materialien',false)");await assert.rejects(()=>db.query("select portal_tile_save('/admin',false)"));await assert.rejects(()=>db.query("select portal_tile_save('/invalid',true)"));
+await login(1);assert.equal((await db.query('select portal_disabled_tiles() disabled')).rows[0].disabled.join(','),'/materialien');
+await login(5);assert.equal((await db.query("select * from portal_changes(null,'portal_tile_setting')")).rows[0].after_value.enabled,false);await db.query("select portal_tile_save('/materialien',true)");await login(1);assert.equal((await db.query('select portal_disabled_tiles() disabled')).rows[0].disabled.length,0);
 console.log('PASS expansion: group membership/privacy, excluded absence days, scoped feedback/missing submissions, room teaching/booking conflicts, audit access/undo/staleness, reset integration');

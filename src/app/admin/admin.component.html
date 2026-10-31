@@ -12,6 +12,7 @@
   </header>
 
   <nav *ngIf="isAdmin" class="admin-tools"><a routerLink="/raumbuchung">Räume und Buchbarkeit verwalten →</a><a routerLink="/aenderungsverlauf">Änderungsverlauf öffnen →</a></nav>
+  <section class="panel" *ngIf="isAdmin"><h2>Kacheln im Hauptmenü</h2><p>Lege zentral fest, welche Kacheln für alle Nutzer verfügbar sind. Rollenrechte und persönliche Einstellungen gelten zusätzlich. Ausblenden sperrt keine Funktion: vorhandene Links und gespeicherte Inhalte bleiben erhalten.</p><p class="message error" role="alert" *ngIf="tileError">{{tileError}}</p><p class="message success" role="status" *ngIf="tileSuccess">{{tileSuccess}}</p><div class="tile-switches"><label *ngFor="let tile of tileOptions"><input type="checkbox" [ngModel]="tileEnabled[tile.route]" (ngModelChange)="toggleTile(tile.route,$event)" [disabled]="tileBusy||!tileSettings.ready||!!tileError">{{tile.title}}</label></div><p>Die Verwaltung bleibt erreichbar, damit du deaktivierte Kacheln jederzeit wieder einschalten kannst. Andere geöffnete Hauptmenüs übernehmen Änderungen spätestens nach 30 Sekunden.</p><button type="button" class="row-btn" (click)="loadTiles()" [disabled]="tileBusy">Kachelstatus neu laden</button></section>
   <section class="panel">
     <h2>Neues Konto anlegen</h2>
 

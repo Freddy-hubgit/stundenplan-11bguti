@@ -10,6 +10,7 @@
     </div>
   </header>
 
+  <p *ngIf="tileError" role="status">{{tileError}}</p>
   <app-dashboard></app-dashboard>
   <div class="tile-grid" [class.compact]="homeLayout.preferences.compact">
     <a *ngFor="let tile of visibleTiles; trackBy: trackTile" class="tile" (contextmenu)="tileContext($event,tile)" (mousedown)="tileDown($event,tile)" [attr.data-route]="tile.route" [style.--tile-accent]="homeLayout.accent(tile.route, settings.theme === 'light')" [style.--tile-tint]="homeLayout.tint(tile.route)" [routerLink]="tile.route">
@@ -38,8 +39,8 @@
     </a>
   </div>
 
-  <p *ngIf="!visibleTiles.length" class="home-empty">Alle Kacheln sind ausgeblendet. Über das Zahnrad kannst du sie unter „Startbildschirm“ wieder einblenden.</p>
+  <p *ngIf="tileSettings.ready&&!visibleTiles.length" class="home-empty">Keine Kacheln sichtbar. Persönlich ausgeblendete Kacheln kannst du im Zahnrad unter „Startbildschirm“ wieder einblenden. Zentral deaktivierte Kacheln kann nur ein Admin freigeben.</p>
 
   <section *ngIf="contextTile" class="tile-context" [style.left.px]="menuX" [style.top.px]="menuY" aria-label="Kachel einstellen" (click)="$event.stopPropagation()" (contextmenu)="$event.preventDefault()"><strong>{{contextTile.title}}</strong><label>Farbe<select [ngModel]="homeLayout.color(contextTile.route)" (ngModelChange)="homeLayout.setColor(contextTile.route,$event)"><option value="">Standard</option><option *ngFor="let color of homeLayout.colors" [value]="color.key">{{color.label}}</option></select></label><div class="context-actions"><button type="button" (click)="homeLayout.move(tiles,contextTile.route,-1)">← Nach vorne</button><button type="button" (click)="homeLayout.move(tiles,contextTile.route,1)">Nach hinten →</button><button type="button" (click)="homeLayout.toggle(contextTile.route);contextTile=null">Kachel ausblenden</button><button type="button" (click)="contextTile=null">Schließen</button></div><p>Zum Verschieben rechte Maustaste gedrückt halten und auf eine andere Kachel ziehen. Weitere Optionen findest du im Zahnrad unter Startbildschirm.</p></section>
-  <app-settings-modal [homeTiles]="tiles" [open]="settingsOpen" (openChange)="settingsOpen = $event"></app-settings-modal>
+  <app-settings-modal [homeTiles]="availableTiles" [open]="settingsOpen" (openChange)="settingsOpen = $event"></app-settings-modal>
 </div>

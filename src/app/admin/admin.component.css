@@ -365,3 +365,5 @@ button.primary:disabled {
 .edit-row .multi-roles input[type=checkbox] { width:19px;height:19px;padding:0;flex:0 0 19px;background:var(--control-bg); }.edit-row .multi-roles input[type=checkbox]:checked { background:var(--control-accent);border-color:var(--control-accent); }
 
 .admin-tools{display:flex;gap:18px;flex-wrap:wrap;margin:20px 0}.admin-tools a{color:var(--accent,#70d9e5);padding:12px 16px;border:1px solid currentColor;border-radius:10px;text-decoration:none}
+
+.tile-switches{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:18px 0}.tile-switches label{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--border,#34414a);border-radius:10px}.tile-switches input{width:18px;height:18px;accent-color:#70d9e5}

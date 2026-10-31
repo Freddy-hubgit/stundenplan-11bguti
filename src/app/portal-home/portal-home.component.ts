@@ -1,6 +1,7 @@
+import {PortalTilesService} from '../portal-tiles.service';
 import { hasRole } from '../supabase.service';
 import { HomeLayoutService } from '../home-layout.service';
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { SupabaseService } from '../supabase.service';
 import { SettingsService } from '../settings.service';
 
@@ -16,7 +17,7 @@ interface PortalTile {
   templateUrl: './portal-home.component.html',
   styleUrls: ['./portal-home.component.css'],
 })
-export class PortalHomeComponent implements OnInit {
+export class PortalHomeComponent implements OnInit,OnDestroy {
   tiles: PortalTile[] = [
     {title:'Klassen & Kurse',description:'Deine Gruppen und Zuordnungen',route:'/klassen',icon:'👥'},
     {title:'Materialablage',description:'Arbeitsblätter, Dateien und Links deiner Gruppen',route:'/materialien',icon:'📂'},
@@ -32,12 +33,16 @@ export class PortalHomeComponent implements OnInit {
     },
   ];
 
+  tileError='';private destroyed=false;private tileTimer?:ReturnType<typeof setInterval>;
+  async refreshTileSettings():Promise<void>{try{await this.tileSettings.load();this.tileError='';if(this.contextTile&&!this.tileSettings.allowed(this.contextTile.route))this.contextTile=null;}catch{this.tileError='Die zentralen Kacheleinstellungen konnten nicht geladen werden. Die zuletzt verfügbare Ansicht wird angezeigt.';}}
+  ngOnDestroy():void{this.destroyed=true;clearInterval(this.tileTimer);}
+  get availableTiles():PortalTile[]{return this.tileSettings.ready?this.tiles.filter(t=>this.tileSettings.allowed(t.route)):[];}
   settingsOpen = false;
   greeting = 'Hi!';
 
-  constructor(private supabase: SupabaseService, public settings: SettingsService, public homeLayout: HomeLayoutService) { this.homeLayout.activate(null); }
+  constructor(private supabase: SupabaseService, public settings: SettingsService, public homeLayout: HomeLayoutService,public tileSettings:PortalTilesService) { this.homeLayout.activate(null); }
 
-  get visibleTiles(): PortalTile[] { return this.homeLayout.visible(this.tiles); }
+  get visibleTiles(): PortalTile[] { return this.homeLayout.visible(this.availableTiles); }
   trackTile(_: number, tile: PortalTile): string { return tile.route; }
 
   contextTile:PortalTile|null=null;menuX=0;menuY=0;private rightDrag:{route:string;x:number;y:number;moved:boolean}|null=null;private suppressContext=false;
@@ -91,5 +96,6 @@ export class PortalHomeComponent implements OnInit {
         },
       ];
     }
+    await this.refreshTileSettings();if(!this.destroyed)this.tileTimer=setInterval(()=>void this.refreshTileSettings(),30000);
   }
 }

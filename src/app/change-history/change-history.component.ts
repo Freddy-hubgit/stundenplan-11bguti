@@ -3,7 +3,7 @@ interface Change{id:number;actor_name:string;entity:string;record_key:string;rec
 @Component({selector:'app-change-history',templateUrl:'./change-history.component.html',styleUrls:['../portal-home/portal-home.component.css','../homework/homework.component.css','./change-history.component.css']})
 export class ChangeHistoryComponent implements OnInit{
  changes:Change[]=[];filter='';busy=false;error='';success='';more=true;
- entities=[{key:'school_schedule',label:'Stundenpläne'},{key:'profiles',label:'Kontorollen'},{key:'school_member',label:'Klassenzuordnungen'},{key:'school_group',label:'Klassen und Kurse'},{key:'teacher_absence',label:'Krankmeldungen'},{key:'substitution_entry',label:'Vertretungen'},{key:'school_room',label:'Räume'},{key:'room_booking',label:'Raumbuchungen'}];
+ entities=[{key:'portal_tile_setting',label:'Hauptmenü-Kacheln'},{key:'school_schedule',label:'Stundenpläne'},{key:'profiles',label:'Kontorollen'},{key:'school_member',label:'Klassenzuordnungen'},{key:'school_group',label:'Klassen und Kurse'},{key:'teacher_absence',label:'Krankmeldungen'},{key:'substitution_entry',label:'Vertretungen'},{key:'school_room',label:'Räume'},{key:'room_booking',label:'Raumbuchungen'}];
  constructor(private api:SupabaseService,public settings:SettingsService){}
  name(entity:string):string{return this.entities.find(e=>e.key===entity)?.label||entity;}
  describe(value:any,entity:string):string[]{
@@ -11,6 +11,7 @@ export class ChangeHistoryComponent implements OnInit{
   const days:Record<string,string>={Mon:'Montag',Tue:'Dienstag',Wed:'Mittwoch',Thu:'Donnerstag',Fri:'Freitag',Sat:'Samstag',Sun:'Sonntag'};
   const roles:Record<string,string>={user:'Nutzer',teacher:'Lehrer',support:'Support',admin:'Admin'};
   if(entity==='school_schedule')return (value.lessons||[]).length?(value.lessons||[]).map((l:any)=>`${days[l.day]||l.day} ${l.start}–${l.end} · ${l.subject} · ${l.teacher} · Raum ${l.room}`):['Keine Stunden eingetragen'];
+  if(entity==='portal_tile_setting')return [value.route,value.enabled?'Kachel aktiviert':'Kachel deaktiviert'];
   if(entity==='profiles')return ['Rollen: '+(value.roles||[value.role]).map((r:string)=>roles[r]||r).join(', ')];
   if(entity==='school_group')return [value.name,value.kind==='class'?'Klasse':'Kurs',value.grade?'Jahrgang '+value.grade:'',value.focus||''].filter(Boolean);
   if(entity==='school_member')return [value.member_kind==='teacher'?'Als Lehrkraft zugeordnet':'Als Schüler zugeordnet'];
