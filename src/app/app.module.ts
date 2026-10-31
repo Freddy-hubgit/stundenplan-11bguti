@@ -1,3 +1,7 @@
+import {GroupChatsComponent} from './group-chats/group-chats.component';
+import {SubmissionReviewComponent} from './submission-review/submission-review.component';
+import {RoomBookingComponent} from './room-booking/room-booking.component';
+import {ChangeHistoryComponent} from './change-history/change-history.component';
 import {SchoolComponent} from './school/school.component';
 import {MaterialsComponent} from './materials/materials.component';
 import {ExamPlanComponent} from './exam-plan/exam-plan.component';
@@ -29,6 +33,9 @@ import { MessagesComponent } from './messages/messages.component';
 import { SupportComponent } from './support/support.component';
 
 const routes: Routes = [
+  {path:'abgaben',component:SubmissionReviewComponent,canActivate:[AuthGuard,FeatureAccessGuard],data:{allowedRoles:['teacher','admin']}},
+  {path:'raumbuchung',component:RoomBookingComponent,canActivate:[AuthGuard]},
+  {path:'aenderungsverlauf',component:ChangeHistoryComponent,canActivate:[AuthGuard,FeatureAccessGuard],data:{allowedRoles:['admin']}},
   {path:'klassen',component:SchoolComponent,canActivate:[AuthGuard]},
   {path:'materialien',component:MaterialsComponent,canActivate:[AuthGuard]},
   {path:'schuljahr',component:YearResetComponent,canActivate:[AuthGuard,FeatureAccessGuard],data:{allowedRoles:['admin']}},
@@ -48,7 +55,7 @@ const routes: Routes = [
 
 @NgModule({
   declarations: [
-    AppComponent,
+    AppComponent,GroupChatsComponent,SubmissionReviewComponent,RoomBookingComponent,ChangeHistoryComponent,
     SchoolComponent,MaterialsComponent,ExamPlanComponent,DashboardComponent,YearResetComponent,
     AbsenceComponent,
     NotificationsComponent,

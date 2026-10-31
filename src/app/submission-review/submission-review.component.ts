@@ -1,0 +1,15 @@
+import {Component,OnInit} from '@angular/core';import {SupabaseService} from '../supabase.service';import {SettingsService} from '../settings.service';
+interface Assignment{task_id:string;title:string;subject:string;group_name:string;due_date:string;expected:number;submitted:number;reviewed:number;}
+interface Review{student_id:string;student_name:string;done:boolean;body:string;link:string;file_path:string;file_name:string;submitted_at:string;feedback:string;reviewed_at:string;}
+@Component({selector:'app-submission-review',templateUrl:'./submission-review.component.html',styleUrls:['../portal-home/portal-home.component.css','../homework/homework.component.css','./submission-review.component.css']})
+export class SubmissionReviewComponent implements OnInit{
+ tasks:Assignment[]=[];rows:Review[]=[];selected:Assignment|null=null;drafts:Record<string,string>={};filter='all';error='';success='';busy=false;
+ constructor(private api:SupabaseService,public settings:SettingsService){}
+ get visible():Review[]{return this.rows.filter(r=>this.filter==='missing'?!r.submitted_at:this.filter==='unreviewed'?!!r.submitted_at&&!r.reviewed_at:true);}
+ async ngOnInit():Promise<void>{await this.reload();}
+ async reload():Promise<void>{if(this.busy)return;this.busy=true;this.error='';try{this.tasks=await this.api.supportRpc('hw_review_overview');if(this.selected){this.selected=this.tasks.find(t=>t.task_id===this.selected!.task_id)||null;if(this.selected)await this.loadRows();else this.rows=[];}}catch(e:any){this.error=e?.message||'Abgabeübersicht konnte nicht geladen werden.';}finally{this.busy=false;}}
+ private async loadRows():Promise<void>{this.rows=await this.api.supportRpc('hw_review_students',{task:this.selected!.task_id});this.drafts={};this.rows.forEach(r=>this.drafts[r.student_id]=r.feedback||'');}
+ async select(task:Assignment):Promise<void>{if(this.busy)return;this.busy=true;this.error='';this.success='';this.selected=task;this.rows=[];try{await this.loadRows();}catch(e:any){this.error=e?.message||'Abgaben nicht verfügbar.';}finally{this.busy=false;}}
+ async save(row:Review):Promise<void>{if(this.busy||!this.selected)return;this.busy=true;this.error='';this.success='';try{await this.api.supportRpc('hw_review_save',{task:this.selected.task_id,student:row.student_id,comment_text:this.drafts[row.student_id]||''});this.success='Rückmeldung gespeichert.';const saved=await this.api.supportRpc<Review[]>('hw_review_students',{task:this.selected.task_id});this.rows=saved;this.tasks=await this.api.supportRpc('hw_review_overview');}catch(e:any){this.error=e?.message||'Rückmeldung konnte nicht gespeichert werden.';}finally{this.busy=false;}}
+ async download(row:Review):Promise<void>{const tab=window.open('about:blank','_blank');if(!tab){this.error='Bitte Pop-ups für den Download erlauben.';return;}tab.opener=null;try{tab.location.href=await this.api.homeworkFileUrl(row.file_path,row.file_name);}catch(e:any){tab.close();this.error=e?.message||'Download nicht möglich.';}}
+}

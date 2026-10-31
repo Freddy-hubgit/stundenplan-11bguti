@@ -65,6 +65,9 @@ export class PortalHomeComponent implements OnInit {
     this.greeting = name ? `${greeting}, ${name}` : `${greeting}!`;
     if(hasRole(profile,'teacher','admin','support'))this.tiles=[...this.tiles,{title:'Krankmeldungen',description:hasRole(profile,'admin')?'Abwesenheiten prüfen und Vertretungen bestätigen':hasRole(profile,'support')?'Krankmeldungen prüfen und zurücknehmen':'Abwesenheit melden und Wunschvertretung vorschlagen',route:'/krankmeldung',icon:'🩺'}];
     if(hasRole(profile,'admin'))this.tiles=[...this.tiles,{title:'Schuljahres-Reset',description:'Vorschau und kontrollierter Neustart',route:'/schuljahr',icon:'⚠'}];
+    this.tiles=[...this.tiles,{title:'Raumbuchung',description:'Freie Räume finden und reservieren',route:'/raumbuchung',icon:'🚪'}];
+    if(hasRole(profile,'teacher','admin'))this.tiles=[...this.tiles,{title:'Abgabeübersicht',description:'Abgaben prüfen und Rückmeldungen geben',route:'/abgaben',icon:'📥'}];
+    if(hasRole(profile,'admin'))this.tiles=[...this.tiles,{title:'Änderungsverlauf',description:'Änderungen prüfen und Stundenpläne wiederherstellen',route:'/aenderungsverlauf',icon:'📜'}];
     const isStaff = hasRole(profile, 'admin', 'support');
 
     if (hasRole(profile, 'teacher', 'support', 'admin')) this.tiles = [...this.tiles, { title: 'Kalender', description: 'Termine, Veranstaltungen und Besprechungen', route: '/kalender', icon: '📅' }];

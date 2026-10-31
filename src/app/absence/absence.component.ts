@@ -9,6 +9,7 @@ import { dateKey } from '../substitution.service';
 export class AbsenceComponent implements OnInit,OnDestroy {
  profile:Profile|null=null;identities:TeacherIdentity[]=[];reports:TeacherAbsence[]=[];teachers=Array.from(new Set(DEFAULT_LESSONS.map(l=>l.teacher))).sort();
  start=dateKey(new Date());end=this.start;from='07:00';to='18:00';requestKind='cancelled';wish='';busy=false;loading=true;error='';success='';settingsOpen=false;
+ periodReport:string|null=null;period={start:'',end:'',from:'07:00',to:'18:00'};excluded:Record<string,boolean>={};
  choices:Record<string,{kind:string;replacement:string}>={};requests:Record<string,{kind:string;replacement:string}>={};decisionDirty:Record<string,boolean>={};editingReport:string|null=null;private timer?:ReturnType<typeof setInterval>;
  constructor(private auth:SupabaseService,private api:AbsenceService,public settings:SettingsService,private notifications:NotificationsService){}
  get isSupport():boolean{return hasRole(this.profile,'support');}
@@ -39,6 +40,11 @@ export class AbsenceComponent implements OnInit,OnDestroy {
  async act(action:()=>Promise<unknown>,message:string):Promise<void>{if(this.busy)return;this.busy=true;this.error='';this.success='';try{await action();this.success=message;await this.refresh();await this.notifications.refresh();}catch(e:any){this.error=e?.message||'Speichern fehlgeschlagen.';}finally{this.busy=false;}}
  report():Promise<void>{return this.act(()=>this.api.report(this.start,this.end,this.from,this.to,this.requestKind,this.requestKind==='replacement'?this.wish:''),'Antrag gesendet. Admins wurden benachrichtigt. Im Stundenplan ändert sich erst nach Bestätigung etwas.');}
  preference(report:TeacherAbsence):Promise<void>{const choice=this.requests[report.id];return this.act(async()=>{await this.api.preference(report.id,choice.kind,choice.kind==='replacement'?choice.replacement:'');this.editingReport=null;},'Antrag geändert. Admins wurden benachrichtigt.');}
+ canEditPeriod(report:TeacherAbsence):boolean{return this.isSupport||(this.isTeacher&&report.teacher_id===this.profile?.id&&report.status==='reported');}
+ editPeriod(report:TeacherAbsence):void{if(!this.canEditPeriod(report)||this.busy)return;this.periodReport=report.id;this.period={start:report.start_date,end:report.end_date,from:report.starts.slice(0,5),to:report.ends.slice(0,5)};this.excluded={};(report.excluded_dates||[]).forEach(d=>this.excluded[d]=true);}
+ periodDayLabel(day:string):string{return new Date(day+'T12:00:00').toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'});}
+ get periodDays():string[]{const days:string[]=[];const start=new Date(this.period.start+'T12:00:00'),end=new Date(this.period.end+'T12:00:00');for(let d=start;d<=end&&days.length<31;d.setDate(d.getDate()+1))days.push(dateKey(d));return days;}
+ savePeriod(report:TeacherAbsence):Promise<void>{return this.act(async()=>{await this.api.editPeriod(report.id,this.period.start,this.period.end,this.period.from,this.period.to,Object.keys(this.excluded).filter(d=>this.excluded[d]));this.periodReport=null;},'Zeitraum geändert. Offene Anträge bleiben bis zur Admin-Bestätigung ohne Auswirkung auf den Schülerstundenplan.');}
  withdraw(report:TeacherAbsence):Promise<void>{if(!this.isSupport||!confirm('Krankmeldung für '+report.teacher_name+' vom '+report.start_date+' bis '+report.end_date+' vollständig zurücknehmen? Zugehörige Entfall- und Vertretungseinträge werden entfernt.'))return Promise.resolve();return this.act(()=>this.api.withdraw(report.id),'Krankmeldung zurückgenommen. Es gilt wieder der reguläre Unterricht.');}
  resolve(report:TeacherAbsence):Promise<void>{const choice=this.choices[report.id];return this.act(async()=>{await this.api.resolve(report.id,choice.kind,choice.replacement);this.decisionDirty[report.id]=false;},'Entfall oder Vertretung bestätigt. Die Schüler wurden benachrichtigt.');}
 }

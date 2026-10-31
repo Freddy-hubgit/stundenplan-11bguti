@@ -11,6 +11,7 @@
     </div>
   </header>
 
+  <nav *ngIf="isAdmin" class="admin-tools"><a routerLink="/raumbuchung">Räume und Buchbarkeit verwalten →</a><a routerLink="/aenderungsverlauf">Änderungsverlauf öffnen →</a></nav>
   <section class="panel">
     <h2>Neues Konto anlegen</h2>
 

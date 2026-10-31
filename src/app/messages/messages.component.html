@@ -1,11 +1,11 @@
 <main class="portal-shell" [class.theme-light]="settings.theme==='light'" [class.bg-aurora]="settings.backgroundKey==='aurora'" [class.bg-sunset]="settings.backgroundKey==='sunset'" [class.bg-forest]="settings.backgroundKey==='forest'">
  <div class="messages-content">
   <header class="portal-header"><div><a routerLink="/" class="back">← Hauptmenü</a><h1>Nachrichten</h1></div><button type="button" class="settings-btn" (click)="settingsOpen=true" aria-label="Einstellungen öffnen">⚙</button></header>
-  <p class="intro">Private Chats mit anderen Nutzern – unabhängig von ihrer Rolle.</p>
+  <p class="intro">Private Chats und Gruppen mit anderen Nutzern – unabhängig von ihrer Rolle.</p><div class="chat-tabs"><button type="button" (click)="mode='direct'" [attr.aria-pressed]="mode==='direct'">Direktnachrichten</button><button type="button" (click)="mode='group'" [attr.aria-pressed]="mode==='group'">Gruppenchats</button></div><app-group-chats *ngIf="mode==='group'"></app-group-chats>
   <p *ngIf="loading" role="status">Nachrichten werden geladen …</p>
   <p *ngIf="error" class="error" role="alert">{{ error }} <button type="button" (click)="refresh()">Erneut laden</button></p>
   <p *ngIf="refreshError" class="error" role="alert">{{ refreshError }} <button type="button" (click)="refresh()">Erneut laden</button></p>
-  <div class="chat-layout" *ngIf="profile && !loading">
+  <div class="chat-layout" *ngIf="profile && !loading && mode==='direct'">
    <aside class="panel sidebar">
     <h2>Neuer Chat</h2><label for="people-search">Person suchen</label><input id="people-search" type="search" [(ngModel)]="search" placeholder="Name oder Rolle" autocomplete="off">
     <div class="people"><button type="button" class="person" *ngFor="let person of filteredPeople; trackBy:trackId" [disabled]="busy||messagesLoading" (click)="open(person)"><strong>{{ person.full_name }}</strong><span>{{ roleLabel(person.role) }} · {{ person.id.slice(-6) }}</span><span class="sr-only">Chat starten</span></button></div>
@@ -26,7 +26,7 @@
     <ng-template #noChat><h2>Deine Nachrichten</h2><p class="muted">Wähle eine Person oder einen bestehenden Chat aus.</p></ng-template>
    </section>
   </div>
-  <p class="muted hint">Nur die beiden Beteiligten können diesen Chat über das Portal lesen und beantworten. Aktualisierung alle 4 Sekunden.</p>
+  <p *ngIf="mode==='direct'" class="muted hint">Nur die beiden Beteiligten können diesen Chat über das Portal lesen und beantworten. Aktualisierung alle 4 Sekunden.</p>
  </div>
  <app-settings-modal [open]="settingsOpen" (openChange)="settingsOpen=$event"></app-settings-modal>
 </main>

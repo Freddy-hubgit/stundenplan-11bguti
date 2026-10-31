@@ -12,7 +12,7 @@ export class MessagesComponent implements OnInit,OnDestroy {
  threads: DirectThread[]=[];
  messages: DirectMessage[]=[];
  selected: DirectThread | null=null;pending=false;
- search=''; loading=true; busy=false; messagesLoading=false; settingsOpen=false;
+ mode='direct';search=''; loading=true; busy=false; messagesLoading=false; settingsOpen=false;
  error=''; refreshError='';
  private drafts: Record<string,string>={};
  private timer?:ReturnType<typeof setInterval>;
