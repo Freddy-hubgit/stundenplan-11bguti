@@ -1,6 +1,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),ts=require('../node_modules/typescript');
 let clock='2026-10-30T22:59:00Z';class ClockDate extends Date{constructor(...args){super(...(args.length?args:[clock]));}}
-const imports={'@angular/core':{Component:()=>c=>c},'../supabase.service':{hasRole:()=>false},'../timetable-data':{DEFAULT_LESSONS:[]},'../substitution.service':{dateKey:()=> '2026-10-30'}};
+const periods={exports:{}};vm.runInNewContext(ts.transpileModule(fs.readFileSync('src/app/school-periods.ts','utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2020,module:ts.ModuleKind.CommonJS}}).outputText,periods);
+const imports={'../school-periods':periods.exports,'@angular/core':{Component:()=>c=>c},'../supabase.service':{hasRole:()=>false},'../timetable-data':{DEFAULT_LESSONS:[]},'../substitution.service':{dateKey:()=> '2026-10-30'}};
 const ctx={exports:{},require:n=>imports[n]||{},Date:ClockDate,Intl};
 vm.runInNewContext(ts.transpileModule(fs.readFileSync('src/app/absence/absence.component.ts','utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2020,module:ts.ModuleKind.CommonJS}}).outputText,ctx);
 const component=new ctx.exports.AbsenceComponent(null,null,null,null);

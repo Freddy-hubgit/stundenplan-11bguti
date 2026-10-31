@@ -1,3 +1,4 @@
+import {PeriodPickerComponent} from './period-picker/period-picker.component';
 import {GroupChatsComponent} from './group-chats/group-chats.component';
 import {SubmissionReviewComponent} from './submission-review/submission-review.component';
 import {RoomBookingComponent} from './room-booking/room-booking.component';
@@ -55,7 +56,7 @@ const routes: Routes = [
 
 @NgModule({
   declarations: [
-    AppComponent,GroupChatsComponent,SubmissionReviewComponent,RoomBookingComponent,ChangeHistoryComponent,
+    AppComponent,PeriodPickerComponent,GroupChatsComponent,SubmissionReviewComponent,RoomBookingComponent,ChangeHistoryComponent,
     SchoolComponent,MaterialsComponent,ExamPlanComponent,DashboardComponent,YearResetComponent,
     AbsenceComponent,
     NotificationsComponent,

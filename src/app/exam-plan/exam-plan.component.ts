@@ -1,6 +1,8 @@
+import {periodRangeLabel} from '../school-periods';
 import {Component,Input,OnInit} from '@angular/core';import {SchoolService,SchoolExam} from '../school.service';import {dateKey} from '../substitution.service';
 @Component({selector:'app-exam-plan',templateUrl:'./exam-plan.component.html',styleUrls:['./exam-plan.component.css']})
 export class ExamPlanComponent implements OnInit{
+ timeRangeLabel=periodRangeLabel;
  @Input() dates:string[]=[];all=false;editor=false;busy=false;error='';deleting='';conflicts:number|null=null;
  draft={id:'',group_id:'',title:'',subject:'',date:dateKey(new Date()),starts:'07:30',ends:'09:00',room:'',details:''};
  constructor(public school:SchoolService){}

@@ -1,15 +1,17 @@
+import {SCHOOL_PERIODS,periodRangeLabel} from '../school-periods';
 import {Component,OnInit,ViewChild,ElementRef} from '@angular/core';import {SupabaseService,Profile,hasRole} from '../supabase.service';import {SettingsService} from '../settings.service';import {dateKey} from '../substitution.service';
 interface Room{id:string;name:string;details:string;bookable:boolean;}
 interface Slot{id:string|null;room_id:string;label:string;starts_at:string;ends_at:string;can_cancel:boolean;teaching:boolean;}
 @Component({selector:'app-room-booking',templateUrl:'./room-booking.component.html',styleUrls:['../portal-home/portal-home.component.css','../homework/homework.component.css','./room-booking.component.css']})
 export class RoomBookingComponent implements OnInit{
  @ViewChild('roomEditor') roomEditor?:ElementRef<HTMLElement>;
- profile:Profile|null=null;rooms:Room[]=[];slots:Slot[]=[];day=dateKey(new Date());room='';title='';from='15:00';to='16:00';busy=false;error='';success='';editing:string|null=null;roomName='';roomInfo='';enabled=false;
+ profile:Profile|null=null;rooms:Room[]=[];slots:Slot[]=[];day=dateKey(new Date());room='';title='';from=SCHOOL_PERIODS[0].start;to=SCHOOL_PERIODS[0].end;busy=false;error='';success='';editing:string|null=null;roomName='';roomInfo='';enabled=false;
  constructor(private api:SupabaseService,public settings:SettingsService){}
  get isAdmin():boolean{return hasRole(this.profile,'admin');}get bookable():Room[]{return this.rooms.filter(r=>r.bookable);}
  async ngOnInit():Promise<void>{try{this.profile=await this.api.getMyProfile();await this.refresh();}catch(e:any){this.error=e?.message||'Profil konnte nicht geladen werden.';}}
  async refresh():Promise<void>{if(this.busy)return;this.busy=true;this.error='';try{await this.load();}catch(e:any){this.error=e?.message||'Raumbelegung nicht verfügbar.';}finally{this.busy=false;}}
  private async load():Promise<void>{const [rooms,slots]=await Promise.all([this.api.supportRpc<Room[]>('school_rooms'),this.api.supportRpc<Slot[]>('school_room_slots',{day:this.day})]);this.rooms=rooms;this.slots=slots.sort((a,b)=>Date.parse(a.starts_at)-Date.parse(b.starts_at));}
+ slotPeriods(slot:Slot):string{const options:Intl.DateTimeFormatOptions={hour:'2-digit',minute:'2-digit',timeZone:'Europe/Berlin'};return periodRangeLabel(new Date(slot.starts_at).toLocaleTimeString('de-DE',options),new Date(slot.ends_at).toLocaleTimeString('de-DE',options));}
  roomSlots(id:string):Slot[]{return this.slots.filter(s=>s.room_id===id);}
  editRoom(room?:Room):void{this.editing=room?.id||null;this.roomName=room?.name||'';this.roomInfo=room?.details||'';this.enabled=room?.bookable||false;if(room)requestAnimationFrame(()=>{this.roomEditor?.nativeElement.scrollIntoView({behavior:'smooth',block:'start'});this.roomEditor?.nativeElement.querySelector<HTMLInputElement>('input[name=roomName]')?.focus({preventScroll:true});});}
  async act(action:()=>Promise<unknown>,message:string):Promise<void>{if(this.busy)return;this.busy=true;this.error='';this.success='';try{await action();await this.load();this.success=message;}catch(e:any){this.error=e?.message||'Aktion fehlgeschlagen. Eingaben bleiben erhalten.';}finally{this.busy=false;}}

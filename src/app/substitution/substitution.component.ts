@@ -1,3 +1,4 @@
+import {SCHOOL_PERIODS,periodRangeLabel} from '../school-periods';
 import { hasRole } from '../supabase.service';
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { Profile, SupabaseService } from '../supabase.service';
@@ -27,6 +28,7 @@ export class SubstitutionComponent implements OnInit, OnDestroy {
   private revision = 0;
   private destroyed = false;
   constructor(private api: SubstitutionService, private auth: SupabaseService, public settings: SettingsService) {}
+  timeRangeLabel=periodRangeLabel;
   get isStaff(): boolean { return hasRole(this.profile, 'support', 'admin'); }
   calendarOpen = false;
   calendarMonth = new Date();
@@ -83,7 +85,7 @@ export class SubstitutionComponent implements OnInit, OnDestroy {
   today(): void { this.selectDate(dateKey(new Date())); }
   trackDay(_: number, day: { date: string }): string { return day.date; }
   emptyDraft(): SubstitutionInput {
-    return { date: this.selectedDate, teacher: '', start_time: '07:00', end_time: '18:00',
+    return { date: this.selectedDate, teacher: '', start_time: SCHOOL_PERIODS[0].start, end_time: SCHOOL_PERIODS[SCHOOL_PERIODS.length-1].end,
       kind: 'replacement', replacement_teacher: '', room: '', note: '' };
   }
   async ngOnInit(): Promise<void> {

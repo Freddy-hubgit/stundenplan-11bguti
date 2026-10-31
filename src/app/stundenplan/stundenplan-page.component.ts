@@ -1,9 +1,10 @@
+import {SCHOOL_PERIODS} from '../school-periods';
 import {nextTeachingLesson} from '../teacher-next';
 import {SchoolService,SchoolExam} from '../school.service';
 import {ActivatedRoute} from '@angular/router';
 import { hasRole } from '../supabase.service';
 import { SupabaseService } from '../supabase.service';
-import { DEFAULT_LESSONS, DayKey, DayTrack, LanguageChoice, Lesson, Period, SCIENCE_SUBJECTS } from '../timetable-data';
+import { DEFAULT_LESSONS, DayKey, DayTrack, LanguageChoice, Lesson, SCIENCE_SUBJECTS } from '../timetable-data';
 import { SubstitutionService, Substitution, EffectiveLesson, splitSubstitutions, dateKey } from '../substitution.service';
 import { Component, OnInit, OnDestroy, HostListener, ViewEncapsulation, ViewChild, ElementRef } from '@angular/core';
 import html2canvas from 'html2canvas';
@@ -66,20 +67,7 @@ type EditorMode = "new" | "edit";
 
   /* ---------------- KONFIGURATION – hier trägst du deine echten Daten ein ---------------- */
 
-  // Unterrichtsstunden-Raster. Stunde 9 & 10 sind bereits enthalten –
-  // Zeiten bei Bedarf an deine Schule anpassen.
-  readonly periods: Period[] = [
-    { start: "07:30", end: "08:15" }, // 1
-    { start: "08:15", end: "09:00" }, // 2
-    { start: "09:15", end: "10:00" }, // 3
-    { start: "10:00", end: "10:45" }, // 4
-    { start: "11:00", end: "11:45" }, // 5
-    { start: "11:45", end: "12:30" }, // 6
-    { start: "13:00", end: "13:45" }, // 7
-    { start: "13:45", end: "14:30" }, // 8
-    { start: "14:45", end: "15:30" }, // 9
-    { start: "15:30", end: "16:15" }, // 10
-  ];
+  readonly periods = SCHOOL_PERIODS;
 
   // Unterrichtsstunden. Kann jetzt zur Laufzeit über die Buttons in der
   // Oberfläche geändert werden (bearbeiten/hinzufügen/löschen).

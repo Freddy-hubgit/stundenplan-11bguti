@@ -168,20 +168,7 @@
         </select>
       </label>
 
-      <div class="field-row">
-        <label class="field">
-          <span>Start</span>
-          <select [(ngModel)]="editorStart">
-            <option *ngFor="let t of periodTimes" [value]="t">{{ t }}</option>
-          </select>
-        </label>
-        <label class="field">
-          <span>Ende</span>
-          <select [(ngModel)]="editorEnd">
-            <option *ngFor="let t of periodTimes" [value]="t">{{ t }}</option>
-          </select>
-        </label>
-      </div>
+      <app-period-picker label="Unterricht" [(start)]="editorStart" [(end)]="editorEnd"></app-period-picker>
 
       <label class="field">
         <span>Nur für Schwerpunkt (optional)</span>

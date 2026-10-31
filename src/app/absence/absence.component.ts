@@ -1,3 +1,4 @@
+import {SCHOOL_PERIODS,periodRangeLabel} from '../school-periods';
 import { Component,OnInit,OnDestroy } from '@angular/core';
 import { SupabaseService,Profile,hasRole } from '../supabase.service';
 import { SettingsService } from '../settings.service';
@@ -8,10 +9,11 @@ import { dateKey } from '../substitution.service';
 @Component({selector:'app-absence',templateUrl:'./absence.component.html',styleUrls:['../portal-home/portal-home.component.css','../homework/homework.component.css','./absence.component.css']})
 export class AbsenceComponent implements OnInit,OnDestroy {
  profile:Profile|null=null;identities:TeacherIdentity[]=[];reports:TeacherAbsence[]=[];teachers=Array.from(new Set(DEFAULT_LESSONS.map(l=>l.teacher))).sort();
- start=dateKey(new Date());end=this.start;from='07:00';to='18:00';requestKind='cancelled';wish='';busy=false;loading=true;error='';success='';settingsOpen=false;
- periodReport:string|null=null;period={start:'',end:'',from:'07:00',to:'18:00'};excluded:Record<string,boolean>={};
+ start=dateKey(new Date());end=this.start;from=SCHOOL_PERIODS[0].start;to=SCHOOL_PERIODS[SCHOOL_PERIODS.length-1].end;requestKind='cancelled';wish='';busy=false;loading=true;error='';success='';settingsOpen=false;
+ periodReport:string|null=null;period={start:'',end:'',from:SCHOOL_PERIODS[0].start,to:SCHOOL_PERIODS[SCHOOL_PERIODS.length-1].end};excluded:Record<string,boolean>={};
  choices:Record<string,{kind:string;replacement:string}>={};requests:Record<string,{kind:string;replacement:string}>={};decisionDirty:Record<string,boolean>={};editingReport:string|null=null;private timer?:ReturnType<typeof setInterval>;
  constructor(private auth:SupabaseService,private api:AbsenceService,public settings:SettingsService,private notifications:NotificationsService){}
+ timeRangeLabel=periodRangeLabel;
  get isSupport():boolean{return hasRole(this.profile,'support');}
  get isAdmin():boolean{return hasRole(this.profile,'admin');}get isTeacher():boolean{return hasRole(this.profile,'teacher');}
  get ownIdentity():TeacherIdentity|undefined{return this.identities.find(i=>i.user_id===this.profile?.id);}

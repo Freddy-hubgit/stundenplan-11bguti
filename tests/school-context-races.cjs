@@ -1,8 +1,9 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),ts=require('../node_modules/typescript');
 const compile=file=>ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2020,module:ts.ModuleKind.CommonJS}}).outputText;
 const data={exports:{}};vm.runInNewContext(compile('src/app/timetable-data.ts'),data);
+const periods={exports:{}};vm.runInNewContext(compile('src/app/school-periods.ts'),periods);
 const angular={Component:()=>c=>c,ViewChild:()=>()=>{},HostListener:()=>()=>{},ViewEncapsulation:{None:2}};
-const ctx={exports:{},require:n=>n==='@angular/core'?angular:n.includes('timetable-data')?data.exports:n.includes('supabase.service')?{hasRole:(p,...roles)=>p.roles.some(r=>roles.includes(r))}:n.includes('substitution.service')?{dateKey:()=> '2026-10-30'}:{}};
+const ctx={exports:{},require:n=>n==='@angular/core'?angular:n.includes('timetable-data')?data.exports:n.includes('school-periods')?periods.exports:n.includes('supabase.service')?{hasRole:(p,...roles)=>p.roles.some(r=>roles.includes(r))}:n.includes('substitution.service')?{dateKey:()=> '2026-10-30'}:{}};
 vm.runInNewContext(compile('src/app/stundenplan/stundenplan-page.component.ts'),ctx);
 (async()=>{
  const requests=[],writes=[];let finishSave;
