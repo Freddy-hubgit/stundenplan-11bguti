@@ -36,7 +36,7 @@ Text, Link und private Datei können eingesehen werden. Rückmeldung speichern m
 
 ## Raumbuchung
 
-Admins verwalten Räume unter **Verwaltung → Räume und Buchbarkeit verwalten** oder direkt in **Raumbuchung → Räume verwalten**. Raumname muss dem Stundenplan entsprechen, z. B. `B211`. Räume sind anfangs nicht freigegeben und werden erst durch das Häkchen buchbar. Deaktivieren verhindert neue Reservierungen; vorhandene Reservierungen bleiben bestehen und können von Eigentümer/Admin storniert werden.
+Admins verwalten Räume unter **Verwaltung → Räume und Buchbarkeit verwalten** oder direkt in **Raumbuchung → Räume verwalten**. Raumname muss dem Stundenplan entsprechen, z. B. `B211`. Räume sind anfangs nicht freigegeben. Beim Anlegen oder Bearbeiten das Häkchen „Zur Buchung freigeben“ setzen und anschließend den Raum speichern. Bereits vorhandene Räume können auch direkt über „Zur Buchung freigeben“ bzw. „Buchungsfreigabe aufheben“ in der Raumliste umgeschaltet werden. „Bearbeiten“ springt zum Formular. Deaktivieren verhindert neue Reservierungen; vorhandene Reservierungen bleiben bestehen und können von Eigentümer/Admin storniert werden.
 
 Alle angemeldeten Konten können freigegebene Räume im Voraus für bis zu 12 Stunden am selben Berliner Kalendertag reservieren (maximal 366 Tage voraus). Buchungen und regulärer Unterricht einschließlich bestätigter Vertretungen werden gemeinsam auf Überschneidungen geprüft. Direkt aneinander anschließende Buchungen sind erlaubt. Entfallene Unterrichtsanteile geben einen Raum frei. Unterricht in anderen Räumen belegt den Ersatzraum.
 
