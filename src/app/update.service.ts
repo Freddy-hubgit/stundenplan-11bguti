@@ -1,4 +1,5 @@
 import { Injectable, NgZone } from "@angular/core";
+import bundledVersion from "../assets/version.json";
 
 export const WEB_BASE = "https://Freddy-hubgit.github.io/stundenplan-11bguti";
 export const REPO = "Freddy-hubgit/stundenplan-11bguti";
@@ -8,108 +9,87 @@ export class UpdateService {
   availableCommit: string | null = null;
   statusMessage = "";
   checking = false;
+  // Compile the build identity into the JavaScript, including offline/file builds.
+  // A later fetch could describe a newer deployment than the running code.
+  private loadedCommit = this.getBundledCommit();
 
   constructor(private zone: NgZone) {}
 
-  async getBundledCommit(): Promise<string | null> {
+  private async readCommit(url: string): Promise<string | null> {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 10000);
     try {
-      const res = await fetch("assets/version.json", { cache: "no-store" });
+      const res = await fetch(url, { cache: "no-store", signal: controller.signal });
       if (!res.ok) return null;
       const data = await res.json();
-      return data && data.commit ? String(data.commit) : null;
-    } catch {
-      return null;
-    }
+      return data && typeof data.commit === "string" && /^[a-f0-9]{7,40}$/i.test(data.commit)
+        ? data.commit : null;
+    } catch { return null; }
+    finally { clearTimeout(timer); }
   }
 
-  async getRemoteCommit(): Promise<string | null> {
-    try {
-      const res = await fetch(WEB_BASE + "/version.json?t=" + Date.now(), { cache: "no-store" });
-      if (res.ok) {
-        const data = await res.json();
-        if (data && data.commit) return String(data.commit);
-      }
-    } catch {
-      /* weiter zum GitHub-API-Fallback */
-    }
-
-    try {
-      const res = await fetch("https://api.github.com/repos/" + REPO + "/commits/main", {
-        cache: "no-store",
-        headers: { Accept: "application/vnd.github+json" },
-      });
-      if (!res.ok) return null;
-      const data = await res.json();
-      return data && data.sha ? String(data.sha) : null;
-    } catch {
-      return null;
-    }
+  getBundledCommit(): Promise<string | null> {
+    return Promise.resolve(/^[a-f0-9]{7,40}$/i.test(bundledVersion.commit) ? bundledVersion.commit : null);
   }
 
-  currentLiveCommit(): string | null {
-    try {
-      const v = new URLSearchParams(window.location.search).get("v");
-      return v || null;
-    } catch {
-      return null;
-    }
+  getRemoteCommit(): Promise<string | null> {
+    // Only deployed builds are installable; a source commit may not be live yet.
+    return this.readCommit(WEB_BASE + "/assets/version.json?t=" + Date.now());
   }
 
   isOnLiveSite(): boolean {
-    return window.location.href.indexOf("github.io/stundenplan-11bguti") !== -1;
+    return window.location.origin === new URL(WEB_BASE).origin &&
+      window.location.pathname.startsWith(new URL(WEB_BASE).pathname + "/");
   }
 
   async check(): Promise<boolean> {
+    if (this.checking) return false;
     this.checking = true;
-    this.statusMessage = "";
+    this.availableCommit = null;
+    this.statusMessage = "Prüfe auf Updates …";
     try {
-      if ((window as any).stundenplanDesktop) {
-        const result = await (window as any).stundenplanDesktop.checkUpdate();
+      const desktop = (window as any).stundenplanDesktop;
+      if (desktop) {
+        const result = await desktop.checkUpdate({ checkOnly: true });
+        if (!result || result.error) throw new Error("Updateprüfung fehlgeschlagen");
         this.zone.run(() => {
-          this.checking = false;
-          this.availableCommit = result && result.commit ? result.commit : null;
-          this.statusMessage = result && result.updated
-            ? "Update geladen."
-            : "Du bist auf dem neuesten Stand.";
+          this.availableCommit = result.available ? result.commit : null;
+          this.statusMessage = result.updated ? "Update geladen." :
+            result.available ? "Neue App-Version verfügbar." : "Du bist auf dem neuesten Stand.";
         });
-        return !!(result && result.updated);
+        return !!(result.available || result.updated);
       }
-
       const remote = await this.getRemoteCommit();
-      if (!remote) {
-        this.zone.run(() => {
-          this.checking = false;
-          this.statusMessage = "Update-Check gerade nicht möglich (offline?).";
-        });
-        return false;
-      }
-
-      const current = this.currentLiveCommit() || (await this.getBundledCommit());
-      const needs = !this.sameCommit(current, remote);
-
+      if (!remote) throw new Error("Version nicht erreichbar");
+      const current = await this.loadedCommit;
+      const needs = !current || !(current === remote || current.startsWith(remote) || remote.startsWith(current));
       this.zone.run(() => {
-        this.checking = false;
         this.availableCommit = needs ? remote : null;
-        this.statusMessage = needs ? "Neue Webversion gefunden." : "Du bist auf dem neuesten Stand.";
+        this.statusMessage = needs ? "Neue App-Version verfügbar." : "Du bist auf dem neuesten Stand.";
       });
       return needs;
     } catch {
-      this.zone.run(() => {
-        this.checking = false;
-        this.statusMessage = "Update-Check fehlgeschlagen.";
-      });
+      this.zone.run(() => { this.statusMessage = "Updates konnten nicht geprüft werden. Prüfe deine Internetverbindung und versuche es erneut."; });
       return false;
+    } finally {
+      this.zone.run(() => { this.checking = false; });
     }
   }
 
-  private sameCommit(a: string | null, b: string | null): boolean {
-    if (!a || !b) return false;
-    return a === b || a.indexOf(b) === 0 || b.indexOf(a) === 0;
-  }
-
-  apply(): void {
-    const commit = this.availableCommit;
-    const url = WEB_BASE + "/?v=" + encodeURIComponent(commit || String(Date.now()));
-    window.location.replace(url);
+  async apply(): Promise<void> {
+    if (!this.availableCommit || this.checking) return;
+    const desktop = (window as any).stundenplanDesktop;
+    if (desktop) {
+      this.checking = true;
+      try {
+        const result = await desktop.checkUpdate();
+        if (!result || result.error) throw new Error("Laden fehlgeschlagen");
+        this.availableCommit = null;
+        this.statusMessage = "Update geladen.";
+      } catch { this.statusMessage = "Update konnte nicht geladen werden. Bitte erneut versuchen."; }
+      finally { this.zone.run(() => { this.checking = false; }); }
+      return;
+    }
+    window.location.replace(WEB_BASE + "/?v=" + encodeURIComponent(this.availableCommit));
   }
 }

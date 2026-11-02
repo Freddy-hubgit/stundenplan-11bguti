@@ -1,5 +1,6 @@
 import { HomeLayoutService, HomeTile } from '../home-layout.service';
 import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, HostListener } from '@angular/core';
+import { UpdateService } from '../update.service';
 import { SettingsService } from '../settings.service';
 
 @Component({
@@ -12,7 +13,7 @@ export class SettingsModalComponent implements OnInit, OnChanges {
   @Output() openChange = new EventEmitter<boolean>();
 
   @Input() initialCategory: 'darstellung' | 'konto' = 'darstellung';
-  settingsCategory: 'darstellung' | 'konto' | 'start' = 'darstellung';
+  settingsCategory: 'darstellung' | 'konto' | 'start' | 'update' = 'darstellung';
   @Input() homeTiles: HomeTile[] = [];
   draggedRoute: string | null = null;
   get editableTiles(): HomeTile[] { return this.homeLayout.ordered(this.homeTiles); }
@@ -47,7 +48,7 @@ export class SettingsModalComponent implements OnInit, OnChanges {
     { key: 'forest', label: 'Wald' },
   ];
 
-  constructor(public settings: SettingsService, public homeLayout: HomeLayoutService) {}
+  constructor(public settings: SettingsService, public homeLayout: HomeLayoutService, public updateService: UpdateService) {}
 
   ngOnInit(): void {
     this.currentTheme = this.settings.theme;

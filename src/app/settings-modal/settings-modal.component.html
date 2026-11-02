@@ -7,9 +7,19 @@
         <button *ngIf="homeTiles.length && homeLayout.ready" type="button" class="settings-nav-btn" [class.active]="settingsCategory === 'start'" [attr.aria-pressed]="settingsCategory === 'start'" (click)="settingsCategory = 'start'">Startbildschirm</button>
         <button type="button" class="settings-nav-btn" [class.active]="settingsCategory === 'darstellung'" [attr.aria-pressed]="settingsCategory === 'darstellung'" (click)="settingsCategory = 'darstellung'">Darstellung</button>
         <button type="button" class="settings-nav-btn" [class.active]="settingsCategory === 'konto'" [attr.aria-pressed]="settingsCategory === 'konto'" (click)="settingsCategory = 'konto'">Account</button>
+        <button type="button" class="settings-nav-btn" [class.active]="settingsCategory === 'update'" [attr.aria-pressed]="settingsCategory === 'update'" (click)="settingsCategory = 'update'">App-Update</button>
       </div>
 
       <div class="settings-content">
+        <section *ngIf="settingsCategory === 'update'" class="settings-section" aria-label="App-Update">
+          <h3>App-Update</h3>
+          <p role="status" aria-live="polite">{{ updateService.statusMessage || 'Hier kannst du nach einer neuen App-Version suchen.' }}</p>
+          <div class="chip-group">
+            <button type="button" class="chip" [disabled]="updateService.checking" (click)="updateService.check()">{{ updateService.checking ? 'Bitte warten …' : 'Auf Updates prüfen' }}</button>
+            <button type="button" class="chip" *ngIf="updateService.availableCommit" [disabled]="updateService.checking" (click)="updateService.apply()">Update laden und neu starten</button>
+          </div>
+          <p>Beim Laden der neuen Version wird die App neu geöffnet. Speichere vorher offene Änderungen.</p>
+        </section>
         <section *ngIf="settingsCategory === 'start' && homeTiles.length" class="home-customization" aria-label="Startbildschirm anpassen">
           <h3>Deine Kacheln</h3>
           <p class="customization-hint">Ziehe die Kacheln in die gewünschte Reihenfolge oder nutze die Pfeile. Änderungen gelten sofort und werden für dein Konto in diesem Browser gespeichert.</p>
