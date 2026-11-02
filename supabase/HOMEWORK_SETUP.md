@@ -73,6 +73,8 @@ Die lokalen Tests prüfen Berechtigungen, persönliche Erledigung, private Abgab
 
 ## Windows-/Desktop-App: „push service not available“
 
-Die aktuelle Electron-App besitzt keinen verfügbaren Web-Push-Dienst. Vorhandene JavaScript-Schnittstellen allein bedeuten keine funktionierende Push-Zustellung. Die Webseite erkennt die Desktop-App deshalb und bietet dort keine erfolglose Registrierung mehr an. Stattdessen zeigt sie einen Link zum Schulportal im normalen Browser.
+Ältere Electron-App-Versionen (bis 1.0.1) besitzen keinen verfügbaren Web-Push-Dienst. Vorhandene JavaScript-Schnittstellen allein bedeuten keine funktionierende Push-Zustellung. Die Webseite erkennt die Desktop-App deshalb und bietet dort keine erfolglose Registrierung mehr an. Stattdessen zeigt sie einen Link zum Schulportal im normalen Browser.
 
 Für Hausaufgaben-Erinnerungen das Portal in Chrome oder Edge öffnen, dort anmelden und unter Hausaufgaben die Benachrichtigungen aktivieren. Die Zustellung erfolgt dann durch den Browser, auch bei geschlossener Webseite, abhängig von den Browser-/Betriebssystemeinstellungen. Eine Supabase-Migration oder neue VAPID-Schlüssel sind für diesen Wechsel nicht nötig. Die Desktop-App hat dadurch noch keine eigene native Push-Anbindung.
+
+Ab **Windows-App 1.1.0** steht außerdem eine native Alternative direkt in der App zur Verfügung. Die obige Einschränkung gilt weiterhin für ältere App-Versionen. Einrichtung und Grenzen: [DESKTOP_NOTIFICATIONS_SETUP.md](DESKTOP_NOTIFICATIONS_SETUP.md).
