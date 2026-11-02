@@ -2,7 +2,11 @@ import { Injectable } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 @Injectable({providedIn:'root'})
 export class PushNotificationsService {
- supported=typeof window!=='undefined'&&'Notification'in window&&'serviceWorker'in navigator&&'PushManager'in window;
+ readonly browserUrl='https://freddy-hubgit.github.io/stundenplan-11bguti/';
+ get nativeApp():boolean{if(typeof window==='undefined')return false;const host=window as any;return !!host.stundenplanDesktop||/Electron\//i.test(navigator.userAgent||'')||!!host.Capacitor?.isNativePlatform?.()||/; wv[;)]/i.test(navigator.userAgent||'');}
+ get supported():boolean{return typeof window!=='undefined'&&!this.nativeApp&&window.isSecureContext!==false&&'Notification'in window&&'serviceWorker'in navigator&&'PushManager'in window;}
+ get unsupportedReason():string{if(this.nativeApp)return 'Die installierte App unterstützt Web-Push derzeit nicht. Öffne das Schulportal in Chrome oder Edge, melde dich dort an und aktiviere die Benachrichtigungen. Sie werden dann vom Browser zugestellt, auch wenn die Webseite geschlossen ist.';return 'Dieser Browser unterstützt Web-Push hier nicht. Auf iPhone/iPad die Webseite in Safari zum Home-Bildschirm hinzufügen und darüber öffnen.';}
+
  enabled=false;alertsEnabled=false;busy=false;error='';time='19:00';
  private user:string|null=null;private revision=0;private initialized=false;private contextQueue:Promise<void>=Promise.resolve();
  constructor(private api:SupabaseService){}
@@ -36,7 +40,7 @@ export class PushNotificationsService {
   }}
  }
  async enable(category:'homework'|'alerts'='homework'):Promise<void>{
-  if(this.busy||!this.user||!this.supported)return;
+  if(this.busy||!this.user)return;if(!this.supported){this.error=this.unsupportedReason;return;}
   this.busy=true;this.error='';const revision=this.revision;
   try{
    const permission=await Notification.requestPermission();if(permission!=='granted')throw new Error('Bitte Benachrichtigungen in den Browser-Einstellungen erlauben.');
@@ -53,7 +57,7 @@ export class PushNotificationsService {
    if(category==='alerts')await this.api.supportRpc('portal_push_save',{device:subscription.toJSON()});
    else await this.api.supportRpc('hw_push_save',{device:subscription.toJSON(),remind_at:this.time});
    if(revision===this.revision){if(category==='alerts')this.alertsEnabled=true;else this.enabled=true;}
-  }catch(e:any){if(revision===this.revision)this.error=e?.message||'Benachrichtigungen konnten nicht aktiviert werden.';}
+  }catch(e:any){if(revision===this.revision){const detail=String(e?.message||'');this.error=/push service not available|push service unavailable/i.test(detail)?'Der Push-Dienst dieses Browsers ist nicht verfügbar. Bitte Chrome oder Edge aktualisieren und erneut versuchen. Falls es dort ebenfalls auftritt, können Browserrichtlinien oder die Netzwerkverbindung den Push-Dienst blockieren.':detail||'Benachrichtigungen konnten nicht aktiviert werden.';}}
   finally{this.busy=false;}
  }
  async disable(category:'homework'|'alerts'='homework'):Promise<void>{

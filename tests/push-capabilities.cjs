@@ -1,0 +1,13 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),ts=require('../node_modules/typescript');
+const js=ts.transpileModule(fs.readFileSync('src/app/push-notifications.service.ts','utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2020,module:ts.ModuleKind.CommonJS}}).outputText;
+let permissionCalls=0,subscriptions=0,configCalls=0;
+const Notification={requestPermission:async()=>{permissionCalls++;return'granted';}};
+const registration={pushManager:{getSubscription:async()=>null,subscribe:async()=>{subscriptions++;throw new Error('Registration failed - push service not available');}}};
+const ctx={exports:{},require:()=>({Injectable:()=>c=>c}),window:{Notification,PushManager:{},isSecureContext:true},Notification,navigator:{userAgent:'Mozilla/5.0 Chrome/130.0',serviceWorker:{register:async()=>registration,ready:Promise.resolve(registration)}},document:{baseURI:'https://example.test/'},URL,atob};vm.runInNewContext(js,ctx);
+(async()=>{const service=new ctx.exports.PushNotificationsService({pushConfig:async()=>{configCalls++;return 'B'.repeat(87);}});service.user='account';assert(service.supported);
+ ctx.window.stundenplanDesktop={checkUpdate:()=>{}};assert(!service.supported);await service.enable();assert(service.error.includes('installierte App'));assert.equal(configCalls,0);assert.equal(permissionCalls,0);assert.equal(subscriptions,0);
+ delete ctx.window.stundenplanDesktop;ctx.navigator.userAgent='Mozilla/5.0 Electron/32.2.0';assert(!service.supported);ctx.navigator.userAgent='Mozilla/5.0 (Linux; Android 14; wv) Chrome/130.0';assert(!service.supported);
+ ctx.navigator.userAgent='Mozilla/5.0 Chrome/130.0';assert(service.supported);await service.enable();assert(service.error.includes('Push-Dienst dieses Browsers'));assert(!service.enabled);assert.equal(subscriptions,1);assert.equal(service.busy,false);
+ ctx.window.isSecureContext=false;assert(!service.supported);ctx.window.isSecureContext=true;ctx.window.Capacitor={isNativePlatform:()=>true};assert(!service.supported);
+ console.log('PASS push capabilities: desktop bridge/Electron/WebView excluded, browser stays supported, no native permission/subscription attempt and provider errors explained');
+})().catch(e=>{console.error(e);process.exitCode=1;});

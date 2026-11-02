@@ -70,3 +70,9 @@ WEB_PUSH_MODULE_PATH=/tmp/homework-tests/node_modules/web-push node tests/homewo
 ```
 
 Die lokalen Tests prüfen Berechtigungen, persönliche Erledigung, private Abgaben, Erinnerungszeitfenster, wiederholte Cron-Aufrufe, Push-Verschlüsselung und Kontofilterung. Sie ersetzen keinen Zustellungstest auf einem echten Gerät.
+
+## Windows-/Desktop-App: „push service not available“
+
+Die aktuelle Electron-App besitzt keinen verfügbaren Web-Push-Dienst. Vorhandene JavaScript-Schnittstellen allein bedeuten keine funktionierende Push-Zustellung. Die Webseite erkennt die Desktop-App deshalb und bietet dort keine erfolglose Registrierung mehr an. Stattdessen zeigt sie einen Link zum Schulportal im normalen Browser.
+
+Für Hausaufgaben-Erinnerungen das Portal in Chrome oder Edge öffnen, dort anmelden und unter Hausaufgaben die Benachrichtigungen aktivieren. Die Zustellung erfolgt dann durch den Browser, auch bei geschlossener Webseite, abhängig von den Browser-/Betriebssystemeinstellungen. Eine Supabase-Migration oder neue VAPID-Schlüssel sind für diesen Wechsel nicht nötig. Die Desktop-App hat dadurch noch keine eigene native Push-Anbindung.

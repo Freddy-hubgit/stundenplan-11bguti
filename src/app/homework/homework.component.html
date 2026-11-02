@@ -14,7 +14,7 @@
  </fieldset></form></section>
  <section class="panel reminders" aria-labelledby="reminders-title"><h2 id="reminders-title">Erinnerungen am Vorabend</h2><p>Erinnere mich an Aufgaben für morgen, die noch offen sind oder deren erforderliche Abgabe fehlt – auch bei geschlossener Webseite.</p>
   <ng-container *ngIf="push.supported;else unsupported"><label>Erinnerungszeit (Berlin)<input type="time" [(ngModel)]="push.time" min="16:00" max="22:00" step="300"></label><div class="actions"><button type="button" [disabled]="push.busy" (click)="push.enable()">{{ push.enabled?'Erinnerungszeit speichern':'Benachrichtigungen aktivieren' }}</button><button type="button" *ngIf="push.enabled" [disabled]="push.busy" (click)="push.disable()">Auf diesem Gerät deaktivieren</button><span class="badge">{{ push.enabled?'Aktiv auf diesem Gerät':'Nicht aktiviert' }}</span></div></ng-container>
-  <ng-template #unsupported><p>Dieser Browser unterstützt Web-Push hier nicht. Auf iPhone/iPad die Webseite zum Home-Bildschirm hinzufügen und von dort öffnen.</p></ng-template>
+  <ng-template #unsupported><p>{{push.unsupportedReason}}</p><a *ngIf="push.nativeApp" [href]="push.browserUrl" target="_blank" rel="noopener noreferrer">Schulportal im Browser öffnen →</a></ng-template>
   <p class="error" role="alert" *ngIf="push.error">{{ push.error }}</p><p class="muted">Freiwillig, pro Gerät aktivierbar. Standard: 19:00 Uhr, Zustellung innerhalb weniger Minuten. Es gelten die Benachrichtigungseinstellungen deines Geräts. Auf iOS ist eine Installation auf dem Home-Bildschirm nötig.</p>
  </section>
  <p class="panel muted" *ngIf="!loading&&!visibleTasks.length">In dieser Ansicht gibt es keine Aufgaben.</p>
