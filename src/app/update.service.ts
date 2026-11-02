@@ -21,11 +21,12 @@ export class UpdateService {
   async programAction(action:'status'|'check'|'download'|'install'='status'):Promise<void>{
     const bridge=this.programBridge;if(!bridge||(this.programBusy&&action!=='status'))return;
     if(action!=='status')this.programBusy=true;
-    if(action==='download')this.programTimer=setInterval(()=>void this.programAction(),1000);
+    if(action==='download'&&!this.programTimer)this.programTimer=setInterval(()=>void this.programAction(),1000);
     try{const state=await bridge[action]();this.zone.run(()=>{this.program=state;});}
     catch{this.program={...this.program,phase:'error',message:'Programmupdate nicht erreichbar. Bitte erneut versuchen.'};}
     finally{this.zone.run(()=>{if(action!=='status')this.programBusy=false;});}
-    if(!this.programBusy&&this.program?.phase!=='downloading')clearInterval(this.programTimer);
+    if(this.program?.phase==='downloading'&&!this.programTimer)this.programTimer=setInterval(()=>void this.programAction(),1000);
+    if(!this.programBusy&&this.program?.phase!=='downloading'){clearInterval(this.programTimer);this.programTimer=null;}
   }
 
   get isDesktop():boolean{return !!(window as any).stundenplanDesktop||/Electron\//i.test(navigator.userAgent||'');}
