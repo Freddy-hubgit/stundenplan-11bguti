@@ -7,7 +7,7 @@
         <button *ngIf="homeTiles.length && homeLayout.ready" type="button" class="settings-nav-btn" [class.active]="settingsCategory === 'start'" [attr.aria-pressed]="settingsCategory === 'start'" (click)="settingsCategory = 'start'">Startbildschirm</button>
         <button type="button" class="settings-nav-btn" [class.active]="settingsCategory === 'darstellung'" [attr.aria-pressed]="settingsCategory === 'darstellung'" (click)="settingsCategory = 'darstellung'">Darstellung</button>
         <button type="button" class="settings-nav-btn" [class.active]="settingsCategory === 'konto'" [attr.aria-pressed]="settingsCategory === 'konto'" (click)="settingsCategory = 'konto'">Account</button>
-        <button type="button" class="settings-nav-btn" [class.active]="settingsCategory === 'update'" [attr.aria-pressed]="settingsCategory === 'update'" (click)="settingsCategory = 'update'">App-Update</button>
+        <button type="button" class="settings-nav-btn" [class.active]="settingsCategory === 'update'" [attr.aria-pressed]="settingsCategory === 'update'" (click)="settingsCategory = 'update'; updateService.programAction()">App-Update</button>
       </div>
 
       <div class="settings-content">
@@ -19,7 +19,14 @@
             <button type="button" class="chip" [disabled]="updateService.checking" (click)="updateService.check()">{{ updateService.checking ? 'Bitte warten …' : 'Auf Updates prüfen' }}</button>
             <button type="button" class="chip" *ngIf="updateService.availableCommit" [disabled]="updateService.checking" (click)="updateService.apply()">Weboberfläche laden und neu starten</button>
           </div>
-          <section *ngIf="updateService.isDesktop" class="native-update"><h4>Windows-Programm</h4><p *ngIf="updateService.nativeCurrentVersion">Installiert: {{updateService.nativeCurrentVersion}}</p><p role="status" aria-live="polite">{{updateService.nativeStatus||'Mit „Auf Updates prüfen“ wird auch das App-Repository auf eine veröffentlichte Windows-Version geprüft.'}}</p><a *ngIf="updateService.nativeAvailable&&updateService.nativeLatest" [href]="updateService.nativeLatest.downloadUrl" target="_blank" rel="noopener noreferrer" class="native-download">Windows {{updateService.nativeLatest.version}} herunterladen →</a><p>Programmupdates werden als Installer heruntergeladen. Die App anschließend vollständig beenden und den Installer starten. Webupdates ersetzen das Windows-Programm nicht.</p></section>
+          <section *ngIf="updateService.isDesktop" class="native-update"><h4>Windows-Programm</h4><p *ngIf="updateService.nativeCurrentVersion">Installiert: {{updateService.nativeCurrentVersion}}</p><p role="status" aria-live="polite">{{updateService.nativeStatus||'Mit „Auf Updates prüfen“ wird auch das App-Repository auf eine veröffentlichte Windows-Version geprüft.'}}</p><a *ngIf="updateService.nativeAvailable&&updateService.nativeLatest" [href]="updateService.nativeLatest.downloadUrl" target="_blank" rel="noopener noreferrer" class="native-download">Windows {{updateService.nativeLatest.version}} herunterladen →</a><div *ngIf="updateService.program?.supported">
+            <p role="status">{{updateService.program.message}}</p>
+            <p *ngIf="updateService.program.phase==='checking'">Programmupdate wird geprüft …</p>
+            <p *ngIf="updateService.program.phase==='downloading'">Download: {{updateService.program.percent}} %</p>
+            <progress *ngIf="updateService.program.phase==='downloading'" max="100" [value]="updateService.program.percent" aria-label="Programmupdate herunterladen"></progress>
+            <button class="native-download" *ngIf="updateService.program.availableVersion&amp;&amp;['available','error'].includes(updateService.program.phase)" [disabled]="updateService.programBusy" (click)="updateService.programAction('download')">Programmupdate herunterladen</button>
+            <button class="native-download" *ngIf="updateService.program.phase==='downloaded'" [disabled]="updateService.programBusy" (click)="updateService.programAction('install')">Jetzt installieren und neu starten</button>
+          </div><p *ngIf="!updateService.program?.supported">Für Updates direkt in der App einmalig den aktuellen Windows-Installer installieren. Portable Apps werden manuell ersetzt.</p></section>
           <p>Beim Laden der Weboberfläche wird die Ansicht neu geöffnet. Speichere vorher offene Änderungen.</p>
         </section>
         <section *ngIf="settingsCategory === 'start' && homeTiles.length" class="home-customization" aria-label="Startbildschirm anpassen">

@@ -14,6 +14,20 @@ export class UpdateService {
   nativeLatest:NativeRelease|null=null;
   nativeAvailable=false;
   nativeStatus='';
+  program:any=null;
+  programBusy=false;
+  private programTimer:any=null;
+  get programBridge():any{return (window as any).stundenplanDesktop?.programUpdater;}
+  async programAction(action:'status'|'check'|'download'|'install'='status'):Promise<void>{
+    const bridge=this.programBridge;if(!bridge||(this.programBusy&&action!=='status'))return;
+    if(action!=='status')this.programBusy=true;
+    if(action==='download')this.programTimer=setInterval(()=>void this.programAction(),1000);
+    try{const state=await bridge[action]();this.zone.run(()=>{this.program=state;});}
+    catch{this.program={...this.program,phase:'error',message:'Programmupdate nicht erreichbar. Bitte erneut versuchen.'};}
+    finally{this.zone.run(()=>{if(action!=='status')this.programBusy=false;});}
+    if(!this.programBusy&&this.program?.phase!=='downloading')clearInterval(this.programTimer);
+  }
+
   get isDesktop():boolean{return !!(window as any).stundenplanDesktop||/Electron\//i.test(navigator.userAgent||'');}
 
   // Compile the build identity into the JavaScript, including offline/file builds.
@@ -89,6 +103,7 @@ export class UpdateService {
 
   async check():Promise<boolean>{
     if(this.checking)return false;this.checking=true;this.availableCommit=null;this.statusMessage='Prüfe auf Webupdates …';
+    if(this.programBridge)void this.programAction('check');
     try{const result=await Promise.all([this.checkWeb(),this.isDesktop?this.checkWindows():Promise.resolve(false)]);return result.some(Boolean);}
     finally{this.zone.run(()=>{this.checking=false;});}
   }
