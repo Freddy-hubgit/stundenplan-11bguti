@@ -13,6 +13,7 @@
       <div class="settings-content">
         <section *ngIf="settingsCategory === 'update'" class="settings-section" aria-label="App-Update">
           <h3>App-Update</h3>
+          <p>Webversion: Update-Test 1</p>
           <p role="status" aria-live="polite">{{ updateService.statusMessage || 'Hier kannst du nach einer neuen App-Version suchen.' }}</p>
           <div class="chip-group">
             <button type="button" class="chip" [disabled]="updateService.checking" (click)="updateService.check()">{{ updateService.checking ? 'Bitte warten …' : 'Auf Updates prüfen' }}</button>
