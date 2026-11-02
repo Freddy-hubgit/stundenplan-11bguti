@@ -17,6 +17,7 @@
       <div class="tile-top">
         <span class="tile-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" [ngSwitch]="tile.route">
+            <g *ngSwitchCase="'/hefte'"><rect x="5" y="3" width="15" height="18" rx="2"/><path d="M9 3v18M3 7h4m-4 5h4m-4 5h4m5-10h5m-5 4h5"/></g>
             <g *ngSwitchCase="'/klassen'"><circle cx="9" cy="7" r="3"/><path d="M3 21v-4a6 6 0 0 1 12 0v4M17 4a3 3 0 0 1 0 6m3 11v-4a6 6 0 0 0-3-5"/></g>
             <g *ngSwitchCase="'/materialien'"><path d="M3 7V4h7l3 3h8v13H3Z"/><path d="M8 12h8m-8 4h5"/></g>
             <g *ngSwitchCase="'/schuljahr'"><path d="M4 7a9 9 0 1 1-1 9M4 3v5h5"/><path d="M12 8v5m0 3h.01"/></g>

@@ -19,6 +19,7 @@ interface PortalTile {
 })
 export class PortalHomeComponent implements OnInit,OnDestroy {
   tiles: PortalTile[] = [
+    {title:'Meine Hefte',description:'Persönliche Notizen für jedes Fach und ein allgemeines Heft',route:'/hefte',icon:'📓'},
     {title:'Klassen & Kurse',description:'Deine Gruppen und Zuordnungen',route:'/klassen',icon:'👥'},
     {title:'Materialablage',description:'Arbeitsblätter, Dateien und Links deiner Gruppen',route:'/materialien',icon:'📂'},
     { title: 'Benachrichtigungen', description: 'Neue Meldungen und Unterrichtsänderungen', route: '/meldungen', icon: '🔔' },

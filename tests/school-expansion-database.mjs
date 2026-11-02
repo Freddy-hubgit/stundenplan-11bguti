@@ -9,7 +9,7 @@ grant usage on schema storage,auth to authenticated,anon;grant all on storage.ob
 insert into auth.users select ('00000000-0000-0000-0000-00000000000'||n)::uuid from generate_series(1,6)n;
 insert into profiles select id,'Person '||right(id::text,1),right(id::text,1)||'@example.test',case right(id::text,1) when '3' then 'teacher' when '4' then 'support' when '5' then 'admin' else 'user' end from auth.users;`);
 for(const f of (await readdir(new URL('../supabase/migrations/',import.meta.url))).filter(f=>f.endsWith('.sql')&&(!process.env.USE_EXPANSION_PACKAGE||f<'202610310024')).sort())await db.exec(await readFile(new URL('../supabase/migrations/'+f,import.meta.url),'utf8'));
-if(process.env.USE_EXPANSION_PACKAGE){await db.exec(await readFile(new URL('../supabase/setup/school-expansion.sql',import.meta.url),'utf8'));await db.exec(await readFile(new URL('../supabase/migrations/202610310029_portal_tiles.sql',import.meta.url),'utf8'));}
+if(process.env.USE_EXPANSION_PACKAGE){await db.exec(await readFile(new URL('../supabase/setup/school-expansion.sql',import.meta.url),'utf8'));await db.exec(await readFile(new URL('../supabase/migrations/202610310029_portal_tiles.sql',import.meta.url),'utf8'));await db.exec(await readFile(new URL('../supabase/migrations/202611020030_personal_notebooks.sql',import.meta.url),'utf8'));}
 const uid=n=>`00000000-0000-0000-0000-00000000000${n}`;
 async function login(n,role='authenticated'){await db.exec('reset role');await db.query("select set_config('request.jwt.claim.sub',$1,false)",[n?uid(n):'']);await db.exec('set role '+role);}
 // Group privacy, lazy creation, membership management, removal and unread state.
@@ -75,4 +75,12 @@ await login(4);await assert.rejects(()=>db.query("select portal_tile_save('/mate
 await login(5);await db.query("select portal_tile_save('/materialien',false)");await assert.rejects(()=>db.query("select portal_tile_save('/admin',false)"));await assert.rejects(()=>db.query("select portal_tile_save('/invalid',true)"));
 await login(1);assert.equal((await db.query('select portal_disabled_tiles() disabled')).rows[0].disabled.join(','),'/materialien');
 await login(5);assert.equal((await db.query("select * from portal_changes(null,'portal_tile_setting')")).rows[0].after_value.enabled,false);await db.query("select portal_tile_save('/materialien',true)");await login(1);assert.equal((await db.query('select portal_disabled_tiles() disabled')).rows[0].disabled.length,0);
+
+// Private notebooks: author-only access, revision conflicts, and retention through a year reset.
+await login(1);const page=(await db.query("select notebook_save(null,null,'Mathe','Mitschrift','<script>Text</script>',current_date,false) id")).rows[0].id;
+assert.equal((await db.query('select * from notebook_pages()')).rows[0].body,'<script>Text</script>');assert((await db.query('select notebook_subjects() subjects')).rows[0].subjects.includes('Mathe'));
+for(const actor of [2,3,4,5]){await login(actor);assert.equal((await db.query('select * from notebook_pages()')).rows.length,0);await assert.rejects(()=>db.query("select notebook_save($1,1,'','Hack','Bad',current_date,false)",[page]),{code:'40001'});await assert.rejects(()=>db.query('select notebook_delete($1,1)',[page]),{code:'40001'});}
+await login(1);await db.query("select notebook_save($1,1,'','Allgemein','Neue Version',current_date,true)",[page]);await assert.rejects(()=>db.query("select notebook_save($1,1,'','Alt','Alt',current_date,false)",[page]),{code:'40001'});await assert.rejects(()=>db.query('select notebook_delete($1,1)',[page]),{code:'40001'});
+await login(5);const notePreview=(await db.query('select school_reset_plan(false,false,false) p')).rows[0].p;await db.query('select school_reset_execute($1,$2)',[notePreview.token,notePreview.confirmation]);await db.query("select portal_tile_save('/hefte',false)");
+await login(1);assert.equal((await db.query('select * from notebook_pages()')).rows[0].revision,2);await db.query('select notebook_delete($1,2)',[page]);assert.equal((await db.query('select * from notebook_pages()')).rows.length,0);
 console.log('PASS expansion: group membership/privacy, excluded absence days, scoped feedback/missing submissions, room teaching/booking conflicts, audit access/undo/staleness, reset integration');

@@ -1,3 +1,4 @@
+import {NotebooksComponent,NotebookLeaveGuard} from './notebooks/notebooks.component';
 import {PeriodPickerComponent} from './period-picker/period-picker.component';
 import {GroupChatsComponent} from './group-chats/group-chats.component';
 import {SubmissionReviewComponent} from './submission-review/submission-review.component';
@@ -34,6 +35,7 @@ import { MessagesComponent } from './messages/messages.component';
 import { SupportComponent } from './support/support.component';
 
 const routes: Routes = [
+  {path:'hefte',component:NotebooksComponent,canActivate:[AuthGuard],canDeactivate:[NotebookLeaveGuard]},
   {path:'abgaben',component:SubmissionReviewComponent,canActivate:[AuthGuard,FeatureAccessGuard],data:{allowedRoles:['teacher','admin']}},
   {path:'raumbuchung',component:RoomBookingComponent,canActivate:[AuthGuard]},
   {path:'aenderungsverlauf',component:ChangeHistoryComponent,canActivate:[AuthGuard,FeatureAccessGuard],data:{allowedRoles:['admin']}},
@@ -56,7 +58,7 @@ const routes: Routes = [
 
 @NgModule({
   declarations: [
-    AppComponent,PeriodPickerComponent,GroupChatsComponent,SubmissionReviewComponent,RoomBookingComponent,ChangeHistoryComponent,
+    AppComponent,PeriodPickerComponent,NotebooksComponent,GroupChatsComponent,SubmissionReviewComponent,RoomBookingComponent,ChangeHistoryComponent,
     SchoolComponent,MaterialsComponent,ExamPlanComponent,DashboardComponent,YearResetComponent,
     AbsenceComponent,
     NotificationsComponent,
