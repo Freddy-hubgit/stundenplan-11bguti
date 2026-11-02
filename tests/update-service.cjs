@@ -1,66 +1,23 @@
-const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const vm = require('node:vm');
-const ts = require('../node_modules/typescript');
-const old = 'a'.repeat(40), latest = 'b'.repeat(40);
-const js = ts.transpileModule(fs.readFileSync('src/app/update.service.ts', 'utf8'), {
-  compilerOptions: { target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.CommonJS }
-}).outputText;
-function setup(commit = old, desktop) {
-  const requests = [], navigations = [];
-  let remote = latest, fail = false;
-  const ctx = {
-    exports: {}, URL, AbortController, setTimeout, clearTimeout,
-    require: name => name === '@angular/core' ? { Injectable: () => c => c } : { default: { commit } },
-    window: { stundenplanDesktop: desktop, location: {
-      origin: 'https://freddy-hubgit.github.io', pathname: '/stundenplan-11bguti/',
-      search: '?v=' + latest, replace: url => navigations.push(url)
-    } },
-    fetch: async url => {
-      requests.push(url);
-      if (fail) throw Error('offline');
-      return { ok: true, json: async () => ({ commit: remote }) };
-    }
-  };
-  vm.runInNewContext(js, ctx);
-  return { service: new ctx.exports.UpdateService({ run: fn => fn() }), requests, navigations,
-    setRemote: value => { remote = value; }, offline: () => { fail = true; } };
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),ts=require('../node_modules/typescript');
+const compile=file=>ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2020,module:ts.ModuleKind.CommonJS}}).outputText;
+const old='a'.repeat(40),latest='b'.repeat(40),helper={exports:{},URL};vm.runInNewContext(compile('src/app/native-updates.ts'),helper);
+const release=()=>({tag_name:'v1.1.1',draft:false,prerelease:false,assets:[{name:'Schulportal.Setup.1.1.1.exe',state:'uploaded',size:100,browser_download_url:'https://github.com/Freddy-hubgit/stundenplan-app/releases/download/v1.1.1/Schulportal.Setup.1.1.1.exe'}]});
+function setup(commit=old,desktop){
+ const requests=[],navigations=[];let remote=latest,fail=false,nativeFail=false,payload=release();
+ const ctx={exports:{},URL,AbortController,setTimeout,clearTimeout,navigator:{userAgent:'Chrome'},require:n=>n==='@angular/core'?{Injectable:()=>c=>c}:n.includes('native-updates')?helper.exports:{default:{commit}},window:{stundenplanDesktop:desktop,location:{origin:'https://freddy-hubgit.github.io',pathname:'/stundenplan-11bguti/',search:'?v='+latest,replace:u=>navigations.push(u)}},fetch:async url=>{requests.push(url);if(fail||nativeFail&&url.includes('api.github.com'))throw Error('offline');return{ok:true,json:async()=>url.includes('api.github.com')?payload:{commit:remote}};}};
+ vm.runInNewContext(compile('src/app/update.service.ts'),ctx);
+ return{service:new ctx.exports.UpdateService({run:fn=>fn()}),requests,navigations,setUA:v=>ctx.navigator.userAgent=v,setRemote:v=>remote=v,offline:()=>fail=true,nativeOffline:()=>nativeFail=true,setRelease:p=>payload=p};
 }
-(async () => {
-  const test = setup();
-  assert.equal(await test.service.check(), true, 'URL version must not hide an older running build');
-  assert.equal(test.service.availableCommit, latest);
-  assert.match(test.requests[0], /\/assets\/version.json\?t=/);
-  await test.service.apply();
-  assert.equal(test.navigations.length, 1);
-  test.setRemote(old);
-  assert.equal(await test.service.check(), false);
-  assert.equal(test.service.availableCommit, null);
-  await test.service.apply();
-  assert.equal(test.navigations.length, 1, 'no install without available update');
-  test.offline();
-  assert.equal(await test.service.check(), false);
-  assert.match(test.service.statusMessage, /nicht geprüft/);
-  assert.equal(test.service.checking, false);
-  assert.equal(test.requests.some(url => url.includes('api.github.com')), false, 'unpublished source commits must not advertise updates');
-  const invalid = setup(); invalid.setRemote('not-a-commit');
-  assert.equal(await invalid.service.check(), false);
-  assert.match(invalid.service.statusMessage, /nicht geprüft/);
-  const calls = [];
-  const desktop = setup(old, { checkUpdate: async options => {
-    calls.push(options);
-    return options ? { available: true, commit: latest } : { updated: true, commit: latest };
-  } });
-  assert.equal(await desktop.service.check(), true);
-  assert.equal(calls[0].checkOnly, true);
-  assert.equal(desktop.navigations.length, 0, 'check must not navigate');
-  await desktop.service.apply();
-  assert.equal(calls.length, 2);
-  assert.equal(calls[1], undefined);
-  assert.equal(desktop.service.availableCommit, null);
-  const failed = setup(old, { checkUpdate: async () => ({ error: 'offline' }) });
-  assert.equal(await failed.service.check(), false);
-  assert.match(failed.service.statusMessage, /nicht geprüft/);
-  assert.equal(failed.service.availableCommit, null);
-  console.log('PASS update service: build identity, deployed version path, offline and invalid responses, guarded installation, desktop check/apply');
-})().catch(error => { console.error(error); process.exitCode = 1; });
+(async()=>{
+ const browser=setup();assert.equal(await browser.service.check(),true);assert.equal(browser.service.availableCommit,latest);assert.match(browser.requests[0],/assets\/version.json/);await browser.service.apply();assert.equal(browser.navigations.length,1);browser.setRemote(old);assert.equal(await browser.service.check(),false);assert.equal(browser.service.availableCommit,null);await browser.service.apply();assert.equal(browser.navigations.length,1);assert(!browser.requests.some(u=>u.includes('api.github.com')));browser.offline();assert.equal(await browser.service.check(),false);assert.match(browser.service.statusMessage,/nicht geprüft/);
+ const invalid=setup();invalid.setRemote('bad');assert.equal(await invalid.service.check(),false);
+ const calls=[],desktop=setup(old,{getAppVersion:async()=> '1.1.0',checkUpdate:async options=>{calls.push(options);return options?{available:true,commit:latest}:{updated:true,commit:latest};}});
+ assert(await desktop.service.check());assert.equal(desktop.service.nativeCurrentVersion,'1.1.0');assert.equal(desktop.service.nativeLatest.version,'1.1.1');assert(desktop.service.nativeAvailable);assert.equal(calls[0].checkOnly,true);await desktop.service.apply();assert.equal(calls[1],undefined);assert.equal(desktop.navigations.length,0);
+ for(const version of ['1.1.1','1.2.0']){const equal=setup(old,{getAppVersion:async()=>version,checkUpdate:async()=>({available:false})});assert.equal(await equal.service.check(),false);assert.equal(equal.service.nativeAvailable,false);assert.match(equal.service.nativeStatus,/aktuell/);}
+ const legacy=setup(old,{checkUpdate:async()=>({available:false})});assert(await legacy.service.check());assert.equal(legacy.service.nativeCurrentVersion,null);assert.match(legacy.service.nativeStatus,/noch nicht/);assert(legacy.service.nativeAvailable);
+ const uaLegacy=setup(old,{checkUpdate:async()=>({available:false})});uaLegacy.setUA('Mozilla/5.0 stundenplan-app/1.1.0 Electron/32.2.0');assert(await uaLegacy.service.check());assert.equal(uaLegacy.service.nativeCurrentVersion,'1.1.0');
+ const partial=setup(old,{getAppVersion:async()=> '1.1.0',checkUpdate:async()=>({error:'offline'})});assert(await partial.service.check());assert.match(partial.service.statusMessage,/nicht geprüft/);assert(partial.service.nativeAvailable);partial.nativeOffline();assert.equal(await partial.service.check(),false);assert.equal(partial.service.nativeLatest,null);assert.match(partial.service.nativeStatus,/nicht geprüft/);
+ for(const bad of [{...release(),draft:true},{...release(),prerelease:true},{...release(),assets:[]},{...release(),assets:[{...release().assets[0],browser_download_url:'https://evil.test/Setup.exe'}]}]){const test=setup(old,{getAppVersion:async()=> '1.1.0',checkUpdate:async()=>({available:false})});test.setRelease(bad);assert.equal(await test.service.check(),false);assert.equal(test.service.nativeLatest,null);}
+ assert(helper.exports.newerAppVersion('1.10.0','1.9.0'));assert(!helper.exports.newerAppVersion('1.1.0','1.2.0'));assert.equal(helper.exports.appVersion('v1.1.1'),'1.1.1');assert.equal(helper.exports.appVersion('bad'),null);
+ console.log('PASS updates: independent web/native checks, published installers only, semantic versions/no downgrade, legacy unknown version, partial failures, safe download URLs and web check/apply');
+})().catch(e=>{console.error(e);process.exitCode=1;});

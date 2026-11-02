@@ -212,3 +212,5 @@
 @media(max-width:600px) { .tile-options { justify-content: space-between; }.tile-setting { padding: 12px; } }
 
 .tile-transparency{display:block;min-width:0}.tile-transparency input[type=range]{display:block;width:100%;min-width:0;max-width:400px;padding:0;margin:10px 0;accent-color:var(--accent,#70d9e5)}
+
+.native-update{margin-top:20px;padding-top:18px;border-top:1px solid var(--border,#344151)}.native-update p{margin:10px 0;line-height:1.6}.native-download{display:inline-block;color:var(--control-accent,#70d9e5);border:1px solid currentColor;border-radius:9px;padding:10px 14px;text-decoration:none;margin:8px 0}

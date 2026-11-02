@@ -14,12 +14,13 @@
         <section *ngIf="settingsCategory === 'update'" class="settings-section" aria-label="App-Update">
           <h3>App-Update</h3>
           <p>Webversion: Update-Test 1</p>
-          <p role="status" aria-live="polite">{{ updateService.statusMessage || 'Hier kannst du nach einer neuen App-Version suchen.' }}</p>
+          <p role="status" aria-live="polite">{{ updateService.statusMessage || 'Prüfe hier die Weboberfläche und in der Windows-App zusätzlich das installierte Programm.' }}</p>
           <div class="chip-group">
             <button type="button" class="chip" [disabled]="updateService.checking" (click)="updateService.check()">{{ updateService.checking ? 'Bitte warten …' : 'Auf Updates prüfen' }}</button>
-            <button type="button" class="chip" *ngIf="updateService.availableCommit" [disabled]="updateService.checking" (click)="updateService.apply()">Update laden und neu starten</button>
+            <button type="button" class="chip" *ngIf="updateService.availableCommit" [disabled]="updateService.checking" (click)="updateService.apply()">Weboberfläche laden und neu starten</button>
           </div>
-          <p>Beim Laden der neuen Version wird die App neu geöffnet. Speichere vorher offene Änderungen.</p>
+          <section *ngIf="updateService.isDesktop" class="native-update"><h4>Windows-Programm</h4><p *ngIf="updateService.nativeCurrentVersion">Installiert: {{updateService.nativeCurrentVersion}}</p><p role="status" aria-live="polite">{{updateService.nativeStatus||'Mit „Auf Updates prüfen“ wird auch das App-Repository auf eine veröffentlichte Windows-Version geprüft.'}}</p><a *ngIf="updateService.nativeAvailable&&updateService.nativeLatest" [href]="updateService.nativeLatest.downloadUrl" target="_blank" rel="noopener noreferrer" class="native-download">Windows {{updateService.nativeLatest.version}} herunterladen →</a><p>Programmupdates werden als Installer heruntergeladen. Die App anschließend vollständig beenden und den Installer starten. Webupdates ersetzen das Windows-Programm nicht.</p></section>
+          <p>Beim Laden der Weboberfläche wird die Ansicht neu geöffnet. Speichere vorher offene Änderungen.</p>
         </section>
         <section *ngIf="settingsCategory === 'start' && homeTiles.length" class="home-customization" aria-label="Startbildschirm anpassen">
           <h3>Deine Kacheln</h3><label class="tile-transparency">Transparenz aller Kacheln: {{homeLayout.preferences.transparency}} %<input type="range" min="0" max="100" step="5" aria-label="Transparenz aller Kacheln" [ngModel]="homeLayout.preferences.transparency" (ngModelChange)="homeLayout.setAllTransparency($event)"></label><p class="customization-hint">0 % ist undurchsichtig, 100 % zeigt den Hintergrund vollständig. Schrift und Symbole bleiben sichtbar. Dieser Regler übernimmt den Wert für alle Kacheln; darunter kannst du einzelne anpassen.</p>
