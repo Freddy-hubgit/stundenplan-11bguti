@@ -210,3 +210,5 @@
 .compact-choice { margin: 20px 0; }
 .storage-error { color: #f38e8e; font-size: 12px; margin-bottom: 12px; }
 @media(max-width:600px) { .tile-options { justify-content: space-between; }.tile-setting { padding: 12px; } }
+
+.tile-transparency{display:block;min-width:0}.tile-transparency input[type=range]{display:block;width:100%;min-width:0;max-width:400px;padding:0;margin:10px 0;accent-color:var(--accent,#70d9e5)}

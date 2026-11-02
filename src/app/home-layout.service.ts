@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 export interface HomeTile { route: string; title: string; }
-interface HomePreferences { order: string[]; hidden: string[]; colors: Record<string,string>; compact: boolean; }
+interface HomePreferences { order: string[]; hidden: string[]; colors: Record<string,string>; compact: boolean; transparency:number; transparencies:Record<string,number>; }
 @Injectable({providedIn:'root'})
 export class HomeLayoutService {
  private account: string | null=null;
@@ -15,7 +15,7 @@ export class HomeLayoutService {
   {key:'green',label:'Grün',dark:'#7bdbb2',light:'#227553',tint:'rgba(123,219,178,.10)'},
  ];
  private readonly routes=['/abgaben','/raumbuchung','/aenderungsverlauf','/klassen','/materialien','/schuljahr','/krankmeldung','/meldungen','/hausaufgaben','/nachrichten','/videokonferenz','/stundenplan','/kalender','/support','/vertretungsplan','/admin'];
- private defaults(): HomePreferences{return {order:[],hidden:[],colors:{},compact:false};}
+ private defaults(): HomePreferences{return {order:[],hidden:[],colors:{},compact:false,transparency:0,transparencies:{}};}
  get ready():boolean{return !!this.account;}
  activate(account:string|null):void{
   this.account=account;this.preferences=this.defaults();this.storageError='';
@@ -25,7 +25,8 @@ export class HomeLayoutService {
    const routes=(items:unknown)=>Array.isArray(items)?Array.from(new Set(items.filter(r=>typeof r==='string'&&this.routes.includes(r)))):[];
    const colors:Record<string,string>={};
    if(value.colors&&typeof value.colors==='object')this.routes.forEach(route=>{if(this.colors.some(c=>c.key===value.colors[route]))colors[route]=value.colors[route];});
-   this.preferences={order:routes(value.order),hidden:routes(value.hidden),colors,compact:value.compact===true};
+   const transparencies:Record<string,number>={};if(value.transparencies&&typeof value.transparencies==='object')this.routes.forEach(route=>{const v=value.transparencies[route];if(typeof v==='number'&&Number.isFinite(v))transparencies[route]=Math.round(Math.max(0,Math.min(100,v)));});
+   this.preferences={transparency:typeof value.transparency==='number'&&Number.isFinite(value.transparency)?Math.round(Math.max(0,Math.min(100,value.transparency))):0,transparencies,order:routes(value.order),hidden:routes(value.hidden),colors,compact:value.compact===true};
   }catch{this.storageError='Gespeicherte Einstellungen konnten nicht geladen werden. Du kannst sie neu festlegen.';}
  }
  private save():void{
@@ -55,6 +56,10 @@ export class HomeLayoutService {
  }
  accent(route:string,light:boolean):string|null{const color=this.colors.find(c=>c.key===this.color(route));return color?(light?color.light:color.dark):null;}
  tint(route:string):string|null{return this.colors.find(c=>c.key===this.color(route))?.tint||null;}
+ transparency(route:string):number{return this.preferences.transparencies[route]===undefined?this.preferences.transparency:this.preferences.transparencies[route];}
+ surfaceOpacity(route:string):number{return 1-this.transparency(route)/100;}
+ setTransparency(route:string,value:number):void{if(!this.routes.includes(route)||!Number.isFinite(Number(value)))return;this.preferences.transparencies[route]=Math.round(Math.max(0,Math.min(100,Number(value))));this.save();}
+ setAllTransparency(value:number):void{if(!Number.isFinite(Number(value)))return;this.preferences.transparency=Math.round(Math.max(0,Math.min(100,Number(value))));this.preferences.transparencies={};this.save();}
  setCompact(value:boolean):void{this.preferences.compact=value;this.save();}
  reset():void{this.preferences=this.defaults();this.save();}
 }

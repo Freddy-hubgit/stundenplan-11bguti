@@ -43,7 +43,7 @@ with sync_playwright() as p:
         for check in panel.locator('.tile-options input[type=checkbox]').all():check.uncheck()
         page.get_by_role('button',name='Schließen',exact=True).click()
         assert page.locator('.tile').count()==0
-        page.get_by_text('Alle Kacheln sind ausgeblendet.',exact=False).wait_for()
+        page.get_by_text('Keine Kacheln sichtbar.',exact=False).wait_for()
         settings();panel.get_by_role('button',name='Startbildschirm zurücksetzen',exact=True).click()
         page.get_by_role('button',name='Darstellung',exact=True).click()
         page.get_by_role('button',name='Hell',exact=True).click()
