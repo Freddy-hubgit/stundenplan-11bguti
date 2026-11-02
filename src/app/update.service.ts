@@ -7,6 +7,7 @@ export const REPO = "Freddy-hubgit/stundenplan-11bguti";
 
 @Injectable({ providedIn: "root" })
 export class UpdateService {
+  readonly webVersion = /^[a-f0-9]{7,40}$/i.test(bundledVersion.commit) ? bundledVersion.commit.slice(0,7) : 'Unbekannt';
   availableCommit: string | null = null;
   statusMessage = "";
   checking = false;
@@ -92,9 +93,12 @@ export class UpdateService {
       if(desktop){
         const result=await desktop.checkUpdate({checkOnly:true});
         if(!result||result.error||result.available&&!/^[a-f0-9]{7,40}$/i.test(result.commit||''))throw new Error('Updateprüfung fehlgeschlagen');
-        this.availableCommit=result.available?result.commit:null;
-        this.statusMessage=result.updated?'Weboberfläche geladen.':result.available?'Neue Weboberfläche verfügbar.':'Weboberfläche ist auf dem neuesten Stand.';
-        return !!(result.available||result.updated);
+        const current=await this.loadedCommit;
+        const remote=/^[a-f0-9]{7,40}$/i.test(result.commit||'')?result.commit:null;
+        const needs=!!result.available||!!(remote&&(!current||!(current===remote||current.startsWith(remote)||remote.startsWith(current))));
+        this.availableCommit=needs?remote:null;
+        this.statusMessage=needs?'Neue Weboberfläche verfügbar.':result.updated?'Weboberfläche geladen.':'Weboberfläche ist auf dem neuesten Stand.';
+        return needs||!!result.updated;
       }
       const remote=await this.getRemoteCommit();if(!remote)throw new Error('Version nicht erreichbar');
       const current=await this.loadedCommit,needs=!current||!(current===remote||current.startsWith(remote)||remote.startsWith(current));

@@ -13,7 +13,7 @@
       <div class="settings-content">
         <section *ngIf="settingsCategory === 'update'" class="settings-section" aria-label="App-Update">
           <h3>App-Update</h3>
-          <p>Webversion: Update-Test 1</p>
+          <p>Geladene Webversion: {{updateService.webVersion}}</p>
           <p role="status" aria-live="polite">{{ updateService.statusMessage || 'Prüfe hier die Weboberfläche und in der Windows-App zusätzlich das installierte Programm.' }}</p>
           <div class="chip-group">
             <button type="button" class="chip" [disabled]="updateService.checking" (click)="updateService.check()">{{ updateService.checking ? 'Bitte warten …' : 'Auf Updates prüfen' }}</button>

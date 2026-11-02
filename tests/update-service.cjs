@@ -10,6 +10,9 @@ function setup(commit=old,desktop){
 }
 (async()=>{
  const browser=setup();assert.equal(await browser.service.check(),true);assert.equal(browser.service.availableCommit,latest);assert.match(browser.requests[0],/assets\/version.json/);await browser.service.apply();assert.equal(browser.navigations.length,1);browser.setRemote(old);assert.equal(await browser.service.check(),false);assert.equal(browser.service.availableCommit,null);await browser.service.apply();assert.equal(browser.navigations.length,1);assert(!browser.requests.some(u=>u.includes('api.github.com')));browser.offline();assert.equal(await browser.service.check(),false);assert.match(browser.service.statusMessage,/nicht geprüft/);
+ assert.equal(browser.service.webVersion,'aaaaaaa');
+ const staleDesktop=setup(old,{getAppVersion:async()=> '1.1.1',checkUpdate:async()=>({available:false,commit:latest})});assert(await staleDesktop.service.check());assert.equal(staleDesktop.service.availableCommit,latest);assert.match(staleDesktop.service.statusMessage,/Neue Weboberfläche/);
+ const currentDesktop=setup(latest,{getAppVersion:async()=> '1.1.1',checkUpdate:async()=>({available:false,commit:latest})});assert.equal(await currentDesktop.service.check(),false);assert.equal(currentDesktop.service.webVersion,'bbbbbbb');
  const invalid=setup();invalid.setRemote('bad');assert.equal(await invalid.service.check(),false);
  const calls=[],desktop=setup(old,{getAppVersion:async()=> '1.1.0',checkUpdate:async options=>{calls.push(options);return options?{available:true,commit:latest}:{updated:true,commit:latest};}});
  assert(await desktop.service.check());assert.equal(desktop.service.nativeCurrentVersion,'1.1.0');assert.equal(desktop.service.nativeLatest.version,'1.1.1');assert(desktop.service.nativeAvailable);assert.equal(calls[0].checkOnly,true);await desktop.service.apply();assert.equal(calls[1],undefined);assert.equal(desktop.navigations.length,0);
