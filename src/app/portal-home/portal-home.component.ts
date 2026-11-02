@@ -36,7 +36,7 @@ export class PortalHomeComponent implements OnInit,OnDestroy {
 
   tileError='';private destroyed=false;private tileTimer?:ReturnType<typeof setInterval>;
   async refreshTileSettings():Promise<void>{try{await this.tileSettings.load();this.tileError='';if(this.contextTile&&!this.tileSettings.allowed(this.contextTile.route))this.contextTile=null;}catch{this.tileError='Die zentralen Kacheleinstellungen konnten nicht geladen werden. Die zuletzt verfügbare Ansicht wird angezeigt.';}}
-  ngOnDestroy():void{this.destroyed=true;clearInterval(this.tileTimer);}
+  ngOnDestroy():void{this.destroyed=true;clearInterval(this.tileTimer);this.clearTileDrag();}
   get availableTiles():PortalTile[]{return this.tileSettings.ready?this.tiles.filter(t=>this.tileSettings.allowed(t.route)):[];}
   settingsOpen = false;
   greeting = 'Hi!';
@@ -46,14 +46,40 @@ export class PortalHomeComponent implements OnInit,OnDestroy {
   get visibleTiles(): PortalTile[] { return this.homeLayout.visible(this.availableTiles); }
   trackTile(_: number, tile: PortalTile): string { return tile.route; }
 
-  contextTile:PortalTile|null=null;menuX=0;menuY=0;private rightDrag:{route:string;x:number;y:number;moved:boolean}|null=null;private suppressContext=false;
+  contextTile:PortalTile|null=null;menuX=0;menuY=0;
+  private rightDrag:{route:string;x:number;y:number;offsetX:number;offsetY:number;source:HTMLElement;ghost:HTMLElement|null;target:HTMLElement|null;moved:boolean;cursor:string;userSelect:string}|null=null;
+  private suppressContext=false;
   tileContext(event:MouseEvent,tile:PortalTile):void{event.preventDefault();event.stopPropagation();if(this.suppressContext){this.suppressContext=false;return;}this.contextTile=tile;this.menuX=Math.max(8,Math.min(event.clientX,window.innerWidth-280));this.menuY=Math.max(8,Math.min(event.clientY,window.innerHeight-420));}
-  tileDown(event:MouseEvent,tile:PortalTile):void{if(event.button!==2)return;event.preventDefault();this.contextTile=null;this.suppressContext=false;this.rightDrag={route:tile.route,x:event.clientX,y:event.clientY,moved:false};}
-  @HostListener('document:mousemove',['$event']) moveTile(event:MouseEvent):void{const drag=this.rightDrag;if(!drag||!(event.buttons&2))return;if(Math.hypot(event.clientX-drag.x,event.clientY-drag.y)>8)drag.moved=true;if(drag.moved){this.contextTile=null;const target=(document.elementFromPoint(event.clientX,event.clientY) as HTMLElement|null)?.closest('[data-route]')?.getAttribute('data-route');if(target&&target!==drag.route)this.homeLayout.moveTo(this.tiles,drag.route,target);}}
-  @HostListener('document:mouseup',['$event']) releaseTile(event:MouseEvent):void{if(event.button===2&&this.rightDrag){this.suppressContext=this.rightDrag.moved;this.rightDrag=null;}}
+  tileDown(event:MouseEvent,tile:PortalTile):void{
+    if(event.button!==2)return;event.preventDefault();this.clearTileDrag();this.contextTile=null;this.suppressContext=false;
+    const source=event.currentTarget as HTMLElement,rect=source.getBoundingClientRect();
+    this.rightDrag={route:tile.route,x:event.clientX,y:event.clientY,offsetX:event.clientX-rect.left,offsetY:event.clientY-rect.top,source,ghost:null,target:null,moved:false,cursor:document.body.style.cursor,userSelect:document.body.style.userSelect};
+  }
+  private tileAt(x:number,y:number):HTMLElement|null{
+    const tile=(document.elementFromPoint(x,y) as HTMLElement|null)?.closest('.tile-grid > .tile[data-route]') as HTMLElement|null;
+    return tile&&tile.parentElement===this.rightDrag?.source.parentElement?tile:null;
+  }
+  @HostListener('document:mousemove',['$event']) moveTile(event:MouseEvent):void{
+    const drag=this.rightDrag;if(!drag)return;if(!(event.buttons&2)){this.suppressContext=drag.moved;this.clearTileDrag();return;}
+    if(!drag.moved&&Math.hypot(event.clientX-drag.x,event.clientY-drag.y)>8){
+      drag.moved=true;this.contextTile=null;const rect=drag.source.getBoundingClientRect();
+      const ghost=drag.source.cloneNode(true) as HTMLElement;ghost.removeAttribute('data-route');ghost.removeAttribute('href');ghost.setAttribute('aria-hidden','true');ghost.tabIndex=-1;ghost.classList.add('tile-drag-ghost');const colors=getComputedStyle(drag.source);['--tile-accent','--tile-tint'].forEach(name=>ghost.style.setProperty(name,colors.getPropertyValue(name)));
+      Object.assign(ghost.style,{position:'fixed',left:'0px',top:'0px',width:rect.width+'px',height:rect.height+'px',minHeight:'0',margin:'0',pointerEvents:'none',zIndex:'2500',transition:'none'});
+      drag.source.parentElement?.appendChild(ghost);drag.ghost=ghost;drag.source.classList.add('tile-drag-source');document.body.style.cursor='grabbing';document.body.style.userSelect='none';
+    }
+    if(!drag.moved)return;
+    if(drag.ghost)drag.ghost.style.transform=`translate3d(${event.clientX-drag.offsetX}px,${event.clientY-drag.offsetY}px,0)`;
+    const target=this.tileAt(event.clientX,event.clientY);if(target!==drag.target){drag.target?.classList.remove('tile-drop-target');drag.target=target;drag.target?.classList.add('tile-drop-target');}
+  }
+  @HostListener('document:mouseup',['$event']) releaseTile(event:MouseEvent):void{
+    const drag=this.rightDrag;if(event.button!==2||!drag)return;this.suppressContext=drag.moved;
+    const target=drag.moved?this.tileAt(event.clientX,event.clientY)?.getAttribute('data-route'):null;
+    this.clearTileDrag();if(target&&target!==drag.route)this.homeLayout.moveTo(this.tiles,drag.route,target);
+  }
+  private clearTileDrag():void{const drag=this.rightDrag;if(!drag)return;drag.ghost?.remove();drag.source.classList.remove('tile-drag-source');drag.target?.classList.remove('tile-drop-target');document.body.style.cursor=drag.cursor;document.body.style.userSelect=drag.userSelect;this.rightDrag=null;}
   @HostListener('document:click') closeTileMenu():void{this.contextTile=null;}
-  @HostListener('document:keydown.escape') escapeTileMenu():void{this.contextTile=null;this.rightDrag=null;}
-  @HostListener('window:blur') cancelTileDrag():void{this.rightDrag=null;}
+  @HostListener('document:keydown.escape') escapeTileMenu():void{this.contextTile=null;this.suppressContext=!!this.rightDrag?.moved;this.clearTileDrag();}
+  @HostListener('window:blur') cancelTileDrag():void{this.suppressContext=!!this.rightDrag?.moved;this.clearTileDrag();}
   openSettings(): void {
     this.settingsOpen = true;
   }

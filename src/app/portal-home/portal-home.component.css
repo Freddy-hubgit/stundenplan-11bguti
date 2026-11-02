@@ -213,3 +213,5 @@
 .tile-context { box-sizing:border-box;max-height:min(420px,calc(100vh - 32px)); }
 
 .tile-context input[type=range]{display:block;width:100%;padding:0;margin-top:10px;accent-color:var(--accent)}
+
+.tile.tile-drag-source{opacity:.22;pointer-events:none;transform:none!important}.tile.tile-drag-ghost{cursor:grabbing;box-shadow:0 18px 48px #0006;outline:2px solid var(--tile-accent);outline-offset:0}.tile.tile-drop-target{outline:2px dashed var(--tile-accent);outline-offset:4px;transform:none!important}
