@@ -10,3 +10,11 @@ const replacement={...cancellation,teacher:'Herr Hansen',kind:'replacement',repl
 assert.equal(next(lessons,'Herr Bendig',[replacement],now).lesson.start,'07:30');
 assert.equal(next([{...lessons[0],teacher:'Her Bendig'}],'Herr Bendig',[],now).lesson.start,'07:30');
 console.log('PASS Herr Bendig: own Monday lesson, missing mapping, cancelled Monday, replacement and legacy typo');
+
+const currentNow=new Date('2026-11-02T13:15:00');
+assert.equal(next(lessons,'Herr Bendig',[],currentNow,true).lesson.start,'13:00');
+assert(next(lessons,'Herr Bendig',[],currentNow).date>currentNow);
+const atStart=new Date('2026-11-02T13:00:00');assert.equal(next(lessons,'Herr Bendig',[],atStart,true).date.getTime(),atStart.getTime());
+const atEnd=new Date('2026-11-02T14:30:00');assert(next(lessons,'Herr Bendig',[],atEnd,true).date>=atEnd);
+assert.notEqual(next(lessons,'Herr Bendig',[cancellation],currentNow,true).date.getDay(),1);
+console.log('PASS current teacher lesson: running/start/end boundaries, cancellation and future-only default');
