@@ -1,3 +1,4 @@
+import {Subject} from 'rxjs';
 import { Injectable } from '@angular/core';
 import { createClient, SupabaseClient, Session } from '@supabase/supabase-js';
 
@@ -20,6 +21,22 @@ export interface Profile {
 
 @Injectable({ providedIn: 'root' })
 export class SupabaseService {
+  readonly avatarChanges=new Subject<string>();
+  private avatarUrls=new Map<string,{url:string;expires:number}>();
+  async profilePictureUrl(account:string):Promise<string|null>{
+    if(!/^[0-9a-f-]{36}$/i.test(account))return null;
+    const cached=this.avatarUrls.get(account);if(cached&&cached.expires>Date.now())return cached.url;
+    const {data,error}=await this.client.storage.from('profile-pictures').createSignedUrl(account+'/avatar.webp',300);
+    if(error)return null;this.avatarUrls.set(account,{url:data.signedUrl,expires:Date.now()+240000});return data.signedUrl;
+  }
+  async saveProfilePicture(image:Blob|null,account:string):Promise<void>{
+    const session=await this.getSession();if(!session||session.user.id!==account)throw new Error('Das Konto hat sich geändert. Bitte Einstellungen neu öffnen.');
+    if(image&&(image.type!=='image/webp'||image.size>2097152))throw new Error('Ungültiges Profilbild.');
+    const id=session.user.id,bucket=this.client.storage.from('profile-pictures');
+    const {error}=image?await bucket.upload(id+'/avatar.webp',image,{upsert:true,contentType:'image/webp',cacheControl:'0'}):await bucket.remove([id+'/avatar.webp']);
+    if(error)throw new Error('Profilbild konnte nicht gespeichert werden. Bitte Verbindung prüfen. Falls noch nicht eingerichtet: Ein Admin muss die Profilbild-SQL-Datei in Supabase ausführen.');
+    this.avatarUrls.delete(id);this.avatarChanges.next(id);
+  }
   private client: SupabaseClient;
 
   constructor() {

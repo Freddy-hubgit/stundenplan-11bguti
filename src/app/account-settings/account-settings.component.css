@@ -10,3 +10,5 @@ input:focus-visible, button:focus-visible { outline: 2px solid var(--accent-cyan
 .error { color: #f79494; margin: 12px 0; } .success { color: #37c9b0; margin: 12px 0; }
 .logout { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); }
 button.danger { background: transparent; color: #f79494; border-color: currentColor; }
+
+.profile-picture{display:flex;gap:18px;align-items:flex-start;margin:16px 0 24px}.profile-picture app-avatar{width:80px;height:80px;font-size:30px}.profile-picture p{font-size:12px;color:var(--text-dim);line-height:1.6}.profile-picture div{min-width:0}.profile-picture label{margin-top:0}

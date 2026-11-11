@@ -8,18 +8,18 @@
   <div class="chat-layout" *ngIf="profile && !loading && mode==='direct'">
    <aside class="panel sidebar">
     <h2>Neuer Chat</h2><label for="people-search">Person suchen</label><input id="people-search" type="search" [(ngModel)]="search" placeholder="Name oder Rolle" autocomplete="off">
-    <div class="people"><button type="button" class="person" *ngFor="let person of filteredPeople; trackBy:trackId" [disabled]="busy||messagesLoading" (click)="open(person)"><strong>{{ person.full_name }}</strong><span>{{ roleLabel(person.role) }} · {{ person.id.slice(-6) }}</span><span class="sr-only">Chat starten</span></button></div>
+    <div class="people"><button type="button" class="person" *ngFor="let person of filteredPeople; trackBy:trackId" [disabled]="busy||messagesLoading" (click)="open(person)"><app-avatar [account]="person.id" [name]="person.full_name"></app-avatar><strong>{{ person.full_name }}</strong><span>{{ roleLabel(person.role) }} · {{ person.id.slice(-6) }}</span><span class="sr-only">Chat starten</span></button></div>
     <p class="muted" *ngIf="!filteredPeople.length">Keine Personen gefunden.</p>
     <h2 class="threads-heading">Meine Chats</h2><p class="muted" *ngIf="!threads.length">Du hast noch keine Chats. Wähle eine Person aus.</p>
-    <button type="button" class="thread" *ngFor="let thread of threads; trackBy:trackId" [class.selected]="selected?.id===thread.id" [attr.aria-pressed]="selected?.id===thread.id" [disabled]="busy" (click)="select(thread)"><strong>{{ thread.peer_name }}</strong><span>{{ roleLabel(thread.peer_role) }}</span><span class="preview">{{ thread.last_message || 'Noch keine Nachrichten' }}</span></button>
+    <button type="button" class="thread" *ngFor="let thread of threads; trackBy:trackId" [class.selected]="selected?.id===thread.id" [attr.aria-pressed]="selected?.id===thread.id" [disabled]="busy" (click)="select(thread)"><app-avatar [account]="thread.peer_id" [name]="thread.peer_name"></app-avatar><strong>{{ thread.peer_name }}</strong><span>{{ roleLabel(thread.peer_role) }}</span><span class="preview">{{ thread.last_message || 'Noch keine Nachrichten' }}</span></button>
    </aside>
    <section class="panel conversation" aria-label="Privater Chat">
     <ng-container *ngIf="selected;else noChat">
-     <div class="conversation-header"><h2>{{ selected.peer_name }}</h2><span class="muted">{{ roleLabel(selected.peer_role) }}</span></div>
+     <div class="conversation-header"><app-avatar [account]="selected.peer_id" [name]="selected.peer_name"></app-avatar><h2>{{ selected.peer_name }}</h2><span class="muted">{{ roleLabel(selected.peer_role) }}</span></div>
      <p *ngIf="messagesLoading" role="status">Chat wird geladen …</p>
      <div #messageLog class="message-log" role="log" aria-live="polite" aria-relevant="additions" aria-label="Chatverlauf">
       <p *ngIf="!messagesLoading&&!messages.length" class="muted">Schreibe die erste Nachricht.</p>
-      <article class="message" *ngFor="let message of messages;trackBy:trackId" [class.own]="message.sender_id===profile.id"><header><strong>{{ message.sender_name }}</strong><time>{{ message.created_at | date:'dd.MM.yyyy HH:mm' }}</time></header><p>{{ message.body }}</p></article>
+      <article class="message" *ngFor="let message of messages;trackBy:trackId" [class.own]="message.sender_id===profile.id"><header><app-avatar [account]="message.sender_id" [name]="message.sender_name"></app-avatar><strong>{{ message.sender_name }}</strong><time>{{ message.created_at | date:'dd.MM.yyyy HH:mm' }}</time></header><p>{{ message.body }}</p></article>
      </div>
      <form (ngSubmit)="send()"><label for="direct-message">Nachricht</label><textarea id="direct-message" name="message" [(ngModel)]="draft" rows="3" maxlength="5000" required [disabled]="busy||messagesLoading" placeholder="Schreibe eine Nachricht …"></textarea><button type="submit" class="primary" [disabled]="busy||messagesLoading||!draft.trim()">{{ busy?'Sende …':'Nachricht senden' }}</button></form>
     </ng-container>

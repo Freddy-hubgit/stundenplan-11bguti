@@ -2,6 +2,11 @@
 <p *ngIf="loadError" role="alert">{{ loadError }}</p>
 <div *ngIf="profile" class="account-details">
   <h3>Dein Konto</h3>
+  <section class="profile-picture" aria-label="Profilbild">
+    <app-avatar [account]="profile.id" [name]="profile.full_name||''" aria-label="Dein Profilbild"></app-avatar>
+    <div><label>Profilbild hochladen<input type="file" accept="image/jpeg,image/png,image/webp" [disabled]="avatarBusy||loggingOut" (change)="selectAvatar($event)"></label><p>JPG, PNG oder WebP, maximal 5 MB. Das Bild wird mittig quadratisch zugeschnitten und am Konto gespeichert. Angemeldete Nutzer können es in Chats sehen.</p><button type="button" [disabled]="avatarBusy||loggingOut" (click)="removeAvatar()">Profilbild entfernen</button></div>
+  </section>
+  <p *ngIf="avatarBusy" role="status">Profilbild wird gespeichert …</p><p *ngIf="avatarError" class="error" role="alert">{{avatarError}}</p><p *ngIf="avatarSuccess" class="success" role="status">{{avatarSuccess}}</p>
   <dl><dt>Name</dt><dd>{{ profile.full_name || 'Nicht angegeben' }}</dd>
     <dt>E-Mail</dt><dd>{{ profile.email }}</dd>
     <dt>Rollen</dt><dd>{{ roleNames(profile) }}</dd></dl>

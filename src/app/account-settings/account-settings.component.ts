@@ -1,3 +1,4 @@
+import {prepareAvatar} from '../avatar/prepare-avatar';
 import { roleNames } from '../supabase.service';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
@@ -18,6 +19,20 @@ export class AccountSettingsComponent implements OnInit {
   passwordError = '';
   passwordSuccess = '';
   saving = false;
+  avatarBusy=false;avatarError='';avatarSuccess='';
+  async selectAvatar(event:Event):Promise<void>{
+    const input=event.target as HTMLInputElement,file=input.files?.[0];if(!file||this.avatarBusy)return;
+    this.avatarBusy=true;this.avatarError='';this.avatarSuccess='';
+    try{await this.supabase.saveProfilePicture(await prepareAvatar(file),this.profile?.id||'');this.avatarSuccess='Profilbild gespeichert.';}
+    catch(e:any){this.avatarError=e?.message||'Profilbild konnte nicht gespeichert werden.';}
+    finally{this.avatarBusy=false;input.value='';}
+  }
+  async removeAvatar():Promise<void>{
+    if(this.avatarBusy)return;this.avatarBusy=true;this.avatarError='';this.avatarSuccess='';
+    try{await this.supabase.saveProfilePicture(null,this.profile?.id||'');this.avatarSuccess='Profilbild entfernt.';}
+    catch(e:any){this.avatarError=e?.message||'Profilbild konnte nicht entfernt werden.';}
+    finally{this.avatarBusy=false;}
+  }
   loggingOut = false;
   logoutError = '';
   constructor(private supabase: SupabaseService, private router: Router) {}
@@ -61,7 +76,7 @@ export class AccountSettingsComponent implements OnInit {
 
 
   async logout(): Promise<void> {
-    if (this.loggingOut || this.saving) return;
+    if (this.loggingOut || this.saving || this.avatarBusy) return;
     this.loggingOut = true;
     this.logoutError = '';
     try {

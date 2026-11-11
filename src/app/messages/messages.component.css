@@ -15,3 +15,5 @@ button { font-size: 13px; }button.primary { background: #7be2e9; color: #10202a;
 @media(max-width:760px) { .chat-layout { grid-template-columns: 1fr; }.panel { padding: 18px; }.people { max-height: 160px; }.message-log { height: 360px; } }
 
 .chat-tabs{display:flex;gap:12px;flex-wrap:wrap;margin:18px 0}.chat-tabs button[aria-pressed=true]{border-color:var(--accent);color:var(--accent)}
+
+.person app-avatar,.thread app-avatar{float:left;margin-right:10px}.message header app-avatar{width:28px;height:28px;margin-right:8px}.conversation-header app-avatar{margin-right:10px}

@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),ts=require('../node_modules/typescript');
 const js=ts.transpileModule(fs.readFileSync('src/app/supabase.service.ts','utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2020,module:ts.ModuleKind.CommonJS}}).outputText;
-const ctx={exports:{},require:name=>name==='@angular/core'?{Injectable:()=>c=>c}:{createClient:()=>({})}};vm.runInNewContext(js,ctx);const api=new ctx.exports.SupabaseService();
+const ctx={exports:{},require:name=>name==='rxjs'?require('rxjs'):name==='@angular/core'?{Injectable:()=>c=>c}:{createClient:()=>({})}};vm.runInNewContext(js,ctx);const api=new ctx.exports.SupabaseService();
 const error=(status,body)=>({message:'Edge Function returned a non-2xx status code',context:new Response(JSON.stringify(body),{status})});
 (async()=>{
  let result=await api.unwrapFunctionResult(null,error(500,{error:'Profilanlage fehlgeschlagen. Bitte zuerst die Lehrer-Migration ausführen.'}),'create-teacher');assert.match(result.error,/Profilanlage/);

@@ -5,7 +5,7 @@
      [class.bg-forest]="settings.backgroundKey === 'forest'">
   <header class="portal-header">
     <h1>{{ greeting }}</h1>
-    <div class="header-actions">
+    <div class="header-actions"><app-avatar *ngIf="avatarAccount" [account]="avatarAccount" [name]="avatarName" aria-label="Dein Profilbild"></app-avatar>
       <button type="button" class="settings-btn" (click)="openSettings()" title="Einstellungen" aria-label="Einstellungen öffnen">⚙</button>
     </div>
   </header>

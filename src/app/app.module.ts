@@ -1,3 +1,4 @@
+import {AvatarComponent} from './avatar/avatar.component';
 import {NotebooksComponent,NotebookLeaveGuard} from './notebooks/notebooks.component';
 import {PeriodPickerComponent} from './period-picker/period-picker.component';
 import {GroupChatsComponent} from './group-chats/group-chats.component';
@@ -58,7 +59,7 @@ const routes: Routes = [
 
 @NgModule({
   declarations: [
-    AppComponent,PeriodPickerComponent,NotebooksComponent,GroupChatsComponent,SubmissionReviewComponent,RoomBookingComponent,ChangeHistoryComponent,
+    AvatarComponent,AppComponent,PeriodPickerComponent,NotebooksComponent,GroupChatsComponent,SubmissionReviewComponent,RoomBookingComponent,ChangeHistoryComponent,
     SchoolComponent,MaterialsComponent,ExamPlanComponent,DashboardComponent,YearResetComponent,
     AbsenceComponent,
     NotificationsComponent,

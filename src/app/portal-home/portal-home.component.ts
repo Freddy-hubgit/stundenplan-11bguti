@@ -34,6 +34,7 @@ export class PortalHomeComponent implements OnInit,OnDestroy {
     },
   ];
 
+  avatarAccount='';avatarName='';
   tileError='';private destroyed=false;private tileTimer?:ReturnType<typeof setInterval>;
   async refreshTileSettings():Promise<void>{try{await this.tileSettings.load();this.tileError='';if(this.contextTile&&!this.tileSettings.allowed(this.contextTile.route))this.contextTile=null;}catch{this.tileError='Die zentralen Kacheleinstellungen konnten nicht geladen werden. Die zuletzt verfügbare Ansicht wird angezeigt.';}}
   ngOnDestroy():void{this.destroyed=true;clearInterval(this.tileTimer);this.clearTileDrag();}
@@ -90,6 +91,7 @@ export class PortalHomeComponent implements OnInit,OnDestroy {
 
   async ngOnInit(): Promise<void> {
     const profile = await this.supabase.getMyProfile();
+    this.avatarAccount=profile?.id||'';this.avatarName=profile?.full_name||'';
     this.homeLayout.activate(profile?.id ?? null);
     const name = profile?.full_name?.trim().split(/\s+/)[0];
     const greetings = ['Hi', 'Hallo', 'Hey', 'Willkommen', 'Schön, dich zu sehen', 'Schön, dass du da bist'];

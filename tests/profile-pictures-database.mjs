@@ -1,0 +1,21 @@
+import assert from 'node:assert/strict';import {readFile} from 'node:fs/promises';
+const {PGlite}=await import(process.env.PGLITE_MODULE_PATH||'@electric-sql/pglite');const db=new PGlite();
+await db.exec(`create role anon;create role authenticated;create schema auth;create schema storage;
+create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid;$$;
+create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);
+create table storage.objects(bucket_id text,name text,unique(bucket_id,name));alter table storage.objects enable row level security;
+grant usage on schema storage,auth to authenticated,anon;grant all on storage.objects to authenticated,anon;
+create policy legacy_open on storage.objects for all to public using(true) with check(true);`);
+const sql=await readFile('supabase/migrations/202611110031_profile_pictures.sql','utf8');await db.exec(sql);await db.exec(sql);
+const a='00000000-0000-0000-0000-000000000001',b='00000000-0000-0000-0000-000000000002';
+async function login(id){await db.exec('reset role');await db.query("select set_config('request.jwt.claim.sub',$1,false)",[id||'']);await db.exec('set role '+(id?'authenticated':'anon'));}
+await login(a);await db.query("insert into storage.objects values('profile-pictures',$1)",[a+'/avatar.webp']);
+await assert.rejects(()=>db.query("insert into storage.objects values('profile-pictures',$1)",[b+'/avatar.webp']));
+await assert.rejects(()=>db.query("insert into storage.objects values('profile-pictures',$1)",[a+'/arbitrary.svg']));
+await login(b);assert.equal((await db.query('select * from storage.objects')).rows.length,1);
+assert.equal((await db.query("delete from storage.objects where bucket_id='profile-pictures' returning *")).rows.length,0);
+assert.equal((await db.query("update storage.objects set name=name where bucket_id='profile-pictures' returning *")).rows.length,0);
+await login(null);assert.equal((await db.query('select * from storage.objects')).rows.length,0);
+await assert.rejects(()=>db.query("insert into storage.objects values('profile-pictures',$1)",[b+'/avatar.webp']));
+await login(a);assert.equal((await db.query('delete from storage.objects returning *')).rows.length,1);
+await db.close();console.log('PASS profile pictures: repeatable migration, signed-in reads, owner-only writes/removal, anonymous denial despite legacy open policies');
