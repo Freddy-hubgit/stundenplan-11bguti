@@ -1,0 +1,12 @@
+import {learningError} from '../learning-errors';
+import {Component,OnInit,OnDestroy} from '@angular/core';import {SupabaseService} from '../supabase.service';import {SettingsService} from '../settings.service';import {Lesson,teacherKey} from '../timetable-data';import {SubstitutionService,splitSubstitutions,dateKey} from '../substitution.service';
+@Component({selector:'app-my-teaching',templateUrl:'./my-teaching.component.html',styleUrls:['../portal-home/portal-home.component.css','../learning.css','./my-teaching.component.css']})
+export class MyTeachingComponent implements OnInit,OnDestroy{
+ teacher='';lessons:(Lesson&{group_name?:string})[]=[];changes:any[]=[];selected=dateKey(new Date());error='';busy=false;loading=true;private timer?:ReturnType<typeof setInterval>;private destroyed=false;
+ constructor(private api:SupabaseService,public settings:SettingsService,private substitutions:SubstitutionService){}
+ get week():{date:string;label:string;lessons:any[]}[]{const day=new Date(this.selected+'T12:00:00');if(isNaN(day.getTime()))return[];day.setDate(day.getDate()-(day.getDay()+6)%7);const keys=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];return Array.from({length:7},(_,i)=>{const date=new Date(day);date.setDate(date.getDate()+i);const key=dateKey(date);const entries=this.lessons.filter(l=>l.day===keys[date.getDay()]).reduce<any[]>((a,l)=>a.concat(splitSubstitutions(l,key,this.changes)),[]).filter(l=>!l.cancelled&&l.teacher.split(',').some((t:string)=>teacherKey(t)===teacherKey(this.teacher))).sort((a,b)=>a.start.localeCompare(b.start));return {date:key,label:date.toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'2-digit'}),lessons:entries};});}
+ async ngOnInit():Promise<void>{await this.refresh();this.loading=false;if(!this.destroyed)this.timer=setInterval(()=>void this.refresh(),15000);}
+ ngOnDestroy():void{this.destroyed=true;clearInterval(this.timer);}
+ async refresh():Promise<void>{if(this.busy)return;this.busy=true;this.error='';try{const [data,changes]=await Promise.all([this.api.supportRpc<{teacher:string;lessons:any[]}>('school_my_teaching'),this.substitutions.list()]);if(!this.destroyed){this.teacher=data.teacher;this.lessons=data.lessons;this.changes=changes;}}catch(e:any){if(!this.destroyed)this.error=learningError(e,'Eigener Unterricht konnte nicht geladen werden.');}finally{this.busy=false;}}
+ move(offset:number):void{const day=new Date(this.selected+'T12:00:00');day.setDate(day.getDate()+offset*7);this.selected=dateKey(day);}
+}

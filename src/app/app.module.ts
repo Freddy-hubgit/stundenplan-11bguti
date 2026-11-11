@@ -1,3 +1,9 @@
+import {LearningGradesComponent} from './learning-grades/learning-grades.component';
+import {ExaminationCalendarComponent} from './examination-calendar/examination-calendar.component';
+import {ConsultationsComponent} from './consultations/consultations.component';
+import {PortalSearchComponent} from './portal-search/portal-search.component';
+import {TrashComponent} from './trash/trash.component';
+import {MyTeachingComponent} from './my-teaching/my-teaching.component';
 import {AvatarComponent} from './avatar/avatar.component';
 import {NotebooksComponent,NotebookLeaveGuard} from './notebooks/notebooks.component';
 import {PeriodPickerComponent} from './period-picker/period-picker.component';
@@ -36,6 +42,12 @@ import { MessagesComponent } from './messages/messages.component';
 import { SupportComponent } from './support/support.component';
 
 const routes: Routes = [
+ {path:'noten',component:LearningGradesComponent,canActivate:[AuthGuard,FeatureAccessGuard],data:{allowedRoles:['user','teacher','admin']}},
+ {path:'pruefungen',component:ExaminationCalendarComponent,canActivate:[AuthGuard]},
+ {path:'sprechstunden',component:ConsultationsComponent,canActivate:[AuthGuard,FeatureAccessGuard],data:{allowedRoles:['user','teacher','admin']}},
+ {path:'suche',component:PortalSearchComponent,canActivate:[AuthGuard]},
+ {path:'papierkorb',component:TrashComponent,canActivate:[AuthGuard]},
+ {path:'lehrerstundenplan',component:MyTeachingComponent,canActivate:[AuthGuard,FeatureAccessGuard],data:{allowedRoles:['teacher']}},
   {path:'hefte',component:NotebooksComponent,canActivate:[AuthGuard],canDeactivate:[NotebookLeaveGuard]},
   {path:'abgaben',component:SubmissionReviewComponent,canActivate:[AuthGuard,FeatureAccessGuard],data:{allowedRoles:['teacher','admin']}},
   {path:'raumbuchung',component:RoomBookingComponent,canActivate:[AuthGuard]},
@@ -59,7 +71,7 @@ const routes: Routes = [
 
 @NgModule({
   declarations: [
-    AvatarComponent,AppComponent,PeriodPickerComponent,NotebooksComponent,GroupChatsComponent,SubmissionReviewComponent,RoomBookingComponent,ChangeHistoryComponent,
+    LearningGradesComponent,ExaminationCalendarComponent,ConsultationsComponent,PortalSearchComponent,TrashComponent,MyTeachingComponent,AvatarComponent,AppComponent,PeriodPickerComponent,NotebooksComponent,GroupChatsComponent,SubmissionReviewComponent,RoomBookingComponent,ChangeHistoryComponent,
     SchoolComponent,MaterialsComponent,ExamPlanComponent,DashboardComponent,YearResetComponent,
     AbsenceComponent,
     NotificationsComponent,

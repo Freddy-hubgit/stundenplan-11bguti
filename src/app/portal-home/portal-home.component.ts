@@ -19,6 +19,9 @@ interface PortalTile {
 })
 export class PortalHomeComponent implements OnInit,OnDestroy {
   tiles: PortalTile[] = [
+    {title:'Suche',description:'Hefte, Aufgaben, Materialien und Termine finden',route:'/suche',icon:'🔎'},
+    {title:'Papierkorb',description:'Gelöschte Inhalte 30 Tage wiederherstellen',route:'/papierkorb',icon:'♻'},
+    {title:'Prüfungskalender',description:'Klassenarbeiten und Prüfungstermine deiner Klassen',route:'/pruefungen',icon:'📅'},
     {title:'Meine Hefte',description:'Persönliche Notizen für jedes Fach und ein allgemeines Heft',route:'/hefte',icon:'📓'},
     {title:'Klassen & Kurse',description:'Deine Gruppen und Zuordnungen',route:'/klassen',icon:'👥'},
     {title:'Materialablage',description:'Arbeitsblätter, Dateien und Links deiner Gruppen',route:'/materialien',icon:'📂'},
@@ -97,6 +100,8 @@ export class PortalHomeComponent implements OnInit,OnDestroy {
     const greetings = ['Hi', 'Hallo', 'Hey', 'Willkommen', 'Schön, dich zu sehen', 'Schön, dass du da bist'];
     const greeting = greetings[Math.floor(Math.random() * greetings.length)];
     this.greeting = name ? `${greeting}, ${name}` : `${greeting}!`;
+    if(hasRole(profile,'user','teacher','admin'))this.tiles=[...this.tiles,{title:'Notenübersicht',description:'Noten, Durchschnitte und Selbsteinschätzungen',route:'/noten',icon:'📊'},{title:'Sprechstunden',description:'Freie Gesprächstermine finden und buchen',route:'/sprechstunden',icon:'🗓'}];
+    if(hasRole(profile,'teacher'))this.tiles=[...this.tiles,{title:'Mein Unterricht',description:'Dein persönlicher Wochenplan über alle Klassen',route:'/lehrerstundenplan',icon:'🗓'}];
     if(hasRole(profile,'teacher','admin','support'))this.tiles=[...this.tiles,{title:'Krankmeldungen',description:hasRole(profile,'admin')?'Abwesenheiten prüfen und Vertretungen bestätigen':hasRole(profile,'support')?'Krankmeldungen prüfen und zurücknehmen':'Abwesenheit melden und Wunschvertretung vorschlagen',route:'/krankmeldung',icon:'🩺'}];
     if(hasRole(profile,'admin'))this.tiles=[...this.tiles,{title:'Schuljahres-Reset',description:'Vorschau und kontrollierter Neustart',route:'/schuljahr',icon:'⚠'}];
     this.tiles=[...this.tiles,{title:'Raumbuchung',description:'Freie Räume finden und reservieren',route:'/raumbuchung',icon:'🚪'}];

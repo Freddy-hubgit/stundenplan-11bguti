@@ -109,7 +109,8 @@ export class PortalSectionComponent implements OnInit, OnDestroy {
   constructor(public route: ActivatedRoute, public settings: SettingsService, private auth: SupabaseService,
     private api: PortalEventsService) {}
   get isMeetings(): boolean { return this.route.snapshot.data.title === 'Videokonferenz'; }
-  get isStaff(): boolean { return hasRole(this.profile, 'admin', 'support'); }
+  get isStaff(): boolean { return hasRole(this.profile, 'teacher','admin', 'support'); }
+  canEditEvent(event:PortalEvent):boolean{return hasRole(this.profile,'admin','support')||hasRole(this.profile,'teacher')&&event.owner_id===this.profile?.id;}
   get monthLabel(): string { return this.month.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' }); }
   get selectedDateLabel(): string { return new Date(this.selectedDate + 'T12:00:00').toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }); }
   eventsOn(date: string): PortalEvent[] {
@@ -182,6 +183,7 @@ export class PortalSectionComponent implements OnInit, OnDestroy {
     this.draft.meeting_url = 'https://meet.jit.si/Schulportal-' + Array.from(random).map(n => n.toString(16).padStart(2, '0')).join('');
   }
   edit(event: PortalEvent): void {
+    if(!this.canEditEvent(event))return;
     if (this.busy) return;
     this.draftInstants = { start: event.starts_at, end: event.ends_at };
     this.editingId = event.id;

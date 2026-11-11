@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 
 export interface PortalEvent {
+  owner_id?:string|null;
   id: string; kind: 'event' | 'meeting'; title: string; description: string;
   starts_at: string; ends_at: string; location: string; meeting_url: string;
 }

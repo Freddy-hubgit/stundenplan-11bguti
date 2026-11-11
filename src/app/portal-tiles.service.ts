@@ -1,5 +1,6 @@
 import {Injectable} from '@angular/core';import {SupabaseService} from './supabase.service';
 export const PORTAL_TILE_OPTIONS=[
+ {route:'/noten',title:'Notenübersicht'},{route:'/pruefungen',title:'Prüfungskalender'},{route:'/sprechstunden',title:'Sprechstunden'},{route:'/suche',title:'Suche'},{route:'/papierkorb',title:'Papierkorb'},{route:'/lehrerstundenplan',title:'Mein Unterricht'},
  {route:'/hefte',title:'Meine Hefte'},
  {route:'/stundenplan',title:'Stundenplan'},{route:'/klassen',title:'Klassen & Kurse'},{route:'/materialien',title:'Materialablage'},
  {route:'/hausaufgaben',title:'Hausaufgaben'},{route:'/abgaben',title:'Abgabeübersicht'},{route:'/nachrichten',title:'Nachrichten'},

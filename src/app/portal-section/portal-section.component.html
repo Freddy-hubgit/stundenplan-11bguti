@@ -38,7 +38,7 @@
       <div class="event-header"><h3>{{ event.title }}</h3><span class="badge">{{ event.kind === 'meeting' ? (isLive(event) ? 'Jitsi · Jetzt' : 'Jitsi') : 'Termin' }}</span></div>
       <p class="event-time">{{ event.starts_at | date:'dd.MM.yyyy HH:mm' }} – {{ event.ends_at | date:'dd.MM.yyyy HH:mm' }}</p>
       <p *ngIf="event.location" class="location">{{ event.location }}</p><p class="description" *ngIf="event.description">{{ event.description }}</p>
-      <div class="actions"><ng-container *ngIf="event.kind === 'meeting' && meetingUrl(event)"><a class="primary button" [href]="meetingUrl(event)" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">Teilnehmen ↗</a><button type="button" (click)="copyLink(event)">Link kopieren</button></ng-container><button type="button" (click)="exportEvent(event)">Zum Kalender hinzufügen (.ics)</button><ng-container *ngIf="isStaff"><button type="button" (click)="edit(event)" [disabled]="busy">Bearbeiten</button><button type="button" class="danger" (click)="deletingId = event.id" [disabled]="busy">Löschen</button></ng-container></div>
+      <div class="actions"><ng-container *ngIf="event.kind === 'meeting' && meetingUrl(event)"><a class="primary button" [href]="meetingUrl(event)" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">Teilnehmen ↗</a><button type="button" (click)="copyLink(event)">Link kopieren</button></ng-container><button type="button" (click)="exportEvent(event)">Zum Kalender hinzufügen (.ics)</button><ng-container *ngIf="canEditEvent(event)"><button type="button" (click)="edit(event)" [disabled]="busy">Bearbeiten</button><button type="button" class="danger" (click)="deletingId = event.id" [disabled]="busy">Löschen</button></ng-container></div>
       <div class="delete-confirm" *ngIf="deletingId === event.id"><p>Diesen Termin wirklich löschen?</p><button type="button" class="danger" [disabled]="busy" (click)="remove(event.id)">Löschen bestätigen</button> <button type="button" [disabled]="busy" (click)="deletingId = null">Behalten</button></div>
     </article>
     <p class="hint" *ngIf="isMeetings">„Teilnehmen“ öffnet Jitsi in einem neuen Tab. Zum Starten eines Raums kann Jitsi eine Anmeldung verlangen. Kamera, Mikrofon und Raumzugang werden dort verwaltet.</p>
@@ -50,7 +50,7 @@
     <section *ngIf="selectedTimelineEvent as item" class="day-event-details" aria-label="Termindetails">
       <h3>{{ item.title }}</h3><p>{{ item.starts_at | date:'dd.MM.yyyy HH:mm' }} – {{ item.ends_at | date:'dd.MM.yyyy HH:mm' }}</p>
       <p *ngIf="item.location">{{ item.location }}</p><p class="description">{{ item.description }}</p>
-      <div class="actions"><a *ngIf="meetingUrl(item)" class="button primary" [href]="meetingUrl(item)" target="_blank" rel="noopener noreferrer">Teilnehmen</a><button type="button" (click)="exportEvent(item)">Kalenderexport (.ics)</button><button *ngIf="isStaff" type="button" (click)="editFromDay(item)">Termin bearbeiten</button></div>
+      <div class="actions"><a *ngIf="meetingUrl(item)" class="button primary" [href]="meetingUrl(item)" target="_blank" rel="noopener noreferrer">Teilnehmen</a><button type="button" (click)="exportEvent(item)">Kalenderexport (.ics)</button><button *ngIf="canEditEvent(item)" type="button" (click)="editFromDay(item)">Termin bearbeiten</button></div>
     </section>
     <div class="timeline-scroll" tabindex="0" aria-label="Uhrzeiten des ausgewählten Tages">
       <div class="day-timeline" [style.height.px]="daySlots.length * 36">

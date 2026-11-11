@@ -1,0 +1,23 @@
+import {learningError} from '../learning-errors';
+import {ActivatedRoute} from '@angular/router';
+import {Component,OnInit} from '@angular/core';import {SchoolExam,SchoolService} from '../school.service';import {SettingsService} from '../settings.service';import {hasRole} from '../supabase.service';import {dateKey} from '../substitution.service';import {SCHOOL_PERIODS} from '../school-periods';
+@Component({selector:'app-examination-calendar',templateUrl:'./examination-calendar.component.html',styleUrls:['../portal-home/portal-home.component.css','../learning.css','./examination-calendar.component.css']})
+export class ExaminationCalendarComponent implements OnInit{
+ groups:{id:string;name:string}[]=[];exams:SchoolExam[]=[];periods=SCHOOL_PERIODS;group='';month=dateKey(new Date()).slice(0,7);byClass=false;teacher=false;busy=false;loading=true;error='';success='';editor=false;deleting='';draft:any={};
+ constructor(public school:SchoolService,public settings:SettingsService,private route:ActivatedRoute){}
+ matchesGroup(e:SchoolExam):boolean{return !this.group||e.group_id===this.group||!!e.class_ids?.includes(this.group);}
+ get editorGroups():{id:string;name:string}[]{return this.draft.id&&!this.groups.some(g=>g.id===this.draft.group_id)?[...this.groups,{id:this.draft.group_id,name:this.draft.group_name||'Kurs'}]:this.groups;}
+ get weekLoads():{week:string;count:number}[]{if(!this.group||!this.teacher)return[];return this.days.filter((_,i)=>i%7===0).map(day=>{const end=new Date(day.key+'T12:00:00');end.setDate(end.getDate()+7);const until=dateKey(end);return {week:day.key,count:this.exams.filter(e=>this.matchesGroup(e)&&e.date>=day.key&&e.date<until).length};});}
+ get visible():SchoolExam[]{return this.exams.filter(e=>e.date.startsWith(this.month)&&this.matchesGroup(e)).sort((a,b)=>(this.byClass?a.group_name.localeCompare(b.group_name,'de'):0)||a.date.localeCompare(b.date)||a.starts.localeCompare(b.starts));}
+ get days():{key:string;label:number;outside:boolean;exams:SchoolExam[]}[]{const [y,m]=this.month.split('-').map(Number);if(!y||!m)return[];const start=new Date(y,m-1,1,12);start.setDate(start.getDate()-(start.getDay()+6)%7);return Array.from({length:42},(_,i)=>{const d=new Date(start);d.setDate(d.getDate()+i);const key=dateKey(d);return {key,label:d.getDate(),outside:d.getMonth()!==m-1,exams:this.exams.filter(e=>e.date===key&&this.matchesGroup(e))};});}
+ get heading():string{const [y,m]=this.month.split('-').map(Number);return new Date(y,m-1,1).toLocaleDateString('de-DE',{month:'long',year:'numeric'});}
+ async ngOnInit():Promise<void>{try{await this.school.load();this.teacher=hasRole(this.school.profile,'teacher','admin');await this.load();const item=this.route.snapshot.queryParamMap.get('item');const exam=this.exams.find(e=>e.id===item);if(exam){this.month=exam.date.slice(0,7);this.group=exam.group_id;}}catch(e:any){this.error=learningError(e,'Prüfungskalender konnte nicht geladen werden. Bitte Einrichtung prüfen.');}finally{this.loading=false;}}
+ private async load():Promise<void>{const [groups,exams]=await Promise.all([this.school.api.supportRpc<{id:string;name:string}[]>('exam_calendar_groups'),this.school.api.supportRpc<SchoolExam[]>('exam_calendar_list')]);this.groups=groups;this.exams=exams;}
+ async refresh():Promise<void>{if(this.busy)return;this.busy=true;this.error='';try{await this.load();}catch(e:any){this.error=learningError(e,'Aktualisieren fehlgeschlagen.');}finally{this.busy=false;}}
+ move(offset:number):void{const [y,m]=this.month.split('-').map(Number);this.month=dateKey(new Date(y,m-1+offset,1,12)).slice(0,7);}
+ create(day=dateKey(new Date())):void{if(!this.teacher)return;this.draft={id:null,group_id:this.group||this.groups[0]?.id||'',title:'',subject:'',date:day,starts:'07:30',ends:'09:00',room:'',details:''};this.editor=true;this.error='';}
+ edit(e:SchoolExam):void{this.draft={...e,starts:e.starts.slice(0,5),ends:e.ends.slice(0,5)};this.editor=true;}
+ canEdit(e:SchoolExam):boolean{return this.school.isAdmin||this.teacher&&e.author_id===this.school.profile?.id;}
+ async save():Promise<void>{if(this.busy)return;this.busy=true;this.error='';this.success='';try{await this.school.saveExam(this.draft);await this.load();this.editor=false;this.success='Klassenarbeit gespeichert und im Stundenplan berücksichtigt.';}catch(e:any){this.error=learningError(e,'Speichern fehlgeschlagen. Eingaben bleiben erhalten.');}finally{this.busy=false;}}
+ async remove(e:SchoolExam):Promise<void>{if(this.busy)return;this.busy=true;this.error='';try{await this.school.deleteExam(e.id);await this.load();this.deleting='';this.success='Prüfung in den Papierkorb verschoben.';}catch(e:any){this.error=learningError(e,'Löschen fehlgeschlagen.');}finally{this.busy=false;}}
+}

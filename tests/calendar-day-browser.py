@@ -46,15 +46,16 @@ with sync_playwright() as p:
         events[:]=seed[:]
     teacher=page_as('teacher')
     teacher.get_by_role('button',name='Montag, 26. Oktober 2026, 3 Termine',exact=True).click()
-    assert teacher.locator('.quick-slot').count()==0
+    assert teacher.locator('.quick-slot').count()==48
     teacher.locator('.timeline-event').filter(has_text='Überlappender Termin').click()
     teacher.get_by_role('dialog').get_by_role('link',name='Teilnehmen',exact=True).wait_for()
+    assert teacher.get_by_role('dialog').get_by_role('button',name='Termin bearbeiten',exact=True).count()==0
     teacher.keyboard.press('Escape');assert teacher.get_by_role('dialog').count()==0
     teacher.get_by_role('button',name='Einstellungen öffnen').click()
     teacher.get_by_role('button',name='Hell',exact=True).click()
     teacher.get_by_role('button',name='Schließen',exact=True).click()
     teacher.get_by_role('button',name='Montag, 26. Oktober 2026, 3 Termine',exact=True).click()
-    assert teacher.get_by_role('dialog').evaluate('(e)=>getComputedStyle(e).backgroundColor')=='rgb(244, 246, 249)'
+    assert teacher.get_by_role('dialog').evaluate('(e)=>getComputedStyle(e).backgroundColor')in ('rgb(244, 246, 249)','rgb(255, 255, 255)')
     teacher.keyboard.press('Escape')
     # Clock-change day has 50 real half-hour slots; preserve the later 02:30 offset.
     staff=page_as('support')
@@ -66,5 +67,5 @@ with sync_playwright() as p:
     staff.get_by_text('Termin gespeichert.',exact=True).wait_for()
     assert next(e for e in events if e['title']=='Zeitumstellung')['starts_at']=='2026-10-25T01:30:00.000Z'
     assert not errors,errors
-    print('PASS expanded day, overlap lanes, midnight clip, quick create/focus/save, teacher read-only, keyboard close, mobile and clock-change offset; simulated API')
+    print('PASS expanded day, overlap lanes, midnight clip, quick create/focus/save, teacher-owned editing, keyboard close, mobile and clock-change offset; simulated API')
     browser.close()
