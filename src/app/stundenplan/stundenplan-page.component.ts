@@ -1,3 +1,4 @@
+import {todayKey as currentSchoolDate} from '../today';
 import {SCHOOL_PERIODS} from '../school-periods';
 import {nextTeachingLesson} from '../teacher-next';
 import {SchoolService,SchoolExam} from '../school.service';
@@ -675,6 +676,8 @@ type EditorMode = "new" | "edit";
     return d;
   }
 
+  isSchoolToday(date:Date):boolean{return dateKey(date)===currentSchoolDate();}
+
   private isSameDate(a: Date, b: Date): boolean {
     return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
   }
@@ -811,7 +814,7 @@ type EditorMode = "new" | "edit";
   }
 
   private buildDayColumn(def: DayDef, date: Date): DayColumn {
-    const isToday = this.isSameDate(date, this.now);
+    const isToday = this.isSchoolToday(date);
     const live = this.liveLesson;
     const todayKey = this.todayKey;
 

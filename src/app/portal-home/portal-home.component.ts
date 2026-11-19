@@ -124,12 +124,13 @@ export class PortalHomeComponent implements OnInit,OnDestroy {
         ...this.tiles,
         {
           title: 'Verwaltung',
-          description: 'Konten anlegen und verwalten',
+          description: 'Konten, Klassen und Portal verwalten',
           route: '/admin',
           icon: '🛠️',
         },
       ];
     }
+    if(isStaff)this.tiles=this.tiles.filter(tile=>!['/klassen','/schuljahr','/aenderungsverlauf','/papierkorb'].includes(tile.route));
     await this.refreshTileSettings();if(!this.destroyed)this.tileTimer=setInterval(()=>void this.refreshTileSettings(),30000);
   }
 }

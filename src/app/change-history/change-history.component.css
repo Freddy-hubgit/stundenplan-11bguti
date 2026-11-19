@@ -2,3 +2,5 @@
 pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;background:var(--input);padding:16px;border-radius:10px}summary{cursor:pointer}details{margin-bottom:16px}
 
 li{margin:6px 0;line-height:1.6;overflow-wrap:anywhere}ul{padding-left:20px;margin-bottom:16px}
+
+:host{display:block;min-width:0}.embedded{padding:0;min-height:0;background:transparent!important;width:100%;box-sizing:border-box}

@@ -49,7 +49,7 @@
     </section>
     <section aria-labelledby="plan-title"><h2 id="plan-title">Wochenübersicht · {{ weekLabel }}</h2>
       <p *ngIf="!loading && !loadError && !daysWithEntries.length" class="panel week-empty" role="status">In dieser Woche hast du keine Vertretungen oder Unterrichtsausfälle.</p>
-      <section *ngFor="let day of daysWithEntries; trackBy: trackDay" class="day-group" [class.is-today]="day.today" [attr.aria-labelledby]="'day-' + day.date">
+      <section *ngFor="let day of daysWithEntries; trackBy: trackDay" class="day-group" [class.is-today]="day.today" [attr.aria-current]="day.today?'date':null" [attr.aria-labelledby]="'day-' + day.date">
         <header class="day-heading"><h3 [id]="'day-' + day.date">{{ day.label }} <span *ngIf="day.today" class="today-label">Heute</span></h3><span class="day-count">{{ day.entries.length }} {{ day.entries.length === 1 ? 'Eintrag' : 'Einträge' }}</span></header>
       <article class="panel entry" *ngFor="let entry of day.entries; trackBy: trackId" [class.cancelled-entry]="entry.kind === 'cancelled'">
         <div class="entry-header"><h3>{{ entry.teacher }} fehlt</h3><span class="badge">{{ entry.kind === 'replacement' ? 'Vertretung' : 'Ausgefallen' }}</span></div>

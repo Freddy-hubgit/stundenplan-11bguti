@@ -1,6 +1,7 @@
-import {Component,OnInit} from '@angular/core';import {SchoolService} from '../school.service';import {SettingsService} from '../settings.service';
+import {Component,Input,OnInit} from '@angular/core';import {SchoolService} from '../school.service';import {SettingsService} from '../settings.service';
 @Component({selector:'app-year-reset',templateUrl:'./year-reset.component.html',styleUrls:['../portal-home/portal-home.component.css','../homework/homework.component.css','../school/school.component.css','./year-reset.component.css']})
 export class YearResetComponent implements OnInit{
+ @Input() embedded=false;
  clearGroups=false;clearChats=false;deleteGraduates=false;preview:any=null;result:any=null;confirmation='';busy=false;error='';finalGrade=13;
  constructor(public school:SchoolService,public settings:SettingsService){}
  async ngOnInit():Promise<void>{try{await this.school.load();this.finalGrade=await this.school.api.supportRpc('school_year_config');this.result=await this.school.api.schoolReset({action:'status'});}catch{this.error='Admin-Einstellungen konnten nicht geladen werden.';}}

@@ -32,6 +32,7 @@ with sync_playwright() as p:
  fail_assignment=True;form.get_by_label('Name',exact=True).fill('Ohne Zuordnung');form.get_by_label('E-Mail',exact=True).fill('teilweise@example.test');form.get_by_label('Passwort',exact=True).fill('Testpasswort123');admin.get_by_label('Klasse beim Anlegen',exact=True).select_option(B);admin.get_by_role('button',name='Konto anlegen',exact=True).click();admin.get_by_text('Das Konto wurde bereits angelegt, aber die Klasse konnte nicht zugeordnet werden.',exact=False).wait_for();assert form.get_by_label('E-Mail',exact=True).input_value()=='';assert sum(kind=='create' for kind,args in requests)==2;fail_assignment=False
  admin.get_by_role('button',name='Klasse speichern',exact=True).click();admin.get_by_text('Klasse gespeichert.',exact=True).wait_for();assert sum(kind=='create' for kind,args in requests)==2
  support=page_as('support');row=support.locator('tbody tr').filter(has_text='user@example.test');row.get_by_role('button',name='Bearbeiten',exact=True).click();support.get_by_label('Klasse bearbeiten',exact=True).select_option('');support.get_by_role('button',name='Speichern',exact=True).click();support.get_by_text('Klassenzuordnung entfernt.',exact=True).wait_for();assert not any(m['person_id']==ids['user'] for m in members)
- assert not support.get_by_role('button',name='Klassen & Kurse',exact=True).count()
+ assert support.get_by_role('button',name='Klassen & Kurse',exact=True).count()==1
+ assert not support.get_by_role('button',name='Schuljahres-Reset',exact=True).count()
  assert not errors,errors;browser.close()
 print('PASS account class UI: create+assign, stale edit preserved, recoverable partial creation without duplicate accounts, support edit/clear and roles preserved; APIs mocked')

@@ -1,3 +1,4 @@
+import {todayKey,schoolDateKey} from '../today';
 import {learningError} from '../learning-errors';
 import {Component,OnInit} from '@angular/core';import {SupabaseService,hasRole} from '../supabase.service';import {SettingsService} from '../settings.service';
 interface Slot{id:string;teacher_id:string;teacher_name:string;starts_at:string;ends_at:string;location:string;booking_id:string|null;student_name:string|null;topic:string|null;available:boolean;can_manage:boolean;can_cancel:boolean;}
@@ -5,6 +6,7 @@ interface Slot{id:string;teacher_id:string;teacher_name:string;starts_at:string;
 export class ConsultationsComponent implements OnInit{
  slots:Slot[]=[];teacher=false;student=false;busy=false;loading=true;error='';success='';filter='';onlyMine=false;booking='';topic='';confirm='';draft={starts:'',ends:'',location:''};
  constructor(private api:SupabaseService,public settings:SettingsService){}
+ isToday(value:string):boolean{return schoolDateKey(new Date(value))===todayKey();}
  get teachers():string[]{return Array.from(new Set(this.slots.map(s=>s.teacher_name))).sort((a,b)=>a.localeCompare(b,'de'));}
  get visible():Slot[]{return this.slots.filter(s=>(!this.filter||s.teacher_name===this.filter)&&(!this.onlyMine||s.can_manage||!!s.booking_id));}
  async ngOnInit():Promise<void>{try{const profile=await this.api.getMyProfile();this.teacher=hasRole(profile,'teacher');this.student=hasRole(profile,'user');await this.load();}catch(e:any){this.error=learningError(e,'Sprechstunden konnten nicht geladen werden. Bitte Einrichtung prüfen.');}finally{this.loading=false;}}

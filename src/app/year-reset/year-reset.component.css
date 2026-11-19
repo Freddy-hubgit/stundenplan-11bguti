@@ -1,3 +1,5 @@
 .danger { background:#a6313b;color:#fff;border-color:#d64e59;font-weight:700; }.danger:hover:not(:disabled) { background:#8b2430; }
 
 li { overflow-wrap:anywhere; }
+
+:host{display:block;min-width:0}.embedded{padding:0;min-height:0;background:transparent!important;width:100%;box-sizing:border-box}

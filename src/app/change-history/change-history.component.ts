@@ -1,7 +1,8 @@
-import {Component,OnInit} from '@angular/core';import {SupabaseService} from '../supabase.service';import {SettingsService} from '../settings.service';
+import {Component,Input,OnInit} from '@angular/core';import {SupabaseService} from '../supabase.service';import {SettingsService} from '../settings.service';
 interface Change{id:number;actor_name:string;entity:string;record_key:string;record_label:string;action:string;before_value:any;after_value:any;created_at:string;reverted_by:number|null;}
 @Component({selector:'app-change-history',templateUrl:'./change-history.component.html',styleUrls:['../portal-home/portal-home.component.css','../homework/homework.component.css','./change-history.component.css']})
 export class ChangeHistoryComponent implements OnInit{
+ @Input() embedded=false;
  changes:Change[]=[];filter='';busy=false;error='';success='';more=true;
  entities=[{key:'portal_tile_setting',label:'Hauptmenü-Kacheln'},{key:'school_schedule',label:'Stundenpläne'},{key:'profiles',label:'Kontorollen'},{key:'school_member',label:'Klassenzuordnungen'},{key:'school_group',label:'Klassen und Kurse'},{key:'teacher_absence',label:'Krankmeldungen'},{key:'substitution_entry',label:'Vertretungen'},{key:'school_room',label:'Räume'},{key:'room_booking',label:'Raumbuchungen'}];
  constructor(private api:SupabaseService,public settings:SettingsService){}

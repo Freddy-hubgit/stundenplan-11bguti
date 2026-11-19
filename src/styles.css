@@ -532,3 +532,6 @@
 .app-background.custom-background { --image-shade: linear-gradient(rgba(7,12,18,.60),rgba(7,12,18,.76)); }
 .app-background.custom-background.light-background { --image-shade: linear-gradient(rgba(244,246,249,.72),rgba(244,246,249,.84)); }
 .app-background.custom-background :is(.portal-shell,.admin-shell,.app-shell) { background-image: var(--image-shade),var(--custom-background) !important; background-size: cover !important; background-position: center !important; background-repeat: no-repeat !important; background-attachment: fixed !important; }
+
+/* Current calendar day stays distinct from a selected day. */
+:is(.portal-shell,.admin-shell,.app-shell,.admin-embedded) :is(.day,.calendar-day,.exam-day,.day-header,.day-group,.teaching-day,.mobile-daybar,.calendar-event)[aria-current="date"]{outline:2px solid var(--accent,var(--accent-cyan,#70d9e5));outline-offset:-2px;background-color:var(--accent-cyan-dim,rgba(79,216,232,.14));}

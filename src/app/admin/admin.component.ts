@@ -1,3 +1,6 @@
+import {YearResetComponent} from '../year-reset/year-reset.component';
+import {ChangeHistoryComponent} from '../change-history/change-history.component';
+import {TrashComponent} from '../trash/trash.component';
 import {SchoolComponent} from '../school/school.component';
 import {RoomBookingComponent} from '../room-booking/room-booking.component';
 import {ActivatedRoute} from '@angular/router';
@@ -16,13 +19,17 @@ import { SettingsService } from '../settings.service';
   styleUrls: ['./admin.component.css'],
 })
 export class AdminComponent implements OnInit {
-  tileOptions=PORTAL_TILE_OPTIONS;tileEnabled:Record<string,boolean>={};tileError='';tileSuccess='';tileBusy=false;
+  tileOptions=PORTAL_TILE_OPTIONS.filter(t=>!['/schuljahr','/aenderungsverlauf'].includes(t.route));tileEnabled:Record<string,boolean>={};tileError='';tileSuccess='';tileBusy=false;
   async loadTiles():Promise<void>{if(!this.isAdmin)return;this.tileError='';try{await this.tileSettings.load();this.tileOptions.forEach(t=>this.tileEnabled[t.route]=this.tileSettings.allowed(t.route));}catch(e:any){this.tileError='Kachelsteuerung konnte nicht geladen werden. Bitte Migration 029 einrichten. '+(e?.message||'');}}
   async toggleTile(route:string,enabled:boolean):Promise<void>{if(!this.isAdmin||this.tileBusy)return;const previous=this.tileEnabled[route];this.tileEnabled[route]=enabled;this.tileBusy=true;this.tileError='';this.tileSuccess='';try{await this.tileSettings.save(route,enabled);this.tileSuccess='Kachel '+(enabled?'aktiviert.':'für alle Nutzer deaktiviert.');}catch(e:any){this.tileEnabled[route]=previous;this.tileError=e?.message||'Kachelstatus konnte nicht gespeichert werden.';}finally{this.tileBusy=false;}}
   @ViewChild(SchoolComponent) classAdmin?:SchoolComponent;
   @ViewChild(RoomBookingComponent) roomAdmin?:RoomBookingComponent;
+  @ViewChild(YearResetComponent) yearAdmin?:YearResetComponent;
+  @ViewChild(ChangeHistoryComponent) historyAdmin?:ChangeHistoryComponent;
+  @ViewChild(TrashComponent) trashAdmin?:TrashComponent;
+  private allowedSection(section:string):string{if(section==='system')section='year';return ['accounts','classes','trash'].includes(section)?section:this.isAdmin&&['rooms','teachers','portal','year','history'].includes(section)?section:'accounts';}
   section='accounts';sectionNotice='';
-  selectSection(section:string):void{if(this.classAdmin?.busy||this.roomAdmin?.busy||this.classSaving||this.creating||this.editSaving||this.roleSaving||this.deleting){this.sectionNotice='Bitte warten, bis der laufende Vorgang abgeschlossen ist.';return;}this.sectionNotice='';this.section=this.isAdmin&&['classes','rooms','teachers','portal','system'].includes(section)?section:'accounts';void this.router.navigate([],{relativeTo:this.route,queryParams:{bereich:this.section},queryParamsHandling:'merge',replaceUrl:true});if(this.section==='accounts')void this.reload();}
+  selectSection(section:string):void{if(this.yearAdmin?.busy||this.historyAdmin?.busy||this.trashAdmin?.busy||this.classAdmin?.busy||this.roomAdmin?.busy||this.classSaving||this.creating||this.editSaving||this.roleSaving||this.deleting){this.sectionNotice='Bitte warten, bis der laufende Vorgang abgeschlossen ist.';return;}this.sectionNotice='';this.section=this.allowedSection(section);void this.router.navigate([],{relativeTo:this.route,queryParams:{bereich:this.section},queryParamsHandling:'merge',replaceUrl:true});if(this.section==='accounts')void this.reload();}
   classes:{id:string;name:string}[]=[];classMemberships:{person_id:string;class_id:string;class_name:string}[]=[];classesReady=false;classesLoading=false;classLoadError='';newClassId='';editClassId='';classBaseline:string[]=[];classSaving=false;classEditError='';classEditSuccess='';
   classIds(person:string):string[]{return this.classMemberships.filter(m=>m.person_id===person).map(m=>m.class_id).sort();}
   classNames(person:string):string{return this.classMemberships.filter(m=>m.person_id===person).map(m=>m.class_name).join(', ')||'Keine Klasse';}
@@ -89,7 +96,7 @@ export class AdminComponent implements OnInit {
     this.myId = me?.id ?? null;
     this.myRole = me?.role ?? null;
     this.myProfile = me;
-    const requested=this.route.snapshot.queryParamMap.get('bereich')||'accounts';this.section=this.isAdmin&&['classes','rooms','teachers','portal','system'].includes(requested)?requested:'accounts';
+    const requested=this.route.snapshot.queryParamMap.get('bereich')||'accounts';this.section=this.allowedSection(requested);
     await this.reload();await this.loadTiles();
   }
 

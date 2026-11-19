@@ -1,3 +1,4 @@
+import {todayKey} from '../today';
 import {SCHOOL_PERIODS,periodRangeLabel} from '../school-periods';
 import { hasRole } from '../supabase.service';
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
@@ -11,7 +12,7 @@ import { Substitution, SubstitutionInput, SubstitutionService, dateKey } from '.
 export class SubstitutionComponent implements OnInit, OnDestroy {
   profile: Profile | null = null;
   entries: Substitution[] = [];
-  selectedDate = dateKey(new Date());
+  selectedDate = todayKey();
   draft: SubstitutionInput = this.emptyDraft();
   endDate = this.selectedDate;
   editingId: string | null = null;
@@ -45,7 +46,7 @@ export class SubstitutionComponent implements OnInit, OnDestroy {
       const day = new Date(monday); day.setDate(day.getDate() + index);
       const key = dateKey(day);
       return { date: key, label: day.toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: '2-digit' }),
-        today: key === dateKey(new Date()), entries: this.entries.filter(e => e.date === key)
+        today: key === todayKey(), entries: this.entries.filter(e => e.date === key)
           .sort((a, b) => a.start_time.localeCompare(b.start_time) || a.teacher.localeCompare(b.teacher, 'de')) };
     });
   }
@@ -77,12 +78,12 @@ export class SubstitutionComponent implements OnInit, OnDestroy {
       const key = dateKey(day);
       return { date: key, number: day.getDate(), label: day.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
         outside: day.getMonth() !== this.calendarMonth.getMonth(), selected: key === this.selectedDate,
-        inWeek: key >= week[0].date && key <= week[6].date, today: key === dateKey(new Date()), hasEntries: this.entries.some(e => e.date === key) };
+        inWeek: key >= week[0].date && key <= week[6].date, today: key === todayKey(), hasEntries: this.entries.some(e => e.date === key) };
     });
   }
   @HostListener('document:click') closeCalendar(): void { this.calendarOpen = false; }
   @HostListener('document:keydown.escape') escapeCalendar(): void { this.calendarOpen = false; }
-  today(): void { this.selectDate(dateKey(new Date())); }
+  today(): void { this.selectDate(todayKey()); }
   trackDay(_: number, day: { date: string }): string { return day.date; }
   emptyDraft(): SubstitutionInput {
     return { date: this.selectedDate, teacher: '', start_time: SCHOOL_PERIODS[0].start, end_time: SCHOOL_PERIODS[SCHOOL_PERIODS.length-1].end,

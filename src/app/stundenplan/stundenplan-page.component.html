@@ -37,7 +37,7 @@
 
     <div class="board" [class.week-view]="!singleDayView" #boardRef (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)">
 
-      <div class="mobile-daybar" *ngIf="isMobile && singleDayView">
+      <div class="mobile-daybar" *ngIf="isMobile && singleDayView" [attr.aria-current]="isSchoolToday(mobileDayDate)?'date':null">
         <div class="mobile-daylabel">
           {{ mobileDayDef.label }}
           <span class="sub">{{ mobileDayDate.getDate() }}.{{ mobileDayDate.getMonth() + 1 }}.{{ mobileDayDate.getFullYear() }}</span>
@@ -45,7 +45,7 @@
       </div>
 
       <div class="day-headers" *ngIf="!isMobile || !singleDayView" [style.grid-template-columns]="'repeat(' + displayedDays.length + ', 1fr)'">
-        <div class="day-header" *ngFor="let col of displayedDays; trackBy: trackByDay" [class.is-today]="col.isToday">
+        <div class="day-header" *ngFor="let col of displayedDays; trackBy: trackByDay" [class.is-today]="col.isToday" [attr.aria-current]="col.isToday?'date':null">
           {{ col.def.short }}
           <span class="num">{{ col.date.getDate() }}.{{ col.date.getMonth() + 1 }}.</span>
         </div>

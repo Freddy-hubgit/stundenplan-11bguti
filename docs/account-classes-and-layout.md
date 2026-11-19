@@ -17,7 +17,7 @@ SQL Editor: https://supabase.com/dashboard/project/amwowtaxrgfcojlsxhzk/sql/new
 
 ## Verwaltung
 
-Die Verwaltung ist nach Konten & Rollen, Klassen & Kursen, Räumen & Buchbarkeit, Lehrerzuordnung, Hauptmenü-Kacheln sowie Schuljahr & Verlauf gegliedert. Klassen und Räume verwenden eingebettet dieselben Komponenten wie die vorhandenen Seiten. Support sieht die Kontenverwaltung; die übrigen Verwaltungsbereiche bleiben Admins vorbehalten. Die Systemsektion verlinkt auf den bestehenden Schuljahreswechsel und Änderungsverlauf. Deren Berechtigungen, Vorschau und Löschbestätigung gelten weiterhin.
+Die Verwaltung ist nach Konten & Rollen, Klassen & Kursen, Räumen & Buchbarkeit, Lehrerzuordnung, Hauptmenü-Kacheln, Schuljahres-Reset, Änderungsverlauf und Papierkorb gegliedert. Klassen und Räume verwenden eingebettet dieselben Komponenten wie die vorhandenen Seiten. Support sieht Konten, die Klassenübersicht und den eigenen zulässigen Papierkorb. Räume, Lehrerzuordnung, Kacheleinstellungen, Schuljahres-Reset und Änderungsverlauf bleiben Admins vorbehalten. Alle Bereiche sind direkt eingebettet; Vorschau und Löschbestätigung des Resets gelten weiterhin. Die entsprechenden Hauptmenükacheln entfallen bei Verwaltungskonten. Schüler und Lehrkräfte ohne Verwaltungsrolle behalten direkte Zugänge zu Klassen und Papierkorb.
 
 ## Layout
 

@@ -1,3 +1,4 @@
+import {todayKey} from '../today';
 import { hasRole } from '../supabase.service';
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
@@ -88,8 +89,8 @@ export class PortalSectionComponent implements OnInit, OnDestroy {
   settingsOpen = false;
   profile: Profile | null = null;
   events: PortalEvent[] = [];
-  selectedDate = dateKey(new Date());
-  month = new Date();
+  selectedDate = todayKey();
+  month = new Date(todayKey()+'T12:00:00');
   weekdays = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
   showPast = false;
   loading = true;
@@ -128,7 +129,7 @@ export class PortalSectionComponent implements OnInit, OnDestroy {
       const date = new Date(first); date.setDate(date.getDate() + i);
       const key = dateKey(date);
       return { date: key, number: date.getDate(), outside: date.getMonth() !== this.month.getMonth(),
-        today: key === dateKey(new Date()), count: this.eventsOn(key).length,
+        today: key === todayKey(), count: this.eventsOn(key).length,
         label: date.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) };
     });
   }
@@ -159,7 +160,7 @@ export class PortalSectionComponent implements OnInit, OnDestroy {
     this.month = new Date(this.month.getFullYear(), this.month.getMonth() + offset, 1, 12);
     this.selectedDate = dateKey(this.month);
   }
-  today(): void { this.month = new Date(); this.selectedDate = dateKey(this.month); }
+  today(): void { this.month = new Date(todayKey()+'T12:00:00'); this.selectedDate = dateKey(this.month); }
   private localInput(date: Date): string {
     return dateKey(date) + 'T' + String(date.getHours()).padStart(2, '0') + ':' + String(date.getMinutes()).padStart(2, '0');
   }

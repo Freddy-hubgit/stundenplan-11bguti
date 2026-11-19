@@ -13,7 +13,7 @@ with sync_playwright() as p:
   elif '/rpc/school_year_config' in url:result=13
   elif '/rpc/school_rooms' in url or '/rpc/school_room_slots' in url:result=[]
   elif '/rpc/school_my_teaching' in url:result=dict(teacher='Herr Bendig',lessons=[])
-  elif '/rpc/learning_grades' in url or '/rpc/exam_calendar_groups' in url or '/rpc/exam_calendar_list' in url or '/rpc/consultation_list' in url or '/rpc/portal_trash_list' in url or '/rpc/notebook_pages' in url or '/rpc/notebook_subjects' in url or '/rpc/school_materials' in url:result=[]
+  elif '/rpc/personal_exam_groups' in url or '/rpc/learning_grades' in url or '/rpc/exam_calendar_groups' in url or '/rpc/exam_calendar_list' in url or '/rpc/consultation_list' in url or '/rpc/portal_trash_list' in url or '/rpc/notebook_pages' in url or '/rpc/notebook_subjects' in url or '/rpc/school_materials' in url:result=[]
   elif '/rpc/portal_events_list' in url or '/rpc/substitution_list' in url or '/rpc/portal_notifications' in url or '/rpc/absence_list' in url or '/rpc/portal_changes' in url:result=[]
   else:return mock(r,'admin')
   r.fulfill(status=200,content_type='application/json',body=json.dumps(result))
