@@ -11,8 +11,8 @@
     </div>
   </header>
 
-  <nav *ngIf="isAdmin" class="admin-tools"><a routerLink="/raumbuchung">Räume und Buchbarkeit verwalten →</a><a routerLink="/aenderungsverlauf">Änderungsverlauf öffnen →</a></nav>
-  <section class="panel" *ngIf="isAdmin"><h2>Kacheln im Hauptmenü</h2><p>Lege zentral fest, welche Kacheln für alle Nutzer verfügbar sind. Rollenrechte und persönliche Einstellungen gelten zusätzlich. Ausblenden sperrt keine Funktion: vorhandene Links und gespeicherte Inhalte bleiben erhalten.</p><p class="message error" role="alert" *ngIf="tileError">{{tileError}}</p><p class="message success" role="status" *ngIf="tileSuccess">{{tileSuccess}}</p><div class="tile-switches"><label *ngFor="let tile of tileOptions"><input type="checkbox" [ngModel]="tileEnabled[tile.route]" (ngModelChange)="toggleTile(tile.route,$event)" [disabled]="tileBusy||!tileSettings.ready||!!tileError">{{tile.title}}</label></div><p>Die Verwaltung bleibt erreichbar, damit du deaktivierte Kacheln jederzeit wieder einschalten kannst. Andere geöffnete Hauptmenüs übernehmen Änderungen spätestens nach 30 Sekunden.</p><button type="button" class="row-btn" (click)="loadTiles()" [disabled]="tileBusy">Kachelstatus neu laden</button></section>
+  <nav class="admin-tabs" aria-label="Verwaltungsbereiche"><button type="button" [class.active]="section==='accounts'" [attr.aria-pressed]="section==='accounts'" (click)="selectSection('accounts')">Konten & Rollen</button><ng-container *ngIf="isAdmin"><button type="button" [class.active]="section==='classes'" [attr.aria-pressed]="section==='classes'" (click)="selectSection('classes')">Klassen & Kurse</button><button type="button" [class.active]="section==='rooms'" [attr.aria-pressed]="section==='rooms'" (click)="selectSection('rooms')">Räume & Buchbarkeit</button><button type="button" [class.active]="section==='teachers'" [attr.aria-pressed]="section==='teachers'" (click)="selectSection('teachers')">Lehrerzuordnung</button><button type="button" [class.active]="section==='portal'" [attr.aria-pressed]="section==='portal'" (click)="selectSection('portal')">Hauptmenü-Kacheln</button><button type="button" [class.active]="section==='system'" [attr.aria-pressed]="section==='system'" (click)="selectSection('system')">Schuljahr & Verlauf</button></ng-container></nav><p *ngIf="sectionNotice" role="status">{{sectionNotice}}</p>
+  <div *ngIf="section==='accounts'">
   <section class="panel">
     <h2>Neues Konto anlegen</h2>
 
@@ -34,7 +34,7 @@
 
       <label class="field">
         <span>Rolle</span>
-        <select [(ngModel)]="newRole" name="newRole" aria-label="Rolle">
+        <select [(ngModel)]="newRole" name="newRole" aria-label="Rolle" (ngModelChange)="newClassId=''">
           <option value="user">Nutzer</option>
           <option value="teacher">Lehrer</option>
           <option value="support">Support</option>
@@ -42,6 +42,9 @@
         </select>
       </label>
 
+      <label class="field" *ngIf="newRole==='user'"><span>Klasse</span><select name="newClassId" aria-label="Klasse beim Anlegen" [(ngModel)]="newClassId" [disabled]="creating||!classesReady"><option value="">Noch keiner Klasse zuordnen</option><option *ngFor="let group of classes" [value]="group.id">{{group.name}}</option></select></label>
+      <p *ngIf="newRole==='user'&&classesReady&&!classes.length">Noch keine Klassen vorhanden. Ein Admin kann sie im Verwaltungsbereich „Klassen & Kurse“ anlegen.</p>
+      <p class="message error" *ngIf="classLoadError">{{classLoadError}} <button type="button" class="row-btn" [disabled]="classesLoading" (click)="loadClasses()">Klassen neu laden</button></p>
       <div class="message error" *ngIf="createError">{{ createError }}</div>
       <div class="message success" *ngIf="createSuccess">{{ createSuccess }}</div>
 
@@ -50,33 +53,19 @@
       </button>
     </form>
   </section>
-
-  <section class="panel" *ngIf="isAdmin">
-    <h2>Lehrerkonto zuordnen</h2>
-    <p>Verknüpfe das Lehrerkonto mit dem exakten Namen im Stundenplan. Diese Zuordnung gilt für den eigenen Unterricht und Krankmeldungen.</p>
-    <p *ngIf="identityLoading" role="status">Lehrerzuordnungen werden geladen …</p>
-    <form (ngSubmit)="saveTeacherIdentity()" class="create-form">
-      <label class="field"><span>Lehrerkonto</span><select name="teacherPerson" [(ngModel)]="teacherPerson" (ngModelChange)="selectTeacher()" [disabled]="identitySaving||identityLoading" required><option value="">Bitte auswählen</option><option *ngFor="let identity of teacherIdentities" [value]="identity.user_id">{{identity.full_name||identity.user_id}} · {{identity.timetable_name||'Noch nicht zugeordnet'}}</option></select></label>
-      <label class="field"><span>Name im Stundenplan</span><input name="timetableName" [(ngModel)]="timetableName" list="admin-teacher-names" maxlength="160" [disabled]="identitySaving" required></label>
-      <datalist id="admin-teacher-names"><option *ngFor="let name of teacherNames" [value]="name"></option></datalist>
-      <p class="message error" role="alert" *ngIf="identityError">{{identityError}}</p><p class="message success" role="status" *ngIf="identitySuccess">{{identitySuccess}}</p>
-      <button type="submit" class="primary" [disabled]="identitySaving||identityLoading||!teacherPerson||!timetableName.trim()">{{identitySaving?'Speichere …':'Zuordnung speichern'}}</button>
-    </form>
-  </section>
-
   <section class="panel">
-    <h2>Bestehende Konten</h2>
+    <h2>Bestehende Konten</h2><button type="button" class="row-btn" [disabled]="loading||classSaving||editSaving||roleSaving||creating" (click)="cancelEdit();reload()">Konten neu laden</button>
 
     <div *ngIf="loading">Lade ...</div>
     <div class="message error" *ngIf="loadError">{{ loadError }}</div>
 
-    <table *ngIf="!loading && !loadError" class="profile-table">
+    <div class="profile-table-scroll"><table *ngIf="!loading && !loadError" class="profile-table">
       <thead>
         <tr>
           <th>Name</th>
           <th>E-Mail</th>
           <th>Rollen</th>
-          <th>Erstellt am</th>
+          <th>Klasse (Schüler)</th><th>Erstellt am</th>
           <th></th>
         </tr>
       </thead>
@@ -86,11 +75,13 @@
             <td>{{ displayName(p) }}</td>
             <td>{{ p.email }}</td>
             <td><span class="role-badge" [class]="p.role">{{ roleNames(p) }}</span></td>
+            <td>{{classesReady?classNames(p.id):'Noch nicht geladen'}}</td>
             <td>{{ p.created_at | date:'dd.MM.yyyy HH:mm' }}</td>
             <td>
               <button
                 type="button"
                 class="row-btn"
+                [disabled]="classesLoading||classSaving||creating"
                 *ngIf="editTargetId !== p.id"
                 (click)="startEdit(p)"
               >
@@ -100,7 +91,7 @@
           </tr>
 
           <tr *ngIf="editTargetId === p.id">
-            <td colspan="5">
+            <td colspan="6">
               <div class="edit-row">
                 <label class="field">
                   <span>Name</span>
@@ -123,9 +114,10 @@
                   />
                 </label>
 
+                <div class="class-editor" *ngIf="hasStudentRole(p)||classIds(p.id).length"><label class="field"><span>Klasse</span><select [name]="'editClass-'+p.id" aria-label="Klasse bearbeiten" [(ngModel)]="editClassId" [disabled]="!classesReady||classSaving||editSaving||roleSaving"><option value="">Keine Klasse</option><option *ngIf="classBaseline.length>1" value="__multiple__">Mehrere Klassen zugeordnet – zum Ändern eine auswählen</option><option *ngFor="let group of classes" [value]="group.id">{{group.name}}</option></select></label><p class="role-hint">Eine Auswahl ersetzt die bisherige Schülerklasse. Kurs- und Lehrerzuordnungen bleiben erhalten.</p><button type="button" class="primary" [disabled]="!classesReady||!classChanged||classSaving||editSaving||roleSaving" (click)="saveClass(p)">{{classSaving?'Speichere Klasse …':'Klasse speichern'}}</button><p class="message error" role="alert" *ngIf="classEditError">{{classEditError}}</p><p class="message success" role="status" *ngIf="classEditSuccess">{{classEditSuccess}}</p></div>
                 <div class="role-editor" *ngIf="canEditRoles">
-                  <fieldset class="multi-roles" [disabled]="roleSaving || editSaving"><legend>Rollen</legend><label *ngFor="let role of roleOptions"><input type="checkbox" [ngModel]="editRoles.includes(role)" (ngModelChange)="toggleEditRole(role)" [name]="'role-' + role">{{ roleLabel(role) }}</label></fieldset>
-                  <button type="button" class="primary" [disabled]="roleSaving || editSaving || !rolesChanged(p)" (click)="saveRole(p)">{{ roleSaving ? 'Speichere Rolle …' : 'Rolle speichern' }}</button>
+                  <fieldset class="multi-roles" [disabled]="classSaving || roleSaving || editSaving"><legend>Rollen</legend><label *ngFor="let role of roleOptions"><input type="checkbox" [ngModel]="editRoles.includes(role)" (ngModelChange)="toggleEditRole(role)" [name]="'role-' + role">{{ roleLabel(role) }}</label></fieldset>
+                  <button type="button" class="primary" [disabled]="classSaving || roleSaving || editSaving || !rolesChanged(p)" (click)="saveRole(p)">{{ roleSaving ? 'Speichere Rolle …' : 'Rolle speichern' }}</button>
                 </div>
                 <p class="role-hint" *ngIf="!canEditRoles">Rollen können nur von Support und Admins geändert werden.</p>
 
@@ -133,7 +125,7 @@
                 <div class="message success" *ngIf="editSuccess">{{ editSuccess }}</div>
 
                 <div class="edit-actions" *ngIf="!confirmingDelete">
-                  <button type="button" class="primary" [disabled]="editSaving || roleSaving" (click)="saveEdit(p)">
+                  <button type="button" class="primary" [disabled]="editSaving || roleSaving || classSaving" (click)="saveEdit(p)">
                     {{ editSaving ? 'Speichere ...' : 'Speichern' }}
                   </button>
                   <button type="button" class="row-btn" (click)="cancelEdit()">Abbrechen</button>
@@ -161,8 +153,28 @@
           </tr>
         </ng-container>
       </tbody>
-    </table>
+    </table></div>
   </section>
-
+  </div>
+  <div *ngIf="isAdmin&&section==='teachers'">
+  <section class="panel" *ngIf="isAdmin">
+    <h2>Lehrerkonto zuordnen</h2>
+    <p>Verknüpfe das Lehrerkonto mit dem exakten Namen im Stundenplan. Diese Zuordnung gilt für den eigenen Unterricht und Krankmeldungen.</p>
+    <p *ngIf="identityLoading" role="status">Lehrerzuordnungen werden geladen …</p>
+    <form (ngSubmit)="saveTeacherIdentity()" class="create-form">
+      <label class="field"><span>Lehrerkonto</span><select name="teacherPerson" [(ngModel)]="teacherPerson" (ngModelChange)="selectTeacher()" [disabled]="identitySaving||identityLoading" required><option value="">Bitte auswählen</option><option *ngFor="let identity of teacherIdentities" [value]="identity.user_id">{{identity.full_name||identity.user_id}} · {{identity.timetable_name||'Noch nicht zugeordnet'}}</option></select></label>
+      <label class="field"><span>Name im Stundenplan</span><input name="timetableName" [(ngModel)]="timetableName" list="admin-teacher-names" maxlength="160" [disabled]="identitySaving" required></label>
+      <datalist id="admin-teacher-names"><option *ngFor="let name of teacherNames" [value]="name"></option></datalist>
+      <p class="message error" role="alert" *ngIf="identityError">{{identityError}}</p><p class="message success" role="status" *ngIf="identitySuccess">{{identitySuccess}}</p>
+      <button type="submit" class="primary" [disabled]="identitySaving||identityLoading||!teacherPerson||!timetableName.trim()">{{identitySaving?'Speichere …':'Zuordnung speichern'}}</button>
+    </form>
+  </section>
+  </div>
+  <div *ngIf="isAdmin&&section==='portal'">
+  <section class="panel" *ngIf="isAdmin"><h2>Kacheln im Hauptmenü</h2><p>Lege zentral fest, welche Kacheln für alle Nutzer verfügbar sind. Rollenrechte und persönliche Einstellungen gelten zusätzlich. Ausblenden sperrt keine Funktion: vorhandene Links und gespeicherte Inhalte bleiben erhalten.</p><p class="message error" role="alert" *ngIf="tileError">{{tileError}}</p><p class="message success" role="status" *ngIf="tileSuccess">{{tileSuccess}}</p><div class="tile-switches"><label *ngFor="let tile of tileOptions"><input type="checkbox" [ngModel]="tileEnabled[tile.route]" (ngModelChange)="toggleTile(tile.route,$event)" [disabled]="tileBusy||!tileSettings.ready||!!tileError">{{tile.title}}</label></div><p>Die Verwaltung bleibt erreichbar, damit du deaktivierte Kacheln jederzeit wieder einschalten kannst. Andere geöffnete Hauptmenüs übernehmen Änderungen spätestens nach 30 Sekunden.</p><button type="button" class="row-btn" (click)="loadTiles()" [disabled]="tileBusy">Kachelstatus neu laden</button></section>
+  </div>
+  <section *ngIf="isAdmin&&section==='classes'" class="admin-embedded"><h2>Klassen & Kurse verwalten</h2><app-school [embedded]="true"></app-school></section>
+  <section *ngIf="isAdmin&&section==='rooms'" class="admin-embedded"><h2>Räume & Buchbarkeit verwalten</h2><app-room-booking [embedded]="true"></app-room-booking></section>
+  <section class="panel" *ngIf="isAdmin&&section==='system'"><h2>Schuljahr & Änderungsverlauf</h2><p>Schuljahreseinstellungen, kontrollierte Bereinigung und der Verlauf zentraler Verwaltungsänderungen.</p><div class="admin-tools"><a routerLink="/schuljahr">Schuljahreswechsel und Bereinigung →</a><a routerLink="/aenderungsverlauf">Änderungsverlauf öffnen →</a></div><p>Der Schuljahreswechsel zeigt vor jeder Löschung eine Vorschau und verlangt die bestehende Bestätigung.</p></section>
   <app-settings-modal [open]="settingsOpen" (openChange)="settingsOpen = $event"></app-settings-modal>
 </div>

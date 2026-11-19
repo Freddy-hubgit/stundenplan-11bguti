@@ -10,7 +10,7 @@
   
   .login-card {
     width: 100%;
-    max-width: 340px;
+    max-width:none;
     background: rgba(255,255,255,0.05);
     border: 1px solid rgba(255,255,255,0.12);
     border-radius: 14px;
@@ -127,3 +127,4 @@
     cursor: pointer;
     text-decoration: underline;
   }
+.login-shell{padding:24px;box-sizing:border-box}.login-card{box-sizing:border-box;max-width:none;width:100%}@media(max-width:480px){.login-shell{padding:14px}.login-card{padding:20px}}

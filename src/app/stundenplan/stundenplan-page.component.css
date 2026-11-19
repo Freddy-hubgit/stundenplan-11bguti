@@ -119,8 +119,8 @@
     }
   
     .app{
-      width:100vw;
-      max-width:1600px;
+      width:100%;
+      max-width:none;
       margin:0 auto;
       padding:28px clamp(18px, 2.5vw, 40px) 60px;
     }
@@ -759,7 +759,7 @@
   
     .modal{
       width:100%;
-      max-width:420px;
+      max-width:none;
       max-height:90vh;
       overflow-y:auto;
       background:var(--bg-elevated);
@@ -769,7 +769,7 @@
     }
 
     .modal.modal-wide{
-      max-width:760px;
+      max-width:none;
     }
 
     .settings-layout{
@@ -1111,3 +1111,5 @@
 .lesson .homework-link { position:absolute;right:6px;bottom:5px;z-index:3;padding:3px 6px;border:1px solid var(--control-border);border-radius:5px;background:var(--bg-elevated);color:var(--text);font-size:9px;text-decoration:none; }
 
 .school-timetable-toolbar { display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin:12px 0; }.school-timetable-toolbar select { margin-left:8px;max-width:240px; }.exam-badge { display:block;font-size:10px;color:#ffe09b;background:#4d3c25;border-radius:5px;padding:3px 5px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+
+.modal-backdrop,.modal{box-sizing:border-box}.modal,.modal.modal-wide{max-width:none;width:100%}.settings-content{min-width:0}

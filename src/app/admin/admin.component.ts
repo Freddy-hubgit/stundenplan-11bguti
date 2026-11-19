@@ -1,9 +1,12 @@
+import {SchoolComponent} from '../school/school.component';
+import {RoomBookingComponent} from '../room-booking/room-booking.component';
+import {ActivatedRoute} from '@angular/router';
 import {PortalTilesService,PORTAL_TILE_OPTIONS} from '../portal-tiles.service';
 import {AbsenceService,TeacherIdentity} from '../absence.service';
 import {DEFAULT_LESSONS} from '../timetable-data';
 import { AccountRole, rolesOf, hasRole, roleNames } from '../supabase.service';
 import { Router } from '@angular/router';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { Profile, SupabaseService } from '../supabase.service';
 import { SettingsService } from '../settings.service';
 
@@ -16,6 +19,17 @@ export class AdminComponent implements OnInit {
   tileOptions=PORTAL_TILE_OPTIONS;tileEnabled:Record<string,boolean>={};tileError='';tileSuccess='';tileBusy=false;
   async loadTiles():Promise<void>{if(!this.isAdmin)return;this.tileError='';try{await this.tileSettings.load();this.tileOptions.forEach(t=>this.tileEnabled[t.route]=this.tileSettings.allowed(t.route));}catch(e:any){this.tileError='Kachelsteuerung konnte nicht geladen werden. Bitte Migration 029 einrichten. '+(e?.message||'');}}
   async toggleTile(route:string,enabled:boolean):Promise<void>{if(!this.isAdmin||this.tileBusy)return;const previous=this.tileEnabled[route];this.tileEnabled[route]=enabled;this.tileBusy=true;this.tileError='';this.tileSuccess='';try{await this.tileSettings.save(route,enabled);this.tileSuccess='Kachel '+(enabled?'aktiviert.':'für alle Nutzer deaktiviert.');}catch(e:any){this.tileEnabled[route]=previous;this.tileError=e?.message||'Kachelstatus konnte nicht gespeichert werden.';}finally{this.tileBusy=false;}}
+  @ViewChild(SchoolComponent) classAdmin?:SchoolComponent;
+  @ViewChild(RoomBookingComponent) roomAdmin?:RoomBookingComponent;
+  section='accounts';sectionNotice='';
+  selectSection(section:string):void{if(this.classAdmin?.busy||this.roomAdmin?.busy||this.classSaving||this.creating||this.editSaving||this.roleSaving||this.deleting){this.sectionNotice='Bitte warten, bis der laufende Vorgang abgeschlossen ist.';return;}this.sectionNotice='';this.section=this.isAdmin&&['classes','rooms','teachers','portal','system'].includes(section)?section:'accounts';void this.router.navigate([],{relativeTo:this.route,queryParams:{bereich:this.section},queryParamsHandling:'merge',replaceUrl:true});if(this.section==='accounts')void this.reload();}
+  classes:{id:string;name:string}[]=[];classMemberships:{person_id:string;class_id:string;class_name:string}[]=[];classesReady=false;classesLoading=false;classLoadError='';newClassId='';editClassId='';classBaseline:string[]=[];classSaving=false;classEditError='';classEditSuccess='';
+  classIds(person:string):string[]{return this.classMemberships.filter(m=>m.person_id===person).map(m=>m.class_id).sort();}
+  classNames(person:string):string{return this.classMemberships.filter(m=>m.person_id===person).map(m=>m.class_name).join(', ')||'Keine Klasse';}
+  hasStudentRole(p:Profile):boolean{return rolesOf(p).includes('user');}
+  get classChanged():boolean{return this.editClassId!=='__multiple__'&&JSON.stringify(this.classBaseline)!==JSON.stringify(this.editClassId?[this.editClassId]:[]);}
+  async loadClasses():Promise<void>{this.classesLoading=true;this.classesReady=false;this.classLoadError='';try{const [classes,memberships]=await Promise.all([this.supabase.supportRpc<{id:string;name:string}[]>('account_class_options'),this.supabase.supportRpc<{person_id:string;class_id:string;class_name:string}[]>('account_class_memberships')]);this.classes=classes;this.classMemberships=memberships;this.classesReady=true;}catch{this.classLoadError='Klassenzuordnungen konnten nicht geladen werden. Bitte die Supabase-Einrichtung für die Kontenverwaltung (037) prüfen und erneut laden.';}finally{this.classesLoading=false;}}
+  async saveClass(p:Profile):Promise<void>{if(!this.classesReady||!this.classChanged||this.classSaving||this.editSaving||this.roleSaving||this.deleting)return;this.classSaving=true;this.classEditError='';this.classEditSuccess='';try{const selected=this.editClassId;const baseline=await this.supabase.supportRpc<string[]>('account_class_set',{person:p.id,target:selected||null,expected_classes:this.classBaseline});this.classBaseline=[...baseline].sort();await this.loadClasses();this.classEditSuccess=selected?'Klasse gespeichert.':'Klassenzuordnung entfernt.';}catch(e:any){this.classEditError=e?.message||'Klasse konnte nicht gespeichert werden. Die Auswahl bleibt erhalten.';}finally{this.classSaving=false;}}
   profiles: Profile[] = [];
   teacherIdentities:TeacherIdentity[]=[];
   teacherPerson='';timetableName='';identityError='';identitySuccess='';identitySaving=false;identityLoading=false;
@@ -60,7 +74,7 @@ export class AdminComponent implements OnInit {
 
   settingsOpen = false;
 
-  constructor(private supabase: SupabaseService, public settings: SettingsService, private router: Router,private absences:AbsenceService,public tileSettings:PortalTilesService) {}
+  constructor(private supabase: SupabaseService, public settings: SettingsService, private router: Router,private absences:AbsenceService,public tileSettings:PortalTilesService,private route:ActivatedRoute) {}
 
   openSettings(): void {
     this.settingsOpen = true;
@@ -75,6 +89,7 @@ export class AdminComponent implements OnInit {
     this.myId = me?.id ?? null;
     this.myRole = me?.role ?? null;
     this.myProfile = me;
+    const requested=this.route.snapshot.queryParamMap.get('bereich')||'accounts';this.section=this.isAdmin&&['classes','rooms','teachers','portal','system'].includes(requested)?requested:'accounts';
     await this.reload();await this.loadTiles();
   }
 
@@ -83,7 +98,7 @@ export class AdminComponent implements OnInit {
     this.loadError = '';
     try {
       this.profiles = await this.supabase.listProfiles();
-      await this.loadTeacherIdentities();
+      await Promise.all([this.loadTeacherIdentities(),this.loadClasses()]);
     } catch (e: any) {
       this.loadError = e?.message ?? 'Konnte Konten nicht laden.';
     }
@@ -103,30 +118,35 @@ export class AdminComponent implements OnInit {
       return;
     }
 
-    this.creating = true;
-    const result = await this.supabase.createUserAccount(
-      this.newEmail,
-      this.newPassword,
-      this.newRole,
-      this.newName
-    );
-    this.creating = false;
-
-    if (!result.ok) {
-      this.createError = result.error ?? 'Erstellung fehlgeschlagen.';
-      return;
-    }
-
-    this.createSuccess = `Konto für ${this.newName || this.newEmail} wurde angelegt.`;
-    this.newName = '';
-    this.newEmail = '';
-    this.newPassword = '';
-    this.newRole = 'user';
-    await this.reload();
+    if(this.creating)return;
+    const chosenClass=this.newRole==='user'?this.newClassId:'';
+    if(chosenClass&&!this.classesReady){this.createError='Bitte zuerst die Klassen neu laden.';return;}
+    const email=this.newEmail.trim(),name=this.newName;
+    this.creating=true;
+    try{
+      const result=await this.supabase.createUserAccount(email,this.newPassword,this.newRole,name);
+      if(!result.ok){this.createError=result.error||'Erstellung fehlgeschlagen.';return;}
+      this.createSuccess=`Konto für ${name||email} wurde angelegt.`;
+      this.newName='';this.newEmail='';this.newPassword='';this.newRole='user';this.newClassId='';
+      await this.reload();
+      if(chosenClass){
+        const created=this.profiles.find(p=>p.email.toLocaleLowerCase()===email.toLocaleLowerCase());
+        try{
+          if(!created||!this.classesReady)throw new Error('Bitte die Kontenliste neu laden und das Konto bearbeiten.');
+          await this.supabase.supportRpc('account_class_set',{person:created.id,target:chosenClass,expected_classes:this.classIds(created.id)});
+          await this.loadClasses();this.createSuccess+=' Klasse zugeordnet.';
+        }catch(e:any){
+          this.createError='Das Konto wurde bereits angelegt, aber die Klasse konnte nicht zugeordnet werden. Nicht erneut anlegen. '+(e?.message||'Bitte die Zuordnung beim bestehenden Konto speichern.');
+          if(created){this.startEdit(created);this.editClassId=chosenClass;this.classEditError='Bitte die Klassenzuordnung hier erneut speichern.';}
+        }
+      }
+    }catch{this.createError='Die Anfrage konnte nicht bestätigt werden. Bitte zuerst die Kontenliste neu laden und prüfen, ob das Konto angelegt wurde.';}
+    finally{this.creating=false;}
   }
 
   startEdit(p: Profile): void {
-    if (this.editSaving || this.roleSaving) return;
+    if (this.editSaving || this.roleSaving || this.classSaving) return;
+    this.classBaseline=this.classIds(p.id);this.editClassId=this.classBaseline.length>1?'__multiple__':this.classBaseline[0]||'';this.classEditError='';this.classEditSuccess='';
     this.editRoles = [...rolesOf(p)];
     this.editTargetId = p.id;
     this.editName = p.full_name ?? '';
@@ -138,7 +158,7 @@ export class AdminComponent implements OnInit {
   }
 
   cancelEdit(): void {
-    if (this.editSaving || this.roleSaving) return;
+    if (this.editSaving || this.roleSaving || this.classSaving) return;
     this.editTargetId = null;
     this.editPassword = '';
     this.editError = '';
@@ -149,7 +169,7 @@ export class AdminComponent implements OnInit {
   get canEditRoles(): boolean { return hasRole(this.myProfile, 'admin', 'support'); }
 
   async saveRole(p: Profile): Promise<void> {
-    if (!this.canEditRoles || this.roleSaving || this.editSaving || !this.rolesChanged(p)) return;
+    if (!this.canEditRoles || this.roleSaving || this.editSaving || this.classSaving || !this.rolesChanged(p)) return;
     if (!this.editRoles.length) { this.editError = 'Mindestens eine Rolle auswählen.'; return; }
     this.roleSaving = true; this.editError = ''; this.editSuccess = '';
     const result = await this.supabase.changeUserRoles(p.id, this.editRoles);
@@ -172,7 +192,7 @@ export class AdminComponent implements OnInit {
   }
 
   async saveEdit(p: Profile): Promise<void> {
-    if (this.roleSaving || this.editSaving) return;
+    if (this.roleSaving || this.editSaving || this.classSaving) return;
     this.editError = '';
     this.editSuccess = '';
 
@@ -197,6 +217,7 @@ export class AdminComponent implements OnInit {
     }
 
     if (Object.keys(changes).length === 0) {
+      if(this.classChanged){await this.saveClass(p);return;}
       this.editError = 'Keine Änderungen vorgenommen.';
       return;
     }
@@ -212,14 +233,15 @@ export class AdminComponent implements OnInit {
 
     this.editSuccess = 'Änderungen gespeichert.';
     this.editPassword = '';
+    if(this.classChanged){await this.saveClass(p);if(this.classEditError||this.classChanged)return;}
     await this.reload();
     setTimeout(() => {
-      if (this.editTargetId === p.id) this.cancelEdit();
+      if (this.editTargetId === p.id&&!this.classChanged&&!this.classSaving) this.cancelEdit();
     }, 1500);
   }
 
   requestDelete(): void {
-    if (this.roleSaving || this.editSaving) return;
+    if (this.roleSaving || this.editSaving || this.classSaving) return;
     this.confirmingDelete = true;
   }
 
@@ -228,7 +250,7 @@ export class AdminComponent implements OnInit {
   }
 
   async confirmDelete(p: Profile): Promise<void> {
-    if (this.roleSaving || this.editSaving) return;
+    if (this.roleSaving || this.editSaving || this.classSaving) return;
     this.editError = '';
     this.deleting = true;
     const result = await this.supabase.deleteUserAccount(p.id);

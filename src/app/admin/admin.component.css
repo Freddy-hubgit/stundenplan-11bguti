@@ -103,7 +103,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  max-width: 700px;
+  max-width:none;
   margin: 0 auto 24px;
 }
 
@@ -140,7 +140,7 @@
 }
 
 .panel {
-  max-width: 700px;
+  max-width:none;
   margin: 0 auto 24px;
   background: rgba(255,255,255,0.05);
   border: 1px solid rgba(255,255,255,0.12);
@@ -367,3 +367,5 @@ button.primary:disabled {
 .admin-tools{display:flex;gap:18px;flex-wrap:wrap;margin:20px 0}.admin-tools a{color:var(--accent,#70d9e5);padding:12px 16px;border:1px solid currentColor;border-radius:10px;text-decoration:none}
 
 .tile-switches{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:18px 0}.tile-switches label{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--border,#34414a);border-radius:10px}.tile-switches input{width:18px;height:18px;accent-color:#70d9e5}
+
+.admin-shell{box-sizing:border-box;width:100%;--line:rgba(167,190,211,.2);--panel:rgba(24,34,43,.82);--muted:#aebfce;--accent:#79dce6;--input:#111b25;--text:#f4f8fc}.admin-shell.theme-light{--line:#d4dde8;--panel:rgba(255,255,255,.88);--muted:#506174;--accent:#176c80;--input:#fff;--text:#18212e}.admin-header{width:100%;box-sizing:border-box;gap:18px;flex-wrap:wrap}.panel{box-sizing:border-box;width:100%}.admin-tabs{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 24px}.admin-tabs button{font:inherit;padding:12px 16px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--text);cursor:pointer;white-space:normal}.admin-tabs button.active{border-color:var(--accent);color:var(--accent)}.admin-tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}.create-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:0 18px;align-items:start}.create-form>.message,.create-form>p{grid-column:1/-1}.create-form>button{justify-self:start}.class-editor{grid-column:1/-1;border-top:1px solid var(--line);padding-top:16px}.profile-table-scroll{max-width:100%;overflow-x:auto}.profile-table{min-width:760px}.admin-embedded{width:100%;min-width:0}.header-actions{flex-wrap:wrap}.admin-tabs button:disabled{opacity:.6}@media(max-width:600px){.admin-shell{padding:22px 14px 40px}.admin-tabs button{flex:1 1 140px;padding:10px}.admin-header{align-items:flex-start}.panel{padding:16px}.edit-row{min-width:0}}

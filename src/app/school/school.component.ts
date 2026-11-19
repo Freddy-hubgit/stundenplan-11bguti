@@ -1,9 +1,10 @@
-import {Component,OnInit} from '@angular/core';
+import {Component,Input,OnInit} from '@angular/core';
 import {SchoolService} from '../school.service';
 import {SettingsService} from '../settings.service';
 import {DEFAULT_LESSONS} from '../timetable-data';
 @Component({selector:'app-school',templateUrl:'./school.component.html',styleUrls:['../portal-home/portal-home.component.css','../homework/homework.component.css','./school.component.css']})
 export class SchoolComponent implements OnInit{
+ @Input() embedded=false;
  error='';success='';busy=false;selected='';name='';groupName='';kind='class';focus='';parent='';grade=11;finalGrade=13;person='';memberKind='student';people:any[]=[];roster:any[]=[];initialMembers:Record<string,string>={};
  constructor(public school:SchoolService,public settings:SettingsService){}
  async ngOnInit():Promise<void>{await this.run(async()=>{await this.school.load();if(this.school.isAdmin){this.people=await this.school.api.supportRpc('school_people');this.finalGrade=await this.school.api.supportRpc('school_year_config');}});}

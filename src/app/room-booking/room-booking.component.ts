@@ -1,9 +1,10 @@
 import {SCHOOL_PERIODS,periodRangeLabel} from '../school-periods';
-import {Component,OnInit,ViewChild,ElementRef} from '@angular/core';import {SupabaseService,Profile,hasRole} from '../supabase.service';import {SettingsService} from '../settings.service';import {dateKey} from '../substitution.service';
+import {Component,Input,OnInit,ViewChild,ElementRef} from '@angular/core';import {SupabaseService,Profile,hasRole} from '../supabase.service';import {SettingsService} from '../settings.service';import {dateKey} from '../substitution.service';
 interface Room{id:string;name:string;details:string;bookable:boolean;}
 interface Slot{id:string|null;room_id:string;label:string;starts_at:string;ends_at:string;can_cancel:boolean;teaching:boolean;}
 @Component({selector:'app-room-booking',templateUrl:'./room-booking.component.html',styleUrls:['../portal-home/portal-home.component.css','../homework/homework.component.css','./room-booking.component.css']})
 export class RoomBookingComponent implements OnInit{
+ @Input() embedded=false;
  @ViewChild('roomEditor') roomEditor?:ElementRef<HTMLElement>;
  profile:Profile|null=null;rooms:Room[]=[];slots:Slot[]=[];day=dateKey(new Date());room='';title='';from=SCHOOL_PERIODS[0].start;to=SCHOOL_PERIODS[0].end;busy=false;error='';success='';editing:string|null=null;roomName='';roomInfo='';enabled=false;
  constructor(private api:SupabaseService,public settings:SettingsService){}
