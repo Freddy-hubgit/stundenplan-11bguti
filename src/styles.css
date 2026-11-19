@@ -28,15 +28,17 @@
     *{box-sizing:border-box; margin:0; padding:0;}
   
     html,body{
-      height:100%;
+      min-height:100%;
       background:var(--bg);
       color:var(--text);
       font-family:var(--font-sans);
       -webkit-font-smoothing:antialiased;
-      overflow-x:hidden;
     }
   
+    html { overflow-x:clip; overflow-y:auto; }
+
     body{
+      min-height:100vh;
       background-image:
         radial-gradient(circle at 12% -10%, rgba(79,216,232,0.06), transparent 40%),
         radial-gradient(circle at 88% 0%, rgba(255,159,74,0.05), transparent 45%);

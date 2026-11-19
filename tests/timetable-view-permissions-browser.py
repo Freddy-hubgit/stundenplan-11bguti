@@ -26,7 +26,8 @@ with sync_playwright() as p:
             assert 'Frau Ersatz' in replacement.inner_text() and 'B999' in replacement.inner_text()
             assert page.get_by_role('button',name='Tag',exact=True).count()==1
             assert page.get_by_role('button',name='Woche',exact=True).count()==1
-            if role=='user':
+            # Match the class permission supplied by browser_fixtures.school_groups.
+            if role not in ['teacher','admin']:
                 assert page.get_by_role('button',name='+ Stunde hinzufügen',exact=True).count()==0
             else:
                 page.get_by_role('button',name='+ Stunde hinzufügen',exact=True).wait_for()

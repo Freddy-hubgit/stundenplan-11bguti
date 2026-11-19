@@ -59,7 +59,8 @@ type EditorMode = "new" | "edit";
     selector: 'app-stundenplan-page',
     templateUrl: './stundenplan-page.component.html',
     styleUrls: ['./stundenplan-page.component.css'],
-    encapsulation: ViewEncapsulation.None,
+    // Global timetable styles previously left html/body scroll-locked after navigation.
+    encapsulation: ViewEncapsulation.Emulated,
   })
   export class StundenplanPageComponent implements OnInit, OnDestroy {
 

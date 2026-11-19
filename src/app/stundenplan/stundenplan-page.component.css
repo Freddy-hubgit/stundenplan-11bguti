@@ -4,7 +4,7 @@
      Display – eine leuchtende "Sweep-Line" wandert in Echtzeit
      durch den Tag, wie eine Tacho-/Instrumentennadel.
      ============================================================ */
-     :root{
+     :host{
       --bg:#0A0D12;
       --bg-elevated:#0D1117;
       --surface:#12161E;
@@ -27,19 +27,11 @@
   
     *{box-sizing:border-box; margin:0; padding:0;}
   
-    app-stundenplan{
+    :host{
       display:block;
       width:100%;
     }
   
-    html,body{
-      height:100%;
-      background:var(--bg);
-      color:var(--text);
-      font-family:var(--font-sans);
-      -webkit-font-smoothing:antialiased;
-      overflow:hidden;
-    }
   
     ::selection{ background:var(--accent-cyan-dim); color:var(--accent-cyan); }
   
